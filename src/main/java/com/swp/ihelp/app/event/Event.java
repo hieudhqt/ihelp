@@ -1,7 +1,10 @@
-package com.swp.ihelp.app.servicevolunteer;
+package com.swp.ihelp.app.event;
 
 import com.swp.ihelp.config.StringPrefixedSequenceIdGenerator;
-import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 
@@ -9,14 +12,14 @@ import javax.persistence.*;
 import java.util.Date;
 
 @Entity
-@Table(name = "volunteer_service")
+@Table(name = "event")
 @Getter
 @Setter
 @NoArgsConstructor
 @ToString
-public class ServiceVolunteer {
+public class Event {
 
-    // ID format: VS_0000x
+    // ID format: EV_0000x
     @Id
     @GeneratedValue(generator = "sequence_generator")
     @GenericGenerator(
@@ -24,7 +27,7 @@ public class ServiceVolunteer {
             strategy = "com.swp.ihelp.config.StringPrefixedSequenceIdGenerator",
             parameters = {
                     @Parameter(name = StringPrefixedSequenceIdGenerator.INCREMENT_PARAM, value = "50"),
-                    @Parameter(name = StringPrefixedSequenceIdGenerator.VALUE_PREFIX_PARAMETER, value = "VS_"),
+                    @Parameter(name = StringPrefixedSequenceIdGenerator.VALUE_PREFIX_PARAMETER, value = "EV_"),
                     @Parameter(name = StringPrefixedSequenceIdGenerator.NUMBER_FORMAT_PARAMETER, value = "%05d"),
             }
     )
@@ -52,7 +55,7 @@ public class ServiceVolunteer {
     @Column(name = "location")
     private String location;
 
-    public ServiceVolunteer(String title, String description, int numOfParticipants, Date createDate, Date startDate, Date endDate, String location) {
+    public Event(String title, String description, int numOfParticipants, Date createDate, Date startDate, Date endDate, String location) {
         this.title = title;
         this.description = description;
         this.numOfParticipants = numOfParticipants;
@@ -61,4 +64,6 @@ public class ServiceVolunteer {
         this.endDate = endDate;
         this.location = location;
     }
+
+    //    private String statusId;
 }

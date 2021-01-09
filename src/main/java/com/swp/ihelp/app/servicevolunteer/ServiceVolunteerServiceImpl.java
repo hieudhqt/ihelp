@@ -3,6 +3,7 @@ package com.swp.ihelp.app.servicevolunteer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -40,6 +41,11 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
 
     @Override
     public void save(ServiceVolunteer serviceVolunteer) throws Exception {
+        // Set createDate as current date for new service.
+        Optional<ServiceVolunteer> result = serviceRepository.findById(serviceVolunteer.getId());
+        if (result.isEmpty()) {
+            serviceVolunteer.setCreateDate(new Date());
+        }
         serviceRepository.save(serviceVolunteer);
     }
 
