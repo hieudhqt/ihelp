@@ -1,4 +1,4 @@
-package com.swp.ihelp.app.servicevolunteer;
+package com.swp.ihelp.app.reward;
 
 import com.swp.ihelp.config.StringPrefixedSequenceIdGenerator;
 import lombok.Getter;
@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.annotations.GenericGenerator;
+
 import org.hibernate.annotations.Parameter;
 
 import javax.persistence.Column;
@@ -13,17 +14,17 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import java.util.Date;
+
 
 @Entity
-@Table(name = "volunteer_service")
+@Table(name = "reward")
 @Getter
 @Setter
 @NoArgsConstructor
 @ToString
-public class ServiceVolunteer {
+public class Reward {
 
-    // ID format: VS_0000x
+    // ID format: RW_0000x
     @Id
     @GeneratedValue(generator = "sequence_generator")
     @GenericGenerator(
@@ -31,7 +32,7 @@ public class ServiceVolunteer {
             strategy = "com.swp.ihelp.config.StringPrefixedSequenceIdGenerator",
             parameters = {
                     @Parameter(name = StringPrefixedSequenceIdGenerator.INCREMENT_PARAM, value = "50"),
-                    @Parameter(name = StringPrefixedSequenceIdGenerator.VALUE_PREFIX_PARAMETER, value = "VS_"),
+                    @Parameter(name = StringPrefixedSequenceIdGenerator.VALUE_PREFIX_PARAMETER, value = "RW_"),
                     @Parameter(name = StringPrefixedSequenceIdGenerator.NUMBER_FORMAT_PARAMETER, value = "%05d"),
             }
     )
@@ -44,28 +45,11 @@ public class ServiceVolunteer {
     @Column(name = "description")
     private String description;
 
-    @Column(name = "num_of_participants")
-    private int numOfParticipants;
+    @Column(name = "picture")
+    private String picture;
 
-    @Column(name = "create_date")
-    private Date createDate;
+    @Column(name = "discount_percentage")
+    private float discountPercentage;
 
-    @Column(name = "start_date")
-    private Date startDate;
 
-    @Column(name = "end_date")
-    private Date endDate;
-
-    @Column(name = "location")
-    private String location;
-
-    public ServiceVolunteer(String title, String description, int numOfParticipants, Date createDate, Date startDate, Date endDate, String location) {
-        this.title = title;
-        this.description = description;
-        this.numOfParticipants = numOfParticipants;
-        this.createDate = createDate;
-        this.startDate = startDate;
-        this.endDate = endDate;
-        this.location = location;
-    }
 }

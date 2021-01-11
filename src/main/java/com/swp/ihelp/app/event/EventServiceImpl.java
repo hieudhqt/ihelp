@@ -1,6 +1,5 @@
 package com.swp.ihelp.app.event;
 
-import com.swp.ihelp.app.servicevolunteer.ServiceVolunteer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
