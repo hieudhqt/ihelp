@@ -42,12 +42,13 @@ public class EventServiceImpl implements EventService {
     @Override
     public void save(EventEntity event) throws Exception {
         // Set createDate as current date for new event.
-//        if (event.getId()!=null) {
-//            Optional<EventEntity> result = eventRepository.findById(event.getId());
-//            if (result.isEmpty()) {
-//                event.setCreatedDate(new Date().getTime());
-//            }
-//        }
+        if (event.getId()!=null) {
+            Optional<EventEntity> result = eventRepository.findById(event.getId());
+            if (result.isEmpty()) {
+                event.setCreatedDate(new Date().getTime());
+            }
+        }
+
         eventRepository.save(event);
     }
 

@@ -1,8 +1,8 @@
-package com.swp.ihelp.app.event;
+package com.swp.ihelp.app.service;
 
 import com.swp.ihelp.app.entity.AccountEntity;
 import com.swp.ihelp.app.entity.StatusEntity;
-import com.swp.ihelp.app.eventcategory.EventCategoryEntity;
+import com.swp.ihelp.app.servicetype.ServiceTypeEntity;
 import com.swp.ihelp.config.StringPrefixedSequenceIdGenerator;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -15,24 +15,26 @@ import javax.persistence.*;
 import java.util.Objects;
 
 @Entity
-@Table(name = "event", schema = "ihelp")
+@Table(name = "service", schema = "ihelp")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class EventEntity {
-    // ID format: EV_0000x
+public class ServiceEntity {
+
+    // ID format: SV_0000x
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "event_seq")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE,generator = "service_seq")
     @GenericGenerator(
-            name = "event_seq",
+            name = "service_seq",
             strategy = "com.swp.ihelp.config.StringPrefixedSequenceIdGenerator",
             parameters = {
                     @Parameter(name = StringPrefixedSequenceIdGenerator.INCREMENT_PARAM, value = "50"),
-                    @Parameter(name = StringPrefixedSequenceIdGenerator.VALUE_PREFIX_PARAMETER, value = "EV_"),
-                    @Parameter(name = StringPrefixedSequenceIdGenerator.NUMBER_FORMAT_PARAMETER, value = "%05d")
+                    @Parameter(name = StringPrefixedSequenceIdGenerator.VALUE_PREFIX_PARAMETER, value = "SV_"),
+                    @Parameter(name = StringPrefixedSequenceIdGenerator.NUMBER_FORMAT_PARAMETER, value = "%05d"),
             }
     )
+    @Column(name = "id", nullable = false, length = 20)
     private String id;
 
     @Basic
@@ -54,12 +56,15 @@ public class EventEntity {
     @Basic
     @Column(name = "point", nullable = true)
     private int point;
+
     @Basic
     @Column(name = "created_date", nullable = true)
     private long createdDate;
+
     @Basic
     @Column(name = "start_date", nullable = true)
     private long startDate;
+
     @Basic
     @Column(name = "end_date", nullable = true)
     private long endDate;
@@ -69,19 +74,19 @@ public class EventEntity {
     private AccountEntity accountByAccountEmail;
 
     @ManyToOne
-    @JoinColumn(name = "event_category_id", referencedColumnName = "id", nullable = false)
-    private EventCategoryEntity eventCategoryByEventCategoryId;
-
-    @ManyToOne
     @JoinColumn(name = "status_id", referencedColumnName = "id", nullable = false)
     private StatusEntity statusByStatusId;
+
+    @ManyToOne
+    @JoinColumn(name = "service_type_id", referencedColumnName = "id", nullable = false)
+    private ServiceTypeEntity serviceTypeByServiceTypeId;
 
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        EventEntity that = (EventEntity) o;
+        ServiceEntity that = (ServiceEntity) o;
         return Objects.equals(id, that.id) &&
                 Objects.equals(title, that.title) &&
                 Objects.equals(description, that.description) &&
@@ -97,5 +102,5 @@ public class EventEntity {
     public int hashCode() {
         return Objects.hash(id, title, description, location, quota, point, createdDate, startDate, endDate);
     }
-}
 
+}
