@@ -3,9 +3,9 @@ package com.swp.ihelp.app.event;
 import java.util.List;
 
 public interface EventService {
-    List<Event> findAll() throws Exception;
-    Event findById(String id) throws Exception;
-    List<Event> findByTitle(String title) throws Exception;
-    void save(Event serviceVolunteer) throws Exception;
+    List<EventEntity> findAll() throws Exception;
+    EventEntity findById(String id) throws Exception;
+    List<EventEntity> findByTitle(String title) throws Exception;
+    void save(EventEntity event) throws Exception;
     void deleteById(String id) throws Exception;
 }

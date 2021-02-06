@@ -18,14 +18,14 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public List<Event> findAll() throws Exception {
+    public List<EventEntity> findAll() throws Exception {
         return eventRepository.findAll();
     }
 
     @Override
-    public Event findById(String id) throws Exception {
-        Optional<Event> result = eventRepository.findById(id);
-        Event event = null;
+    public EventEntity findById(String id) throws Exception {
+        Optional<EventEntity> result = eventRepository.findById(id);
+        EventEntity event = null;
         if (result.isPresent()) {
             event = result.get();
         } else {
@@ -35,17 +35,19 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public List<Event> findByTitle(String title) throws Exception {
+    public List<EventEntity> findByTitle(String title) throws Exception {
         return eventRepository.findByTitle(title);
     }
 
     @Override
-    public void save(Event event) throws Exception {
+    public void save(EventEntity event) throws Exception {
         // Set createDate as current date for new event.
-        Optional<Event> result = eventRepository.findById(event.getId());
-        if (result.isEmpty()) {
-            event.setCreateDate(new Date());
-        }
+//        if (event.getId()!=null) {
+//            Optional<EventEntity> result = eventRepository.findById(event.getId());
+//            if (result.isEmpty()) {
+//                event.setCreatedDate(new Date().getTime());
+//            }
+//        }
         eventRepository.save(event);
     }
 

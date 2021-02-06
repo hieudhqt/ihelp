@@ -5,8 +5,8 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 
-public interface EventRepository extends JpaRepository<Event, String> {
-    @Query("SELECT e from Event e where e.title like %:title%")
-    List<Event> findByTitle(String title);
+public interface EventRepository extends JpaRepository<EventEntity, String> {
+    @Query("SELECT e from EventEntity e where e.title like %:title%")
+    List<EventEntity> findByTitle(String title);
 }
 
