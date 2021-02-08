@@ -30,6 +30,16 @@ public class ServiceController {
         return serviceVolunteerService.findByTitle(serviceTitle);
     }
 
+    @GetMapping("/services/type/{typeId}")
+    public List<ServiceEntity> findByServiceTypeId(@PathVariable int typeId) throws Exception {
+        return serviceVolunteerService.findByServiceTypeId(typeId);
+    }
+
+    @GetMapping("/services/status/{statusId}")
+    public List<ServiceEntity> findByStatusId(@PathVariable int statusId) throws Exception {
+        return serviceVolunteerService.findByStatusId(statusId);
+    }
+
     @PostMapping("/services")
     public ServiceEntity addService(@RequestBody ServiceEntity service) throws Exception {
         serviceVolunteerService.save(service);

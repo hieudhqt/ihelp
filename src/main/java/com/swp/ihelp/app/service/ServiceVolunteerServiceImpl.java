@@ -1,5 +1,7 @@
 package com.swp.ihelp.app.service;
 
+import com.swp.ihelp.app.event.EventEntity;
+import com.swp.ihelp.exception.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -55,5 +57,23 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
     @Override
     public void deleteById(String id) throws Exception {
         serviceRepository.deleteById(id);
+    }
+
+    @Override
+    public List<ServiceEntity> findByServiceTypeId(int serviceTypeId) throws Exception {
+        List<ServiceEntity> result = serviceRepository.findByServiceTypeId(serviceTypeId);
+        if (result.isEmpty()) {
+            throw new EntityNotFoundException("Service with service type id:" + serviceTypeId + "not found.");
+        }
+        return result;
+    }
+
+    @Override
+    public List<ServiceEntity> findByStatusId(int statusId) throws Exception {
+        List<ServiceEntity> result = serviceRepository.findByServiceTypeId(statusId);
+        if (result.isEmpty()) {
+            throw new EntityNotFoundException("Service with status id:" + statusId + "not found.");
+        }
+        return result;
     }
 }

@@ -1,5 +1,6 @@
 package com.swp.ihelp.app.event;
 
+import com.swp.ihelp.exception.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -29,7 +30,7 @@ public class EventServiceImpl implements EventService {
         if (result.isPresent()) {
             event = result.get();
         } else {
-            throw new RuntimeException("Did not find event with id:" + id);
+            throw new EntityNotFoundException("Did not find event with id:" + id);
         }
         return event;
     }
@@ -54,6 +55,28 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public void deleteById(String id) throws Exception {
+        Optional<EventEntity> event = eventRepository.findById(id);
+        if (!event.isPresent()) {
+            throw new EntityNotFoundException("Event id not found:" + id);
+        }
         eventRepository.deleteById(id);
+    }
+
+    @Override
+    public List<EventEntity> findByCategoryId(int categoryId) throws Exception {
+        List<EventEntity> result = eventRepository.findByCategoryId(categoryId);
+        if (result.isEmpty()) {
+            throw new EntityNotFoundException("Event with category id:" + categoryId + "not found.");
+        }
+        return result;
+    }
+
+    @Override
+    public List<EventEntity> findByStatusId(int statusId) throws Exception {
+        List<EventEntity> result = eventRepository.findByStatusId(statusId);
+        if (result.isEmpty()) {
+            throw new EntityNotFoundException("Event with status id:" + statusId + "not found.");
+        }
+        return result;
     }
 }

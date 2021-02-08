@@ -1,5 +1,6 @@
 package com.swp.ihelp.app.event;
 
+import com.swp.ihelp.exception.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,6 +31,16 @@ public class EventController {
         return eventService.findByTitle(eventTitle);
     }
 
+    @GetMapping("/events/category/{categoryId}")
+    public List<EventEntity> findByCategoryId(@PathVariable int categoryId) throws Exception {
+        return eventService.findByCategoryId(categoryId);
+    }
+
+    @GetMapping("/events/status/{statusId}")
+    public List<EventEntity> findByStatusId(@PathVariable int statusId) throws Exception {
+        return eventService.findByStatusId(statusId);
+    }
+
     @PostMapping("/events")
     public EventEntity addEvent(@RequestBody EventEntity event) throws Exception {
         eventService.save(event);
@@ -44,10 +55,6 @@ public class EventController {
 
     @DeleteMapping("/events/{eventId}")
     public String deleteEvent(@PathVariable String eventId) throws Exception {
-        EventEntity event = eventService.findById(eventId);
-        if (event == null) {
-            throw new RuntimeException("Event id not found - " + eventId);
-        }
         eventService.deleteById(eventId);
         return "Delete Event with ID: " + eventId;
     }

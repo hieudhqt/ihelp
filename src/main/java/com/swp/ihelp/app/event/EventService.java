@@ -8,4 +8,6 @@ public interface EventService {
     List<EventEntity> findByTitle(String title) throws Exception;
     void save(EventEntity event) throws Exception;
     void deleteById(String id) throws Exception;
+    List<EventEntity> findByCategoryId(int categoryId) throws Exception;
+    List<EventEntity> findByStatusId(int statusId) throws Exception;
 }
