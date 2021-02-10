@@ -1,5 +1,7 @@
 package com.swp.ihelp.app.entity;
 
+import com.swp.ihelp.app.account.AccountEntity;
+
 import javax.persistence.*;
 import java.util.Objects;
 
@@ -47,7 +49,7 @@ public class ServiceHasAccountEntity {
     }
 
     @ManyToOne
-    @JoinColumn(name = "service_id", referencedColumnName = "id", nullable = false)
+    @JoinColumn(name = "service_id", referencedColumnName = "id", nullable = false, insertable = false, updatable = false)
     public ServiceEntity getServiceByServiceId() {
         return serviceByServiceId;
     }
@@ -57,7 +59,7 @@ public class ServiceHasAccountEntity {
     }
 
     @ManyToOne
-    @JoinColumn(name = "account_email", referencedColumnName = "email", nullable = false)
+    @JoinColumn(name = "account_email", referencedColumnName = "email", nullable = false, insertable = false, updatable = false)
     public AccountEntity getAccountByAccountEmail() {
         return accountByAccountEmail;
     }

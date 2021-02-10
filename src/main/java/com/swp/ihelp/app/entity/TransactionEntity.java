@@ -1,68 +1,43 @@
 package com.swp.ihelp.app.entity;
 
+import com.swp.ihelp.app.account.AccountEntity;
+import lombok.Data;
+
 import javax.persistence.*;
 import java.util.Objects;
 
 @Entity
 @Table(name = "transaction", schema = "ihelp", catalog = "")
+@Data
 public class TransactionEntity {
-    private String id;
-    private Object point;
-    private String description;
-    private Object date;
-    private String type;
-    private AccountEntity accountBySenderEmail;
-    private AccountEntity accountByReceiverEmail;
 
     @Id
     @Column(name = "id", nullable = false, length = 20)
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
+    private String id;
 
     @Basic
     @Column(name = "point", nullable = false)
-    public Object getPoint() {
-        return point;
-    }
-
-    public void setPoint(Object point) {
-        this.point = point;
-    }
+    private int point;
 
     @Basic
     @Column(name = "description", nullable = true, length = 200)
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
+    private String description;
 
     @Basic
     @Column(name = "date", nullable = true)
-    public Object getDate() {
-        return date;
-    }
-
-    public void setDate(Object date) {
-        this.date = date;
-    }
+    private long date;
 
     @Basic
     @Column(name = "type", nullable = true, length = 45)
-    public String getType() {
-        return type;
-    }
+    private String type;
 
-    public void setType(String type) {
-        this.type = type;
-    }
+    @ManyToOne
+    @JoinColumn(name = "sender_email", referencedColumnName = "email", nullable = false)
+    private AccountEntity accountBySenderEmail;
+
+    @ManyToOne
+    @JoinColumn(name = "receiver_email", referencedColumnName = "email", nullable = false)
+    private AccountEntity accountByReceiverEmail;
 
     @Override
     public boolean equals(Object o) {
@@ -81,23 +56,4 @@ public class TransactionEntity {
         return Objects.hash(id, point, description, date, type);
     }
 
-    @ManyToOne
-    @JoinColumn(name = "sender_email", referencedColumnName = "email", nullable = false)
-    public AccountEntity getAccountBySenderEmail() {
-        return accountBySenderEmail;
-    }
-
-    public void setAccountBySenderEmail(AccountEntity accountBySenderEmail) {
-        this.accountBySenderEmail = accountBySenderEmail;
-    }
-
-    @ManyToOne
-    @JoinColumn(name = "receiver_email", referencedColumnName = "email", nullable = false)
-    public AccountEntity getAccountByReceiverEmail() {
-        return accountByReceiverEmail;
-    }
-
-    public void setAccountByReceiverEmail(AccountEntity accountByReceiverEmail) {
-        this.accountByReceiverEmail = accountByReceiverEmail;
-    }
 }

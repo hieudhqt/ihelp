@@ -47,7 +47,7 @@ public class EventHasAccountImageEntity {
     }
 
     @ManyToOne
-    @JoinColumn(name = "event_id", referencedColumnName = "id", nullable = false)
+    @JoinColumn(name = "event_id", referencedColumnName = "id", nullable = false, insertable = false, updatable = false)
     public EventEntity getEventByEventId() {
         return eventByEventId;
     }
@@ -57,7 +57,7 @@ public class EventHasAccountImageEntity {
     }
 
     @ManyToOne
-    @JoinColumn(name = "account_image_id", referencedColumnName = "id", nullable = false)
+    @JoinColumn(name = "account_image_id", referencedColumnName = "id", nullable = false, insertable = false, updatable = false)
     public AccountImageEntity getAccountImageByAccountImageId() {
         return accountImageByAccountImageId;
     }

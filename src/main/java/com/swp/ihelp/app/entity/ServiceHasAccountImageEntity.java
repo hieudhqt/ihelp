@@ -47,7 +47,7 @@ public class ServiceHasAccountImageEntity {
     }
 
     @ManyToOne
-    @JoinColumn(name = "service_id", referencedColumnName = "id", nullable = false)
+    @JoinColumn(name = "service_id", referencedColumnName = "id", nullable = false, insertable = false, updatable = false)
     public ServiceEntity getServiceByServiceId() {
         return serviceByServiceId;
     }
@@ -57,7 +57,7 @@ public class ServiceHasAccountImageEntity {
     }
 
     @ManyToOne
-    @JoinColumn(name = "account_image_id", referencedColumnName = "id", nullable = false)
+    @JoinColumn(name = "account_image_id", referencedColumnName = "id", nullable = false, insertable = false, updatable = false)
     public AccountImageEntity getAccountImageByAccountImageId() {
         return accountImageByAccountImageId;
     }

@@ -1,5 +1,7 @@
 package com.swp.ihelp.app.entity;
 
+import com.swp.ihelp.app.account.AccountEntity;
+
 import javax.persistence.*;
 import java.util.Objects;
 
@@ -47,7 +49,7 @@ public class EventHasAccountEntity {
     }
 
     @ManyToOne
-    @JoinColumn(name = "event_id", referencedColumnName = "id", nullable = false)
+    @JoinColumn(name = "event_id", referencedColumnName = "id", nullable = false, insertable = false, updatable = false)
     public EventEntity getEventByEventId() {
         return eventByEventId;
     }
@@ -57,7 +59,7 @@ public class EventHasAccountEntity {
     }
 
     @ManyToOne
-    @JoinColumn(name = "account_email", referencedColumnName = "email", nullable = false)
+    @JoinColumn(name = "account_email", referencedColumnName = "email", nullable = false, insertable = false, updatable = false)
     public AccountEntity getAccountByAccountEmail() {
         return accountByAccountEmail;
     }

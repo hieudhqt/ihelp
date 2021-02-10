@@ -1,68 +1,43 @@
 package com.swp.ihelp.app.entity;
 
+import com.swp.ihelp.app.account.AccountEntity;
+import lombok.Data;
+
 import javax.persistence.*;
 import java.util.Objects;
 
 @Entity
 @Table(name = "reward", schema = "ihelp", catalog = "")
+@Data
 public class RewardEntity {
-    private String id;
-    private String title;
-    private String description;
-    private Object point;
-    private Object createdDate;
-    private EventEntity eventByEventId;
-    private AccountEntity accountByAccountEmail;
 
     @Id
     @Column(name = "id", nullable = false, length = 320)
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
+    private String id;
 
     @Basic
     @Column(name = "title", nullable = true, length = 100)
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
+    private String title;
 
     @Basic
     @Column(name = "description", nullable = true, length = 500)
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
+    private String description;
 
     @Basic
     @Column(name = "point", nullable = true)
-    public Object getPoint() {
-        return point;
-    }
-
-    public void setPoint(Object point) {
-        this.point = point;
-    }
+    private int point;
 
     @Basic
     @Column(name = "created_date", nullable = true)
-    public Object getCreatedDate() {
-        return createdDate;
-    }
+    private long createdDate;
 
-    public void setCreatedDate(Object createdDate) {
-        this.createdDate = createdDate;
-    }
+    @ManyToOne
+    @JoinColumn(name = "event_id", referencedColumnName = "id", nullable = false)
+    private EventEntity eventByEventId;
+
+    @ManyToOne
+    @JoinColumn(name = "account_email", referencedColumnName = "email", nullable = false)
+    private AccountEntity accountByAccountEmail;
 
     @Override
     public boolean equals(Object o) {
@@ -81,23 +56,4 @@ public class RewardEntity {
         return Objects.hash(id, title, description, point, createdDate);
     }
 
-    @ManyToOne
-    @JoinColumn(name = "event_id", referencedColumnName = "id", nullable = false)
-    public EventEntity getEventByEventId() {
-        return eventByEventId;
-    }
-
-    public void setEventByEventId(EventEntity eventByEventId) {
-        this.eventByEventId = eventByEventId;
-    }
-
-    @ManyToOne
-    @JoinColumn(name = "account_email", referencedColumnName = "email", nullable = false)
-    public AccountEntity getAccountByAccountEmail() {
-        return accountByAccountEmail;
-    }
-
-    public void setAccountByAccountEmail(AccountEntity accountByAccountEmail) {
-        this.accountByAccountEmail = accountByAccountEmail;
-    }
 }
