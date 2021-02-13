@@ -10,4 +10,6 @@ public interface EventService {
     void deleteById(String id) throws Exception;
     List<EventEntity> findByCategoryId(int categoryId) throws Exception;
     List<EventEntity> findByStatusId(int statusId) throws Exception;
+    List<EventEntity> findByAuthorEmail(String email) throws Exception;
+    void joinEvent(String email, String eventId) throws Exception;
 }

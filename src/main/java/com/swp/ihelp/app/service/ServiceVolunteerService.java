@@ -10,4 +10,6 @@ public interface ServiceVolunteerService {
     void deleteById(String id) throws Exception;
     List<ServiceEntity> findByServiceTypeId(int id) throws Exception;
     List<ServiceEntity> findByStatusId(int id) throws Exception;
+    List<ServiceEntity> findByAuthorEmail(String email) throws Exception;
+    void useService(String email, String serviceId) throws Exception;
 }

@@ -1,6 +1,5 @@
 package com.swp.ihelp.app.event;
 
-import com.swp.ihelp.exception.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -41,6 +40,11 @@ public class EventController {
         return eventService.findByStatusId(statusId);
     }
 
+    @GetMapping("/events/account/{email}")
+    public List<EventEntity> findByAuthorEmail(@PathVariable String email) throws Exception {
+        return eventService.findByAuthorEmail(email);
+    }
+
     @PostMapping("/events")
     public EventEntity addEvent(@RequestBody EventEntity event) throws Exception {
         eventService.save(event);
@@ -57,5 +61,11 @@ public class EventController {
     public String deleteEvent(@PathVariable String eventId) throws Exception {
         eventService.deleteById(eventId);
         return "Delete Event with ID: " + eventId;
+    }
+
+    @PostMapping("/events/{email}/{eventId}")
+    public String joinEvent(@PathVariable String email, @PathVariable String eventId) throws Exception{
+        eventService.joinEvent(email, eventId);
+        return "Account with email:" + email + " has joined event with ID:" + eventId + ".";
     }
 }

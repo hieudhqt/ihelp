@@ -1,9 +1,13 @@
 package com.swp.ihelp.app.event;
 
+import com.swp.ihelp.app.entity.AccountEntity;
+import com.swp.ihelp.app.entity.AccountRepository;
+import com.swp.ihelp.app.eventjointable.EventHasAccountEntity;
 import com.swp.ihelp.exception.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityManager;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -12,10 +16,14 @@ import java.util.Optional;
 public class EventServiceImpl implements EventService {
 
     private EventRepository eventRepository;
+    private AccountRepository accountRepository;
+    private EntityManager entityManager;
 
     @Autowired
-    public EventServiceImpl(EventRepository eventRepository) {
+    public EventServiceImpl(EventRepository eventRepository, AccountRepository accountRepository, EntityManager entityManager) {
         this.eventRepository = eventRepository;
+        this.accountRepository = accountRepository;
+        this.entityManager = entityManager;
     }
 
     @Override
@@ -43,7 +51,7 @@ public class EventServiceImpl implements EventService {
     @Override
     public void save(EventEntity event) throws Exception {
         // Set createDate as current date for new event.
-        if (event.getId()!=null) {
+        if (event.getId() != null) {
             Optional<EventEntity> result = eventRepository.findById(event.getId());
             if (result.isEmpty()) {
                 event.setCreatedDate(new Date().getTime());
@@ -78,5 +86,28 @@ public class EventServiceImpl implements EventService {
             throw new EntityNotFoundException("Event with status id:" + statusId + "not found.");
         }
         return result;
+    }
+
+    @Override
+    public List<EventEntity> findByAuthorEmail(String email) throws Exception {
+        return eventRepository.findByAuthorEmail(email);
+    }
+
+    @Override
+    public void joinEvent(String email, String eventId) throws Exception{
+        Optional<EventEntity> eventEntityOptional = eventRepository.findById(eventId);
+        EventEntity eventEntity = eventEntityOptional.get();
+
+        Optional<AccountEntity> accountEntityOptional = accountRepository.findById(email);
+        AccountEntity accountEntity = accountEntityOptional.get();
+
+        EventHasAccountEntity eventAccount = new EventHasAccountEntity();
+        eventAccount.setEvent(eventEntity);
+        eventAccount.setAccount(accountEntity);
+
+        eventEntity.getEventAccount().add(eventAccount);
+
+        EventEntity savedEvent = eventRepository.save(eventEntity);
+//        AccountEntity savedAccount = accountRepository.save(accountEntity);
     }
 }

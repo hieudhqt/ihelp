@@ -1,18 +1,16 @@
 package com.swp.ihelp.app.event;
 
 import com.swp.ihelp.app.entity.AccountEntity;
+import com.swp.ihelp.app.eventjointable.EventHasAccountEntity;
 import com.swp.ihelp.app.entity.StatusEntity;
 import com.swp.ihelp.app.eventcategory.EventCategoryEntity;
 import com.swp.ihelp.config.StringPrefixedSequenceIdGenerator;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 
 import javax.persistence.*;
-import java.util.Objects;
+import java.util.*;
 
 @Entity
 @Table(name = "event", schema = "ihelp")
@@ -20,6 +18,7 @@ import java.util.Objects;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 public class EventEntity {
     // ID format: EV_0000x
     @Id
@@ -76,6 +75,25 @@ public class EventEntity {
     @JoinColumn(name = "status_id", referencedColumnName = "id", nullable = false)
     private StatusEntity statusByStatusId;
 
+    //    @ManyToMany(fetch = FetchType.LAZY,
+//            cascade = {CascadeType.PERSIST, CascadeType.MERGE,
+//                    CascadeType.DETACH, CascadeType.REFRESH})
+//    @JoinTable(name = "event_has_account",
+//    joinColumns = @JoinColumn(name = "event_id"),
+//    inverseJoinColumns = @JoinColumn(name = "account_email"))
+    @OneToMany(
+            mappedBy = "event",
+            cascade = {CascadeType.PERSIST, CascadeType.MERGE,
+                    CascadeType.DETACH, CascadeType.REFRESH}
+    )
+    private Set<EventHasAccountEntity> EventAccount = new HashSet<>();
+
+//    public void addAccount(AccountEntity accountEntity) {
+//        if (EventAccount == null) {
+//            EventAccount = new HashSet<>();
+//        }
+//        EventAccount.add(accountEntity);
+//    }
 
     @Override
     public boolean equals(Object o) {

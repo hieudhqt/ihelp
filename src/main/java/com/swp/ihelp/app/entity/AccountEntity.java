@@ -1,110 +1,77 @@
 package com.swp.ihelp.app.entity;
 
+import com.swp.ihelp.app.eventjointable.EventHasAccountEntity;
+import com.swp.ihelp.app.servicejointable.ServiceHasAccountEntity;
+import lombok.*;
+
 import javax.persistence.*;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 @Entity
 @Table(name = "account", schema = "ihelp")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@ToString
 public class AccountEntity {
-    private String email;
-    private String password;
-    private String fullName;
-    private String phone;
-    private long dateOfBirth;
-    private Boolean gender;
-    private int balancePoint;
-    private int cumulativePoint;
-    private long createdDate;
-
     @Id
     @Column(name = "email", nullable = false, length = 320)
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
+    private String email;
 
     @Basic
     @Column(name = "password", nullable = true, length = 60)
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
+    private String password;
 
     @Basic
     @Column(name = "full_name", nullable = true, length = 255)
-    public String getFullName() {
-        return fullName;
-    }
-
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
-    }
+    private String fullName;
 
     @Basic
     @Column(name = "phone", nullable = true, length = 20)
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
+    private String phone;
 
     @Basic
     @Column(name = "date_of_birth", nullable = true)
-    public long getDateOfBirth() {
-        return dateOfBirth;
-    }
-
-    public void setDateOfBirth(long dateOfBirth) {
-        this.dateOfBirth = dateOfBirth;
-    }
+    private long dateOfBirth;
 
     @Basic
     @Column(name = "gender", nullable = true)
-    public Boolean getGender() {
-        return gender;
-    }
-
-    public void setGender(Boolean gender) {
-        this.gender = gender;
-    }
+    private Boolean gender;
 
     @Basic
     @Column(name = "balance_point", nullable = true)
-    public int getBalancePoint() {
-        return balancePoint;
-    }
-
-    public void setBalancePoint(int balancePoint) {
-        this.balancePoint = balancePoint;
-    }
+    private int balancePoint;
 
     @Basic
     @Column(name = "cumulative_point", nullable = true)
-    public int getCumulativePoint() {
-        return cumulativePoint;
-    }
-
-    public void setCumulativePoint(int cumulativePoint) {
-        this.cumulativePoint = cumulativePoint;
-    }
+    private int cumulativePoint;
 
     @Basic
     @Column(name = "created_date", nullable = true)
-    public long getCreatedDate() {
-        return createdDate;
-    }
+    private long createdDate;
 
-    public void setCreatedDate(long createdDate) {
-        this.createdDate = createdDate;
-    }
+    //    @ManyToMany(fetch = FetchType.LAZY,
+//            cascade = {CascadeType.PERSIST, CascadeType.MERGE,
+//                    CascadeType.DETACH, CascadeType.REFRESH})
+//    @JoinTable(name = "event_has_account",
+//            joinColumns = @JoinColumn(name = "account_email"),
+//            inverseJoinColumns = @JoinColumn(name = "event_id"))
+    @OneToMany(
+            mappedBy = "account",
+            cascade = {CascadeType.PERSIST, CascadeType.MERGE,
+                    CascadeType.DETACH, CascadeType.REFRESH}
+    )
+    private Set<EventHasAccountEntity> EventAccount = new HashSet<>();
+
+    @OneToMany(
+            mappedBy = "account",
+            cascade = {CascadeType.PERSIST, CascadeType.MERGE,
+                    CascadeType.DETACH, CascadeType.REFRESH}
+    )
+    private Set<ServiceHasAccountEntity> ServiceAccount = new HashSet<>();
 
     @Override
     public boolean equals(Object o) {

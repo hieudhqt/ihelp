@@ -40,6 +40,11 @@ public class ServiceController {
         return serviceVolunteerService.findByStatusId(statusId);
     }
 
+    @GetMapping("/services/account/{email}")
+    public List<ServiceEntity> findByAuthorEmail(@PathVariable String email) throws Exception {
+        return serviceVolunteerService.findByAuthorEmail(email);
+    }
+
     @PostMapping("/services")
     public ServiceEntity addService(@RequestBody ServiceEntity service) throws Exception {
         serviceVolunteerService.save(service);
@@ -60,5 +65,11 @@ public class ServiceController {
         }
         serviceVolunteerService.deleteById(serviceId);
         return "Delete Event with ID: " + serviceId;
+    }
+
+    @PostMapping("/services/{email}/{serviceId}")
+    public String joinEvent(@PathVariable String email, @PathVariable String serviceId) throws Exception{
+        serviceVolunteerService.useService(email, serviceId);
+        return "Account with email:" + email + " has used service with ID:" + serviceId + ".";
     }
 }

@@ -1,6 +1,7 @@
 package com.swp.ihelp.app.service;
 
 import com.swp.ihelp.app.entity.AccountEntity;
+import com.swp.ihelp.app.servicejointable.ServiceHasAccountEntity;
 import com.swp.ihelp.app.entity.StatusEntity;
 import com.swp.ihelp.app.servicetype.ServiceTypeEntity;
 import com.swp.ihelp.config.StringPrefixedSequenceIdGenerator;
@@ -12,7 +13,9 @@ import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 
 import javax.persistence.*;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 @Entity
 @Table(name = "service", schema = "ihelp")
@@ -80,6 +83,13 @@ public class ServiceEntity {
     @ManyToOne
     @JoinColumn(name = "service_type_id", referencedColumnName = "id", nullable = false)
     private ServiceTypeEntity serviceTypeByServiceTypeId;
+
+    @OneToMany(
+            mappedBy = "service",
+            cascade = {CascadeType.PERSIST, CascadeType.MERGE,
+                    CascadeType.DETACH, CascadeType.REFRESH}
+    )
+    private Set<ServiceHasAccountEntity> ServiceAccount = new HashSet<>();
 
 
     @Override

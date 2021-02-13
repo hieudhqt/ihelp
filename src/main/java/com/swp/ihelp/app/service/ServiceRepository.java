@@ -14,4 +14,7 @@ public interface ServiceRepository extends JpaRepository<ServiceEntity, String> 
 
     @Query("SELECT s from ServiceEntity s where s.statusByStatusId.id = :id")
     List<ServiceEntity> findByServiceStatusId(int id);
+
+    @Query("SELECT s from ServiceEntity s where s.accountByAccountEmail.email = :email")
+    List<ServiceEntity> findByAuthorEmail(String email);
 }
