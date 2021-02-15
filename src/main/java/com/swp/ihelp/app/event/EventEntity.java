@@ -1,16 +1,19 @@
 package com.swp.ihelp.app.event;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.swp.ihelp.app.entity.AccountEntity;
-import com.swp.ihelp.app.eventjointable.EventHasAccountEntity;
 import com.swp.ihelp.app.entity.StatusEntity;
 import com.swp.ihelp.app.eventcategory.EventCategoryEntity;
+import com.swp.ihelp.app.eventjointable.EventHasAccountEntity;
 import com.swp.ihelp.config.StringPrefixedSequenceIdGenerator;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 
 import javax.persistence.*;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 
 @Entity
 @Table(name = "event", schema = "ihelp")
@@ -63,17 +66,18 @@ public class EventEntity {
     @Column(name = "end_date", nullable = true)
     private long endDate;
 
-    @ManyToOne
+    @JsonBackReference
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_email", referencedColumnName = "email", nullable = false)
-    private AccountEntity accountByAccountEmail;
+    private AccountEntity authorAccount;
 
     @ManyToOne
     @JoinColumn(name = "event_category_id", referencedColumnName = "id", nullable = false)
-    private EventCategoryEntity eventCategoryByEventCategoryId;
+    private EventCategoryEntity eventCategory;
 
     @ManyToOne
     @JoinColumn(name = "status_id", referencedColumnName = "id", nullable = false)
-    private StatusEntity statusByStatusId;
+    private StatusEntity status;
 
     //    @ManyToMany(fetch = FetchType.LAZY,
 //            cascade = {CascadeType.PERSIST, CascadeType.MERGE,

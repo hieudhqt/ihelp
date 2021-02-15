@@ -1,28 +1,27 @@
 package com.swp.ihelp.app.service;
 
 import com.swp.ihelp.app.entity.AccountEntity;
-import com.swp.ihelp.app.servicejointable.ServiceHasAccountEntity;
 import com.swp.ihelp.app.entity.StatusEntity;
+import com.swp.ihelp.app.servicejointable.ServiceHasAccountEntity;
 import com.swp.ihelp.app.servicetype.ServiceTypeEntity;
 import com.swp.ihelp.config.StringPrefixedSequenceIdGenerator;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.ToString;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 
 import javax.persistence.*;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 
 @Entity
 @Table(name = "service", schema = "ihelp")
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 public class ServiceEntity {
 
     // ID format: SV_0000x
@@ -72,17 +71,17 @@ public class ServiceEntity {
     @Column(name = "end_date", nullable = true)
     private long endDate;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_email", referencedColumnName = "email", nullable = false)
-    private AccountEntity accountByAccountEmail;
+    private AccountEntity authorAccount;
 
     @ManyToOne
     @JoinColumn(name = "status_id", referencedColumnName = "id", nullable = false)
-    private StatusEntity statusByStatusId;
+    private StatusEntity status;
 
     @ManyToOne
     @JoinColumn(name = "service_type_id", referencedColumnName = "id", nullable = false)
-    private ServiceTypeEntity serviceTypeByServiceTypeId;
+    private ServiceTypeEntity serviceType;
 
     @OneToMany(
             mappedBy = "service",
@@ -90,27 +89,5 @@ public class ServiceEntity {
                     CascadeType.DETACH, CascadeType.REFRESH}
     )
     private Set<ServiceHasAccountEntity> ServiceAccount = new HashSet<>();
-
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        ServiceEntity that = (ServiceEntity) o;
-        return Objects.equals(id, that.id) &&
-                Objects.equals(title, that.title) &&
-                Objects.equals(description, that.description) &&
-                Objects.equals(location, that.location) &&
-                Objects.equals(quota, that.quota) &&
-                Objects.equals(point, that.point) &&
-                Objects.equals(createdDate, that.createdDate) &&
-                Objects.equals(startDate, that.startDate) &&
-                Objects.equals(endDate, that.endDate);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, title, description, location, quota, point, createdDate, startDate, endDate);
-    }
 
 }

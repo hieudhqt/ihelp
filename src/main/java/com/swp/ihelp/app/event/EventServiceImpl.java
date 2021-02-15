@@ -7,7 +7,6 @@ import com.swp.ihelp.exception.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.EntityManager;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -17,26 +16,26 @@ public class EventServiceImpl implements EventService {
 
     private EventRepository eventRepository;
     private AccountRepository accountRepository;
-    private EntityManager entityManager;
 
     @Autowired
-    public EventServiceImpl(EventRepository eventRepository, AccountRepository accountRepository, EntityManager entityManager) {
+    public EventServiceImpl(EventRepository eventRepository, AccountRepository accountRepository) {
         this.eventRepository = eventRepository;
         this.accountRepository = accountRepository;
-        this.entityManager = entityManager;
     }
 
     @Override
-    public List<EventEntity> findAll() throws Exception {
-        return eventRepository.findAll();
+    public List<EventResponse> findAll() throws Exception {
+        List<EventEntity> eventEntityList = eventRepository.findAll();
+        List<EventResponse> responseList = convertToResponseObject(eventEntityList);
+        return responseList;
     }
 
     @Override
-    public EventEntity findById(String id) throws Exception {
+    public EventResponse findById(String id) throws Exception {
         Optional<EventEntity> result = eventRepository.findById(id);
-        EventEntity event = null;
+        EventResponse event = null;
         if (result.isPresent()) {
-            event = result.get();
+            event = new EventResponse(result.get());
         } else {
             throw new EntityNotFoundException("Did not find event with id:" + id);
         }
@@ -44,20 +43,18 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public List<EventEntity> findByTitle(String title) throws Exception {
-        return eventRepository.findByTitle(title);
+    public List<EventResponse> findByTitle(String title) throws Exception {
+        List<EventEntity> eventEntityList = eventRepository.findByTitle(title);
+        List<EventResponse> responseList = convertToResponseObject(eventEntityList);
+        return responseList;
     }
 
     @Override
     public void save(EventEntity event) throws Exception {
         // Set createDate as current date for new event.
-        if (event.getId() != null) {
-            Optional<EventEntity> result = eventRepository.findById(event.getId());
-            if (result.isEmpty()) {
-                event.setCreatedDate(new Date().getTime());
-            }
+        if (event.getId() == null) {
+            event.setCreatedDate(new Date().getTime());
         }
-
         eventRepository.save(event);
     }
 
@@ -71,30 +68,28 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public List<EventEntity> findByCategoryId(int categoryId) throws Exception {
-        List<EventEntity> result = eventRepository.findByCategoryId(categoryId);
-        if (result.isEmpty()) {
-            throw new EntityNotFoundException("Event with category id:" + categoryId + "not found.");
-        }
-        return result;
+    public List<EventResponse> findByCategoryId(int categoryId) throws Exception {
+        List<EventEntity> eventEntityList = eventRepository.findByCategoryId(categoryId);
+        List<EventResponse> responseList = convertToResponseObject(eventEntityList);
+        return responseList;
     }
 
     @Override
-    public List<EventEntity> findByStatusId(int statusId) throws Exception {
-        List<EventEntity> result = eventRepository.findByStatusId(statusId);
-        if (result.isEmpty()) {
-            throw new EntityNotFoundException("Event with status id:" + statusId + "not found.");
-        }
-        return result;
+    public List<EventResponse> findByStatusId(int statusId) throws Exception {
+        List<EventEntity> eventEntityList = eventRepository.findByStatusId(statusId);
+        List<EventResponse> responseList = convertToResponseObject(eventEntityList);
+        return responseList;
     }
 
     @Override
-    public List<EventEntity> findByAuthorEmail(String email) throws Exception {
-        return eventRepository.findByAuthorEmail(email);
+    public List<EventResponse> findByAuthorEmail(String email) throws Exception {
+        List<EventEntity> eventEntityList = eventRepository.findByAuthorEmail(email);
+        List<EventResponse> responseList = convertToResponseObject(eventEntityList);
+        return responseList;
     }
 
     @Override
-    public void joinEvent(String email, String eventId) throws Exception{
+    public void joinEvent(String email, String eventId) throws Exception {
         Optional<EventEntity> eventEntityOptional = eventRepository.findById(eventId);
         EventEntity eventEntity = eventEntityOptional.get();
 
@@ -109,5 +104,13 @@ public class EventServiceImpl implements EventService {
 
         EventEntity savedEvent = eventRepository.save(eventEntity);
 //        AccountEntity savedAccount = accountRepository.save(accountEntity);
+    }
+
+    private List<EventResponse> convertToResponseObject(List<EventEntity> eventEntityList)
+            throws Exception {
+        if (eventEntityList.isEmpty()) {
+            throw new EntityNotFoundException("No event found.");
+        }
+        return EventResponse.convertToResponseList(eventEntityList);
     }
 }

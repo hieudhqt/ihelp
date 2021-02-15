@@ -16,32 +16,32 @@ public class EventController {
     }
 
     @GetMapping("/events")
-    public List<EventEntity> findAll() throws Exception {
+    public List<EventResponse> findAll() throws Exception {
         return eventService.findAll();
     }
 
     @GetMapping("/events/{eventId}")
-    public EventEntity findById(@PathVariable String eventId) throws Exception {
+    public EventResponse findById(@PathVariable String eventId) throws Exception {
         return eventService.findById(eventId);
     }
 
     @GetMapping("/events/title/{eventTitle}")
-    public List<EventEntity> findByTitle(@PathVariable String eventTitle) throws Exception {
+    public List<EventResponse> findByTitle(@PathVariable String eventTitle) throws Exception {
         return eventService.findByTitle(eventTitle);
     }
 
     @GetMapping("/events/category/{categoryId}")
-    public List<EventEntity> findByCategoryId(@PathVariable int categoryId) throws Exception {
+    public List<EventResponse> findByCategoryId(@PathVariable int categoryId) throws Exception {
         return eventService.findByCategoryId(categoryId);
     }
 
     @GetMapping("/events/status/{statusId}")
-    public List<EventEntity> findByStatusId(@PathVariable int statusId) throws Exception {
+    public List<EventResponse> findByStatusId(@PathVariable int statusId) throws Exception {
         return eventService.findByStatusId(statusId);
     }
 
     @GetMapping("/events/account/{email}")
-    public List<EventEntity> findByAuthorEmail(@PathVariable String email) throws Exception {
+    public List<EventResponse> findByAuthorEmail(@PathVariable String email) throws Exception {
         return eventService.findByAuthorEmail(email);
     }
 

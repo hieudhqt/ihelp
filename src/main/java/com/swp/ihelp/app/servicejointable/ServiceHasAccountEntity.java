@@ -3,15 +3,17 @@ package com.swp.ihelp.app.servicejointable;
 import com.swp.ihelp.app.entity.AccountEntity;
 import com.swp.ihelp.app.service.ServiceEntity;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.persistence.*;
 import java.util.Date;
 
 @Entity
 @Table(name = "service_has_account", schema = "ihelp")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class ServiceHasAccountEntity {

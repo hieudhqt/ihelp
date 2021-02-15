@@ -6,7 +6,6 @@ import lombok.*;
 
 import javax.persistence.*;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 
 @Entity
@@ -53,13 +52,16 @@ public class AccountEntity {
     @Column(name = "created_date", nullable = true)
     private long createdDate;
 
-    //    @ManyToMany(fetch = FetchType.LAZY,
-//            cascade = {CascadeType.PERSIST, CascadeType.MERGE,
-//                    CascadeType.DETACH, CascadeType.REFRESH})
-//    @JoinTable(name = "event_has_account",
-//            joinColumns = @JoinColumn(name = "account_email"),
-//            inverseJoinColumns = @JoinColumn(name = "event_id"))
+    @ManyToOne
+    @JoinColumn(name = "account_status_id", referencedColumnName = "id", nullable = false)
+    private AccountStatusEntity status;
+
+    @ManyToOne
+    @JoinColumn(name = "role_id", referencedColumnName = "id", nullable = false)
+    private RoleEntity role;
+
     @OneToMany(
+            fetch = FetchType.LAZY,
             mappedBy = "account",
             cascade = {CascadeType.PERSIST, CascadeType.MERGE,
                     CascadeType.DETACH, CascadeType.REFRESH}
@@ -67,30 +69,10 @@ public class AccountEntity {
     private Set<EventHasAccountEntity> EventAccount = new HashSet<>();
 
     @OneToMany(
+            fetch = FetchType.LAZY,
             mappedBy = "account",
             cascade = {CascadeType.PERSIST, CascadeType.MERGE,
                     CascadeType.DETACH, CascadeType.REFRESH}
     )
     private Set<ServiceHasAccountEntity> ServiceAccount = new HashSet<>();
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        AccountEntity that = (AccountEntity) o;
-        return Objects.equals(email, that.email) &&
-                Objects.equals(password, that.password) &&
-                Objects.equals(fullName, that.fullName) &&
-                Objects.equals(phone, that.phone) &&
-                Objects.equals(dateOfBirth, that.dateOfBirth) &&
-                Objects.equals(gender, that.gender) &&
-                Objects.equals(balancePoint, that.balancePoint) &&
-                Objects.equals(cumulativePoint, that.cumulativePoint) &&
-                Objects.equals(createdDate, that.createdDate);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(email, password, fullName, phone, dateOfBirth, gender, balancePoint, cumulativePoint, createdDate);
-    }
 }
