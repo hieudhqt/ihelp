@@ -1,4 +1,4 @@
-package com.swp.ihelp.app.account;
+package com.swp.ihelp.app.account.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,5 +18,7 @@ public class LoginResponse implements Serializable {
     private String token;
 
     private String role;
+
+    private String status;
 
 }

@@ -1,5 +1,7 @@
-package com.swp.ihelp.security;
+package com.swp.ihelp.config;
 
+import com.swp.ihelp.security.RequestFilter;
+import com.swp.ihelp.security.RestAuthenticationEntryPoint;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -66,7 +68,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                         "/v2/api-docs**", "/webjars/**"
                 )
                 .permitAll()
-                .antMatchers("/login").permitAll()
+                .antMatchers("/login", "/signup").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .exceptionHandling().authenticationEntryPoint(restAuthenticationEntryPoint)

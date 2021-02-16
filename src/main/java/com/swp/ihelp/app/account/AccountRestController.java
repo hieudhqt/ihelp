@@ -1,19 +1,21 @@
 package com.swp.ihelp.app.account;
 
+import com.swp.ihelp.app.account.request.LoginRequest;
+import com.swp.ihelp.app.account.request.SignUpRequest;
+import com.swp.ihelp.app.account.response.AccountGeneralResponse;
+import com.swp.ihelp.app.account.response.LoginResponse;
+import com.swp.ihelp.security.CustomUserDetails;
 import com.swp.ihelp.security.JwtTokenUtil;
 import com.swp.ihelp.security.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @CrossOrigin
@@ -28,18 +30,36 @@ public class AccountRestController {
     @Autowired
     private UserDetailsServiceImpl userDetailsService;
 
-    @PostMapping("/login")
-    public String login(@RequestBody LoginRequest loginRequest) throws Exception {
-        authenticate(loginRequest.getEmail(), loginRequest.getPassword());
-        final UserDetails userDetails = userDetailsService.loadUserByUsername(loginRequest.getEmail());
-        final String token = jwtTokenUtil.generateToken(userDetails);
-        return token;
+    @Autowired
+    private final AccountService accountService;
+
+    public AccountRestController(AccountService accountService) {
+        this.accountService = accountService;
     }
 
-//    @PostMapping("/signup")
-//    public Boolean register(@RequestBody AccountEntity accountEntity) throws Exception {
-//
-//    }
+    @PostMapping("/login")
+    public LoginResponse login(@RequestBody LoginRequest loginRequest) throws Exception {
+        authenticate(loginRequest.getEmail(), loginRequest.getPassword());
+        final CustomUserDetails userDetails = (CustomUserDetails) userDetailsService.loadUserByUsername(loginRequest.getEmail());
+        final String token = jwtTokenUtil.generateToken(userDetails);
+        AccountEntity account = userDetails.getAccountEntity();
+        return new LoginResponse(loginRequest.getEmail(), token, account.getRoleByRoleId().getName(), account.getAccountStatusByAccountStatusId().getName());
+    }
+
+    @PostMapping("/signup")
+    public String register(@RequestBody SignUpRequest signUpRequest) throws Exception {
+        accountService.insert(signUpRequest);
+        return "Created new account";
+    }
+
+    @GetMapping("/accounts/{email}")
+    public ResponseEntity findById(@PathVariable String email) throws Exception {
+        accountService.findById(email);
+        return ResponseEntity.ok("Found");
+    }
+
+//    @GetMapping("/accounts")
+//    public Page<AccountGeneralResponse>
 
     private void authenticate(String email, String password) throws Exception {
         try {

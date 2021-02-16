@@ -1,6 +1,9 @@
 package com.swp.ihelp.app.account;
 
+import com.swp.ihelp.app.entity.AccountStatusEntity;
+import com.swp.ihelp.app.entity.RoleEntity;
 import lombok.Data;
+import lombok.experimental.Accessors;
 
 import javax.persistence.*;
 import java.util.Objects;
@@ -8,6 +11,7 @@ import java.util.Objects;
 @Entity
 @Table(name = "account", schema = "ihelp", catalog = "")
 @Data
+@Accessors(chain = true)
 public class AccountEntity {
 
     @Id
@@ -45,6 +49,14 @@ public class AccountEntity {
     @Basic
     @Column(name = "created_date", nullable = true)
     private long createdDate;
+
+    @ManyToOne
+    @JoinColumn(name = "role_id", referencedColumnName = "id", nullable = false)
+    private RoleEntity roleByRoleId;
+
+    @ManyToOne
+    @JoinColumn(name = "account_status_id", referencedColumnName = "id", nullable = false)
+    private AccountStatusEntity accountStatusByAccountStatusId;
 
     @Override
     public boolean equals(Object o) {

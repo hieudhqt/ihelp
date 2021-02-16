@@ -25,6 +25,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         if (accountEntity == null) {
             throw new UsernameNotFoundException("Email or password does not match");
         }
-        return new User(accountEntity.getEmail(), accountEntity.getPassword(), new ArrayList<>());
+        return new CustomUserDetails(accountEntity);
     }
 }

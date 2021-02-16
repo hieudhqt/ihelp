@@ -1,4 +1,4 @@
-package com.swp.ihelp.app.account;
+package com.swp.ihelp.app.account.request;
 
 import lombok.Data;
 

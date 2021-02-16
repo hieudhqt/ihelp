@@ -1,10 +1,17 @@
 package com.swp.ihelp.app.entity;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import javax.persistence.*;
 import java.util.Objects;
 
 @Entity
 @Table(name = "role", schema = "ihelp", catalog = "")
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class RoleEntity {
     private String id;
     private String name;
