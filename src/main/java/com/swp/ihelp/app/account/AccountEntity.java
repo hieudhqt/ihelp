@@ -1,12 +1,16 @@
 package com.swp.ihelp.app.account;
 
-import com.swp.ihelp.app.entity.AccountStatusEntity;
-import com.swp.ihelp.app.entity.RoleEntity;
-import lombok.Data;
+import com.swp.ihelp.entity.AccountStatusEntity;
+import com.swp.ihelp.entity.RoleEntity;
+import com.swp.ihelp.app.eventjointable.EventHasAccountEntity;
+import com.swp.ihelp.app.servicejointable.ServiceHasAccountEntity;
+import lombok.*;
 import lombok.experimental.Accessors;
 
 import javax.persistence.*;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 @Entity
 @Table(name = "account", schema = "ihelp", catalog = "")
@@ -57,6 +61,22 @@ public class AccountEntity {
     @ManyToOne
     @JoinColumn(name = "account_status_id", referencedColumnName = "id", nullable = false)
     private AccountStatusEntity accountStatusByAccountStatusId;
+
+    @OneToMany(
+            fetch = FetchType.LAZY,
+            mappedBy = "account",
+            cascade = {CascadeType.PERSIST, CascadeType.MERGE,
+                    CascadeType.DETACH, CascadeType.REFRESH}
+    )
+    private Set<EventHasAccountEntity> EventAccount = new HashSet<>();
+
+    @OneToMany(
+            fetch = FetchType.LAZY,
+            mappedBy = "account",
+            cascade = {CascadeType.PERSIST, CascadeType.MERGE,
+                    CascadeType.DETACH, CascadeType.REFRESH}
+    )
+    private Set<ServiceHasAccountEntity> ServiceAccount = new HashSet<>();
 
     @Override
     public boolean equals(Object o) {
