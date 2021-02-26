@@ -24,8 +24,6 @@ import java.util.Map;
 public class AccountRestController {
 
     @Autowired
-    private final AccountService accountService;
-    @Autowired
     private AuthenticationManager authenticationManager;
 
     @Autowired
@@ -33,6 +31,9 @@ public class AccountRestController {
 
     @Autowired
     private UserDetailsServiceImpl userDetailsService;
+
+    @Autowired
+    private final AccountService accountService;
 
 
     public AccountRestController(AccountService accountService) {
