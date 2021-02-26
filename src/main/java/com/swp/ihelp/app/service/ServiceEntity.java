@@ -1,19 +1,23 @@
 package com.swp.ihelp.app.service;
 
 import com.swp.ihelp.app.account.AccountEntity;
-import com.swp.ihelp.entity.StatusEntity;
+import com.swp.ihelp.app.entity.StatusEntity;
+import com.swp.ihelp.app.image.ImageEntity;
 import com.swp.ihelp.app.servicejointable.ServiceHasAccountEntity;
 import com.swp.ihelp.app.servicetype.ServiceTypeEntity;
 import com.swp.ihelp.config.StringPrefixedSequenceIdGenerator;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.experimental.Accessors;
+import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -21,7 +25,8 @@ import java.util.Set;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString
+@Accessors(chain = true)
+@DynamicUpdate
 public class ServiceEntity {
 
     // ID format: SV_0000x
@@ -40,7 +45,8 @@ public class ServiceEntity {
     private String id;
 
     @Basic
-    @Column(name = "title", nullable = true, length = 100)
+    @Column(name = "title", nullable = false, length = 100)
+    @NotNull
     private String title;
 
     @Basic
@@ -48,27 +54,27 @@ public class ServiceEntity {
     private String description;
 
     @Basic
-    @Column(name = "location", nullable = true, length = 300)
+    @Column(name = "location", nullable = false, length = 300)
     private String location;
 
     @Basic
-    @Column(name = "quota", nullable = true)
+    @Column(name = "quota", nullable = false)
     private int quota;
 
     @Basic
-    @Column(name = "point", nullable = true)
+    @Column(name = "point", nullable = false)
     private int point;
 
     @Basic
-    @Column(name = "created_date", nullable = true)
+    @Column(name = "created_date", nullable = false)
     private long createdDate;
 
     @Basic
-    @Column(name = "start_date", nullable = true)
+    @Column(name = "start_date", nullable = false)
     private long startDate;
 
     @Basic
-    @Column(name = "end_date", nullable = true)
+    @Column(name = "end_date", nullable = false)
     private long endDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -90,4 +96,11 @@ public class ServiceEntity {
     )
     private Set<ServiceHasAccountEntity> ServiceAccount = new HashSet<>();
 
+    @ManyToMany(fetch = FetchType.LAZY,
+            cascade = {CascadeType.PERSIST, CascadeType.MERGE,
+                    CascadeType.DETACH, CascadeType.REFRESH})
+    @JoinTable(name = "service_has_image",
+            joinColumns = @JoinColumn(name = "service_id"),
+            inverseJoinColumns = @JoinColumn(name = "image_id"))
+    private List<ImageEntity> images;
 }

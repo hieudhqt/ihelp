@@ -2,26 +2,34 @@ package com.swp.ihelp.app.event;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.swp.ihelp.app.account.AccountEntity;
-import com.swp.ihelp.entity.StatusEntity;
+import com.swp.ihelp.app.entity.StatusEntity;
 import com.swp.ihelp.app.eventcategory.EventCategoryEntity;
 import com.swp.ihelp.app.eventjointable.EventHasAccountEntity;
+import com.swp.ihelp.app.image.ImageEntity;
 import com.swp.ihelp.config.StringPrefixedSequenceIdGenerator;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
+import lombok.experimental.Accessors;
+import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Objects;
+import java.util.List;
 import java.util.Set;
 
 @Entity
 @Table(name = "event", schema = "ihelp")
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
+@Accessors(chain = true)
+@DynamicUpdate
 public class EventEntity {
     // ID format: EV_0000x
     @Id
@@ -79,12 +87,6 @@ public class EventEntity {
     @JoinColumn(name = "status_id", referencedColumnName = "id", nullable = false)
     private StatusEntity status;
 
-    //    @ManyToMany(fetch = FetchType.LAZY,
-//            cascade = {CascadeType.PERSIST, CascadeType.MERGE,
-//                    CascadeType.DETACH, CascadeType.REFRESH})
-//    @JoinTable(name = "event_has_account",
-//    joinColumns = @JoinColumn(name = "event_id"),
-//    inverseJoinColumns = @JoinColumn(name = "account_email"))
     @OneToMany(
             mappedBy = "event",
             cascade = {CascadeType.PERSIST, CascadeType.MERGE,
@@ -92,32 +94,19 @@ public class EventEntity {
     )
     private Set<EventHasAccountEntity> EventAccount = new HashSet<>();
 
-//    public void addAccount(AccountEntity accountEntity) {
-//        if (EventAccount == null) {
-//            EventAccount = new HashSet<>();
-//        }
-//        EventAccount.add(accountEntity);
-//    }
+    @ManyToMany(fetch = FetchType.LAZY,
+            cascade = {CascadeType.PERSIST, CascadeType.MERGE,
+                    CascadeType.DETACH, CascadeType.REFRESH})
+    @JoinTable(name = "event_has_image",
+            joinColumns = @JoinColumn(name = "event_id"),
+            inverseJoinColumns = @JoinColumn(name = "image_id"))
+    private List<ImageEntity> images = new ArrayList<>();
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        EventEntity that = (EventEntity) o;
-        return Objects.equals(id, that.id) &&
-                Objects.equals(title, that.title) &&
-                Objects.equals(description, that.description) &&
-                Objects.equals(location, that.location) &&
-                Objects.equals(quota, that.quota) &&
-                Objects.equals(point, that.point) &&
-                Objects.equals(createdDate, that.createdDate) &&
-                Objects.equals(startDate, that.startDate) &&
-                Objects.equals(endDate, that.endDate);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, title, description, location, quota, point, createdDate, startDate, endDate);
+    public void addImage(ImageEntity imageEntity) {
+        if (images.contains(imageEntity)) {
+            return;
+        }
+        images.add(imageEntity);
     }
 }
 

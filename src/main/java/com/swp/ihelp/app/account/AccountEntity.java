@@ -1,10 +1,10 @@
 package com.swp.ihelp.app.account;
 
-import com.swp.ihelp.entity.AccountStatusEntity;
-import com.swp.ihelp.entity.RoleEntity;
+import com.swp.ihelp.app.entity.AccountStatusEntity;
+import com.swp.ihelp.app.entity.RoleEntity;
 import com.swp.ihelp.app.eventjointable.EventHasAccountEntity;
 import com.swp.ihelp.app.servicejointable.ServiceHasAccountEntity;
-import lombok.*;
+import lombok.Data;
 import lombok.experimental.Accessors;
 
 import javax.persistence.*;
@@ -56,11 +56,11 @@ public class AccountEntity {
 
     @ManyToOne
     @JoinColumn(name = "role_id", referencedColumnName = "id", nullable = false)
-    private RoleEntity roleByRoleId;
+    private RoleEntity role;
 
     @ManyToOne
     @JoinColumn(name = "account_status_id", referencedColumnName = "id", nullable = false)
-    private AccountStatusEntity accountStatusByAccountStatusId;
+    private AccountStatusEntity status;
 
     @OneToMany(
             fetch = FetchType.LAZY,

@@ -17,5 +17,11 @@ public interface EventRepository extends JpaRepository<EventEntity, String> {
 
     @Query("SELECT e from EventEntity e where e.authorAccount.email = :email")
     List<EventEntity> findByAuthorEmail(String email);
+
+    @Query("SELECT count(e.event.authorAccount) from EventHasAccountEntity e where e.event.id = :eventId")
+    int getRemainingSpots(String eventId);
+
+    @Query("SELECT e.quota from EventEntity e where e.id = :eventId")
+    int getQuota(String eventId);
 }
 
