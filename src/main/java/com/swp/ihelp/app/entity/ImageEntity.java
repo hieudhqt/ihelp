@@ -1,4 +1,4 @@
-package com.swp.ihelp.entity;
+package com.swp.ihelp.app.entity;
 
 import com.swp.ihelp.app.account.AccountEntity;
 import com.swp.ihelp.config.StringPrefixedSequenceIdGenerator;

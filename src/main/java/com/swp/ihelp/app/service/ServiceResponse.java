@@ -1,6 +1,6 @@
 package com.swp.ihelp.app.service;
 
-import com.swp.ihelp.entity.StatusEntity;
+import com.swp.ihelp.app.entity.StatusEntity;
 import com.swp.ihelp.app.servicetype.ServiceTypeEntity;
 import lombok.AllArgsConstructor;
 import lombok.Data;

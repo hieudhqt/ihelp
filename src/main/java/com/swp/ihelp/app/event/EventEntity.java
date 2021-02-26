@@ -2,7 +2,7 @@ package com.swp.ihelp.app.event;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.swp.ihelp.app.account.AccountEntity;
-import com.swp.ihelp.entity.StatusEntity;
+import com.swp.ihelp.app.entity.StatusEntity;
 import com.swp.ihelp.app.eventcategory.EventCategoryEntity;
 import com.swp.ihelp.app.eventjointable.EventHasAccountEntity;
 import com.swp.ihelp.config.StringPrefixedSequenceIdGenerator;

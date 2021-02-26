@@ -1,6 +1,6 @@
 package com.swp.ihelp.app.event;
 
-import com.swp.ihelp.entity.StatusEntity;
+import com.swp.ihelp.app.entity.StatusEntity;
 import com.swp.ihelp.app.eventcategory.EventCategoryEntity;
 import lombok.AllArgsConstructor;
 import lombok.Data;

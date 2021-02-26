@@ -1,6 +1,6 @@
 package com.swp.ihelp.app.eventjointable;
 
-import com.swp.ihelp.entity.ImageEntity;
+import com.swp.ihelp.app.entity.ImageEntity;
 import com.swp.ihelp.app.event.EventEntity;
 import lombok.AllArgsConstructor;
 import lombok.Data;

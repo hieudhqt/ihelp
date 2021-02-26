@@ -1,4 +1,4 @@
-package com.swp.ihelp.entity;
+package com.swp.ihelp.app.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -8,11 +8,11 @@ import javax.persistence.*;
 import java.util.Objects;
 
 @Entity
-@Table(name = "role", schema = "ihelp", catalog = "")
+@Table(name = "account_status", schema = "ihelp", catalog = "")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class RoleEntity {
+public class AccountStatusEntity {
     private String id;
     private String name;
 
@@ -40,7 +40,7 @@ public class RoleEntity {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        RoleEntity that = (RoleEntity) o;
+        AccountStatusEntity that = (AccountStatusEntity) o;
         return Objects.equals(id, that.id) &&
                 Objects.equals(name, that.name);
     }

@@ -1,33 +1,26 @@
-package com.swp.ihelp.entity;
-
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+package com.swp.ihelp.app.entity;
 
 import javax.persistence.*;
 import java.util.Objects;
 
 @Entity
-@Table(name = "account_status", schema = "ihelp", catalog = "")
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class AccountStatusEntity {
-    private String id;
+@Table(name = "status", schema = "ihelp", catalog = "")
+public class StatusEntity {
+    private Integer id;
     private String name;
 
     @Id
-    @Column(name = "id", nullable = false, length = 20)
-    public String getId() {
+    @Column(name = "id", nullable = false)
+    public Integer getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
     @Basic
-    @Column(name = "name", nullable = false, length = 20)
+    @Column(name = "name", nullable = true, length = 45)
     public String getName() {
         return name;
     }
@@ -40,7 +33,7 @@ public class AccountStatusEntity {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        AccountStatusEntity that = (AccountStatusEntity) o;
+        StatusEntity that = (StatusEntity) o;
         return Objects.equals(id, that.id) &&
                 Objects.equals(name, that.name);
     }

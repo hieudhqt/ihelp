@@ -1,8 +1,8 @@
 package com.swp.ihelp.app.account.request;
 
 import com.swp.ihelp.app.account.AccountEntity;
-import com.swp.ihelp.entity.AccountStatusEntity;
-import com.swp.ihelp.entity.RoleEntity;
+import com.swp.ihelp.app.entity.AccountStatusEntity;
+import com.swp.ihelp.app.entity.RoleEntity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
