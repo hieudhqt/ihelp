@@ -1,8 +1,13 @@
 package com.swp.ihelp.app.event;
 
+import com.swp.ihelp.app.event.request.EventRequest;
+import com.swp.ihelp.app.event.response.EventDetailResponse;
+import com.swp.ihelp.app.event.response.EventResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -21,7 +26,7 @@ public class EventController {
     }
 
     @GetMapping("/events/{eventId}")
-    public EventResponse findById(@PathVariable String eventId) throws Exception {
+    public EventDetailResponse findById(@PathVariable String eventId) throws Exception {
         return eventService.findById(eventId);
     }
 
@@ -46,15 +51,15 @@ public class EventController {
     }
 
     @PostMapping("/events")
-    public EventEntity addEvent(@RequestBody EventEntity event) throws Exception {
-        eventService.save(event);
-        return event;
+    public ResponseEntity<String> addEvent(@Valid @RequestBody EventRequest eventRequest) throws Exception {
+        eventService.save(eventRequest);
+        return ResponseEntity.ok("Event added.");
     }
 
     @PutMapping("/events")
-    public EventEntity updateEvent(@RequestBody EventEntity event) throws Exception {
-        eventService.save(event);
-        return event;
+    public ResponseEntity<String> updateEvent(@Valid @RequestBody EventRequest eventRequest) throws Exception {
+        eventService.save(eventRequest);
+        return ResponseEntity.ok("Event " + eventRequest.getId() + " updated");
     }
 
     @DeleteMapping("/events/{eventId}")

@@ -1,8 +1,8 @@
 package com.swp.ihelp.app.account.request;
 
 import com.swp.ihelp.app.account.AccountEntity;
-import com.swp.ihelp.entity.AccountStatusEntity;
-import com.swp.ihelp.entity.RoleEntity;
+import com.swp.ihelp.app.entity.AccountStatusEntity;
+import com.swp.ihelp.app.entity.RoleEntity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -32,7 +32,10 @@ public class SignUpRequest implements Serializable {
 
     public static AccountEntity convertToEntity(SignUpRequest request) {
         PasswordEncoder encoder = new BCryptPasswordEncoder();
+        System.out.println("unencoded:" + request.getPassword());
+        System.out.println("encoded:" + encoder.encode(request.getPassword()));
         RoleEntity signUpRole = new RoleEntity("user", "User");
+        System.out.println("role:" + signUpRole);
         AccountStatusEntity signUpStatus = new AccountStatusEntity("1", "valid");
         return new AccountEntity()
                 .setEmail(request.getEmail())
@@ -44,7 +47,7 @@ public class SignUpRequest implements Serializable {
                 .setBalancePoint(0)
                 .setCumulativePoint(0)
                 .setCreatedDate(System.currentTimeMillis())
-                .setRoleByRoleId(signUpRole)
-                .setAccountStatusByAccountStatusId(signUpStatus);
+                .setRole(signUpRole)
+                .setStatus(signUpStatus);
     }
 }

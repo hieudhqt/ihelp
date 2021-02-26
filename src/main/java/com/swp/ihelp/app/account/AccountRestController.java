@@ -2,19 +2,16 @@ package com.swp.ihelp.app.account;
 
 import com.swp.ihelp.app.account.request.LoginRequest;
 import com.swp.ihelp.app.account.request.SignUpRequest;
-import com.swp.ihelp.app.account.response.AccountGeneralResponse;
 import com.swp.ihelp.app.account.response.LoginResponse;
 import com.swp.ihelp.security.CustomUserDetails;
 import com.swp.ihelp.security.JwtTokenUtil;
 import com.swp.ihelp.security.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -43,7 +40,7 @@ public class AccountRestController {
         final CustomUserDetails userDetails = (CustomUserDetails) userDetailsService.loadUserByUsername(loginRequest.getEmail());
         final String token = jwtTokenUtil.generateToken(userDetails);
         AccountEntity account = userDetails.getAccountEntity();
-        return new LoginResponse(loginRequest.getEmail(), token, account.getRoleByRoleId().getName(), account.getAccountStatusByAccountStatusId().getName());
+        return new LoginResponse(loginRequest.getEmail(), token, account.getRole().getName(), account.getStatus().getName());
     }
 
     @PostMapping("/signup")
@@ -63,6 +60,7 @@ public class AccountRestController {
 
     private void authenticate(String email, String password) throws Exception {
         try {
+            System.out.println("email:" + email + " || pass:" + password);
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
         } catch (DisabledException ex) {
             throw new Exception("USER_DISABLED", ex);

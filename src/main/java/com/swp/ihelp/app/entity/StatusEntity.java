@@ -1,34 +1,29 @@
-package com.swp.ihelp.app.servicetype;
+package com.swp.ihelp.app.entity;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
 import javax.persistence.*;
 import java.util.Objects;
 
 @Entity
-@Table(name = "service_type", schema = "ihelp")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Table(name = "status", schema = "ihelp", catalog = "")
 @Accessors(chain = true)
-public class ServiceTypeEntity {
+@Data
+public class StatusEntity {
     @Id
-    @GeneratedValue (strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false, length = 20)
-    private int id;
+    @Column(name = "id", nullable = false)
+    private Integer id;
 
     @Basic
-    @Column(name = "name", nullable = false, length = 50)
+    @Column(name = "name", nullable = true, length = 45)
     private String name;
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        ServiceTypeEntity that = (ServiceTypeEntity) o;
+        StatusEntity that = (StatusEntity) o;
         return Objects.equals(id, that.id) &&
                 Objects.equals(name, that.name);
     }

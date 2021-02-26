@@ -1,4 +1,4 @@
-package com.swp.ihelp.entity;
+package com.swp.ihelp.app.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

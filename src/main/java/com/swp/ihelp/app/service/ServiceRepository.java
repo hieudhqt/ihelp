@@ -17,4 +17,10 @@ public interface ServiceRepository extends JpaRepository<ServiceEntity, String> 
 
     @Query("SELECT s from ServiceEntity s where s.authorAccount.email = :email")
     List<ServiceEntity> findByAuthorEmail(String email);
+
+    @Query("SELECT count(s.service.authorAccount) from ServiceHasAccountEntity s where s.service.id = :serviceId")
+    int getRemainingSpots(String serviceId);
+
+    @Query("SELECT s.quota from ServiceEntity s where s.id = :serviceId")
+    int getQuota(String serviceId);
 }

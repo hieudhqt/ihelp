@@ -1,8 +1,13 @@
 package com.swp.ihelp.app.service;
 
+import com.swp.ihelp.app.service.request.ServiceRequest;
+import com.swp.ihelp.app.service.response.ServiceDetailResponse;
+import com.swp.ihelp.app.service.response.ServiceResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -21,7 +26,7 @@ public class ServiceController {
     }
 
     @GetMapping("/services/{serviceId}")
-    public ServiceResponse findById(@PathVariable String serviceId) throws Exception {
+    public ServiceDetailResponse findById(@PathVariable String serviceId) throws Exception {
         return serviceVolunteerService.findById(serviceId);
     }
 
@@ -46,25 +51,37 @@ public class ServiceController {
     }
 
     @PostMapping("/services")
-    public ServiceEntity addService(@RequestBody ServiceEntity service) throws Exception {
-        serviceVolunteerService.save(service);
-        return service;
+    public ResponseEntity<String> addService(@Valid @RequestBody ServiceRequest serviceRequest) throws Exception {
+        serviceVolunteerService.insert(serviceRequest);
+        return ResponseEntity.ok("Service added.");
     }
 
     @PutMapping("/services")
-    public ServiceEntity updateService(@RequestBody ServiceEntity service) throws Exception {
-        serviceVolunteerService.save(service);
-        return service;
+    public ResponseEntity<String> updateService(@RequestBody ServiceRequest serviceRequest) throws Exception {
+        serviceVolunteerService.update(serviceRequest);
+        return ResponseEntity.ok("Service " + serviceRequest.getId() + " updated.");
     }
+
+    @PatchMapping("/services")
+    public ResponseEntity<String> patchService(@RequestBody ServiceRequest serviceRequest) throws Exception {
+        serviceVolunteerService.patch(serviceRequest);
+        return ResponseEntity.ok("Service " + serviceRequest.getId() + " patched.");
+    }
+
+//    @PutMapping("/services")
+//    public ResponseEntity<String> updateService(@RequestBody ServiceEntity entity) throws Exception {
+//        serviceVolunteerService.update(entity);
+//        return ResponseEntity.ok("Service " + entity.getId() + " updated.");
+//    }
 
     @DeleteMapping("/services/{serviceId}")
     public String deleteService(@PathVariable String serviceId) throws Exception {
-        ServiceResponse serviceResponse = serviceVolunteerService.findById(serviceId);
-        if (serviceResponse == null) {
-            throw new RuntimeException("Service id not found - " + serviceId);
+        ServiceDetailResponse response = serviceVolunteerService.findById(serviceId);
+        if (response == null) {
+            throw new RuntimeException("Could not find service:" + serviceId);
         }
         serviceVolunteerService.deleteById(serviceId);
-        return "Delete Event with ID: " + serviceId;
+        return "Service deleted." + serviceId;
     }
 
     @PostMapping("/services/{email}/{serviceId}")
