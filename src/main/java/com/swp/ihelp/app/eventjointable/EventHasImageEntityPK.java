@@ -12,7 +12,7 @@ import java.util.Objects;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class EventHasAccountImageEntityPK implements Serializable {
+public class EventHasImageEntityPK implements Serializable {
     private String eventId;
     private String accountImageId;
 
@@ -20,7 +20,7 @@ public class EventHasAccountImageEntityPK implements Serializable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        EventHasAccountImageEntityPK that = (EventHasAccountImageEntityPK) o;
+        EventHasImageEntityPK that = (EventHasImageEntityPK) o;
         return Objects.equals(eventId, that.eventId) &&
                 Objects.equals(accountImageId, that.accountImageId);
     }

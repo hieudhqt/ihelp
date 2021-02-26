@@ -56,11 +56,11 @@ public class AccountEntity {
 
     @ManyToOne
     @JoinColumn(name = "role_id", referencedColumnName = "id", nullable = false)
-    private RoleEntity roleByRoleId;
+    private RoleEntity role;
 
     @ManyToOne
     @JoinColumn(name = "account_status_id", referencedColumnName = "id", nullable = false)
-    private AccountStatusEntity accountStatusByAccountStatusId;
+    private AccountStatusEntity status;
 
     @OneToMany(
             fetch = FetchType.LAZY,

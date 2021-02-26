@@ -12,10 +12,10 @@ import javax.persistence.*;
 import java.util.Objects;
 
 @Entity
-@Table(name = "account_image", schema = "ihelp")
+@Table(name = "image", schema = "ihelp")
 @Data
 @NoArgsConstructor
-public class AccountImageEntity {
+public class ImageEntity {
     // ID format: IMG_0000x
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "image_seq")
@@ -46,7 +46,7 @@ public class AccountImageEntity {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        AccountImageEntity that = (AccountImageEntity) o;
+        ImageEntity that = (ImageEntity) o;
         return Objects.equals(id, that.id) &&
                 Objects.equals(imageUrl, that.imageUrl) &&
                 Objects.equals(type, that.type);

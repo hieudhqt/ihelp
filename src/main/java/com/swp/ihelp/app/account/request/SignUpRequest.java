@@ -32,8 +32,8 @@ public class SignUpRequest implements Serializable {
 
     public static AccountEntity convertToEntity(SignUpRequest request) {
         PasswordEncoder encoder = new BCryptPasswordEncoder();
-        RoleEntity signUpRole = new RoleEntity("user", "User");
-        AccountStatusEntity signUpStatus = new AccountStatusEntity("1", "valid");
+        RoleEntity signUpRole = new RoleEntity("user", null);
+        AccountStatusEntity signUpStatus = new AccountStatusEntity("1", null);
         return new AccountEntity()
                 .setEmail(request.getEmail())
                 .setPassword(encoder.encode(request.getPassword()))
@@ -44,7 +44,7 @@ public class SignUpRequest implements Serializable {
                 .setBalancePoint(0)
                 .setCumulativePoint(0)
                 .setCreatedDate(System.currentTimeMillis())
-                .setRoleByRoleId(signUpRole)
-                .setAccountStatusByAccountStatusId(signUpStatus);
+                .setRole(signUpRole)
+                .setStatus(signUpStatus);
     }
 }

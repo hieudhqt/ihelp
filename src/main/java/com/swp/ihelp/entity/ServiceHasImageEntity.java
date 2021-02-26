@@ -2,15 +2,16 @@ package com.swp.ihelp.entity;
 
 import javax.persistence.*;
 import java.util.Objects;
+import com.swp.ihelp.app.service.ServiceEntity;
 
 @Entity
-@Table(name = "service_has_account_image", schema = "ihelp", catalog = "")
-@IdClass(ServiceHasAccountImageEntityPK.class)
-public class ServiceHasAccountImageEntity {
+@Table(name = "service_has_image", schema = "ihelp", catalog = "")
+@IdClass(ServiceHasImageEntityPK.class)
+public class ServiceHasImageEntity {
     private String serviceId;
     private String accountImageId;
     private ServiceEntity serviceByServiceId;
-    private AccountImageEntity accountImageByAccountImageId;
+    private ImageEntity accountImageByAccountImageId;
 
     @Id
     @Column(name = "service_id", nullable = false, length = 20)
@@ -23,7 +24,7 @@ public class ServiceHasAccountImageEntity {
     }
 
     @Id
-    @Column(name = "account_image_id", nullable = false, length = 45)
+    @Column(name = "image_id", nullable = false, length = 45)
     public String getAccountImageId() {
         return accountImageId;
     }
@@ -36,7 +37,7 @@ public class ServiceHasAccountImageEntity {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        ServiceHasAccountImageEntity that = (ServiceHasAccountImageEntity) o;
+        ServiceHasImageEntity that = (ServiceHasImageEntity) o;
         return Objects.equals(serviceId, that.serviceId) &&
                 Objects.equals(accountImageId, that.accountImageId);
     }
@@ -57,12 +58,12 @@ public class ServiceHasAccountImageEntity {
     }
 
     @ManyToOne
-    @JoinColumn(name = "account_image_id", referencedColumnName = "id", nullable = false, insertable = false, updatable = false)
-    public AccountImageEntity getAccountImageByAccountImageId() {
+    @JoinColumn(name = "image_id", referencedColumnName = "id", nullable = false, insertable = false, updatable = false)
+    public ImageEntity getAccountImageByAccountImageId() {
         return accountImageByAccountImageId;
     }
 
-    public void setAccountImageByAccountImageId(AccountImageEntity accountImageByAccountImageId) {
+    public void setAccountImageByAccountImageId(ImageEntity accountImageByAccountImageId) {
         this.accountImageByAccountImageId = accountImageByAccountImageId;
     }
 }

@@ -13,12 +13,8 @@ import java.io.Serializable;
 @Accessors(chain = true)
 public class LoginResponse implements Serializable {
 
-    private String email;
+    private String accessToken;
 
-    private String token;
-
-    private String role;
-
-    private String status;
+    private String refreshToken;
 
 }

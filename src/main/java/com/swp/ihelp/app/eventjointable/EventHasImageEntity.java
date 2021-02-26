@@ -1,6 +1,6 @@
 package com.swp.ihelp.app.eventjointable;
 
-import com.swp.ihelp.entity.AccountImageEntity;
+import com.swp.ihelp.entity.ImageEntity;
 import com.swp.ihelp.app.event.EventEntity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,13 +9,13 @@ import lombok.NoArgsConstructor;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "event_has_account_image", schema = "ihelp")
+@Table(name = "event_has_image", schema = "ihelp")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class EventHasAccountImageEntity {
+public class EventHasImageEntity {
     @EmbeddedId
-    private EventHasAccountImageEntityPK id = new EventHasAccountImageEntityPK();
+    private EventHasImageEntityPK id = new EventHasImageEntityPK();
 
     @ManyToOne
     @MapsId("eventId")
@@ -24,6 +24,6 @@ public class EventHasAccountImageEntity {
 
     @ManyToOne
     @MapsId("accountImageId")
-    @JoinColumn(name = "account_image_id")
-    private AccountImageEntity accountImage;
+    @JoinColumn(name = "image_id")
+    private ImageEntity accountImage;
 }
