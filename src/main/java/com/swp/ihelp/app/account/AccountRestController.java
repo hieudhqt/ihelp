@@ -45,7 +45,7 @@ public class AccountRestController {
         authenticate(loginRequest.getEmail(), loginRequest.getPassword());
         final UserDetails userDetails = userDetailsService.loadUserByUsername(loginRequest.getEmail());
         final String accessToken = jwtTokenUtil.generateAccessToken(userDetails);
-        return new LoginResponse(accessToken, accessToken);
+        return new LoginResponse(accessToken);
     }
 
     @PostMapping("/refreshtoken")
