@@ -1,19 +1,15 @@
 package com.swp.ihelp.app.account;
 
 import com.swp.ihelp.app.account.request.SignUpRequest;
-import com.swp.ihelp.app.account.response.AccountGeneralResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
-import java.util.Set;
 
 @Service
 public class AccountServiceImpl implements AccountService {
 
-    private AccountRepository accountRepository;
+    private final AccountRepository accountRepository;
 
     @Autowired
     public AccountServiceImpl(AccountRepository accountRepository) {
