@@ -54,6 +54,7 @@ public class AccountRestController {
 
         Map<String, Object> expectedMap = getMapFromJwtToken(claims);
         String token = jwtTokenUtil.regenerateAccessToken(expectedMap, expectedMap.get("sub").toString());
+
         return ResponseEntity.ok(token);
     }
 
