@@ -1,5 +1,6 @@
 package com.swp.ihelp.app.event.response;
 
+import com.swp.ihelp.app.account.response.AccountGeneralResponse;
 import com.swp.ihelp.app.entity.StatusEntity;
 import com.swp.ihelp.app.event.EventEntity;
 import com.swp.ihelp.app.eventcategory.EventCategoryEntity;
@@ -21,8 +22,9 @@ public class EventResponse implements Serializable {
     private int spot;
     private long startDate;
     private long endDate;
-    private String accountEmail;
+    private AccountGeneralResponse authorAccount;
     private StatusEntity status;
+    private boolean isOnsite;
     private EventCategoryEntity category;
     private List<ImageResponse> images;
 
@@ -31,10 +33,11 @@ public class EventResponse implements Serializable {
         this.title = eventEntity.getTitle();
         this.startDate = eventEntity.getStartDate();
         this.endDate = eventEntity.getEndDate();
-        this.accountEmail = eventEntity.getAuthorAccount().getEmail();
+        this.authorAccount = new AccountGeneralResponse(eventEntity.getAuthorAccount());
         this.status = eventEntity.getStatus();
         this.category = eventEntity.getEventCategory();
         this.images = ImageResponse.convertToResponseList(eventEntity.getImages());
+        this.isOnsite = eventEntity.isOnsite();
     }
 
     public static List<EventResponse> convertToResponseList(List<EventEntity> eventEntityList) {

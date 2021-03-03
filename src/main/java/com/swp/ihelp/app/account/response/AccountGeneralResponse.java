@@ -1,5 +1,6 @@
 package com.swp.ihelp.app.account.response;
 
+import com.swp.ihelp.app.account.AccountEntity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -29,4 +30,14 @@ public class AccountGeneralResponse implements Serializable {
 
     private long createdDate;
 
+    public AccountGeneralResponse(AccountEntity accountEntity) {
+        this.email = accountEntity.getEmail();
+        this.fullname = accountEntity.getFullName();
+        this.phone = accountEntity.getPhone();
+        this.dateOfBirth = accountEntity.getDateOfBirth();
+        this.gender = accountEntity.getGender();
+        this.balancePoint = accountEntity.getBalancePoint();
+        this.cumulativePoint = accountEntity.getCumulativePoint();
+        this.createdDate = accountEntity.getCreatedDate();
+    }
 }

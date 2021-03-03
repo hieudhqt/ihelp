@@ -7,6 +7,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api")
+@CrossOrigin
 public class EventCategoryController {
     private EventCategoryService eventCategoryService;
 

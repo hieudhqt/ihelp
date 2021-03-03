@@ -2,18 +2,24 @@ package com.swp.ihelp.app.event;
 
 import com.swp.ihelp.app.event.request.EventRequest;
 import com.swp.ihelp.app.event.response.EventDetailResponse;
-import com.swp.ihelp.app.event.response.EventResponse;
+import com.swp.ihelp.message.EventMessage;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
+@CrossOrigin
 public class EventController {
     private EventService eventService;
+
+    @Autowired
+    private EventMessage eventMessage;
 
     @Autowired
     public EventController(EventService eventService) {
@@ -21,8 +27,9 @@ public class EventController {
     }
 
     @GetMapping("/events")
-    public List<EventResponse> findAll() throws Exception {
-        return eventService.findAll();
+    public ResponseEntity<Map<String, Object>> findAll(@RequestParam(value = "page") int page) throws Exception {
+        Map<String, Object> response = eventService.findAll(page);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping("/events/{eventId}")
@@ -31,46 +38,72 @@ public class EventController {
     }
 
     @GetMapping("/events/title/{eventTitle}")
-    public List<EventResponse> findByTitle(@PathVariable String eventTitle) throws Exception {
-        return eventService.findByTitle(eventTitle);
+    public ResponseEntity<Map<String, Object>> findByTitle(@PathVariable String eventTitle,
+                                                           @RequestParam(value = "page") int page) throws Exception {
+        Map<String, Object> response = eventService.findByTitle(eventTitle, page);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping("/events/category/{categoryId}")
-    public List<EventResponse> findByCategoryId(@PathVariable int categoryId) throws Exception {
-        return eventService.findByCategoryId(categoryId);
+    public ResponseEntity<Map<String, Object>> findByCategoryId(@PathVariable int categoryId,
+                                                                @RequestParam(value = "page") int page) throws Exception {
+        Map<String, Object> response = eventService.findByCategoryId(categoryId, page);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping("/events/status/{statusId}")
-    public List<EventResponse> findByStatusId(@PathVariable int statusId) throws Exception {
-        return eventService.findByStatusId(statusId);
+    public ResponseEntity<Map<String, Object>> findByStatusId(@PathVariable int statusId,
+                                                              @RequestParam(value = "page") int page) throws Exception {
+        Map<String, Object> response = eventService.findByStatusId(statusId, page);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping("/events/account/{email}")
-    public List<EventResponse> findByAuthorEmail(@PathVariable String email) throws Exception {
-        return eventService.findByAuthorEmail(email);
+    public ResponseEntity<Map<String, Object>> findByAuthorEmail(@PathVariable String email,
+                                                                 @RequestParam(value = "page") int page) throws Exception {
+        Map<String, Object> response = eventService.findByAuthorEmail(email, page);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @GetMapping("/events/history/{email}/{statusId}")
+    public ResponseEntity<Map<String, Object>> findByAuthorEmail(@PathVariable String email,
+                                                                 @PathVariable int statusId,
+                                                                 @RequestParam(value = "page") int page) throws Exception {
+        Map<String, Object> response = eventService.findByParticipantEmail(email, statusId, page);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @PostMapping("/events")
     public ResponseEntity<String> addEvent(@Valid @RequestBody EventRequest eventRequest) throws Exception {
         eventService.save(eventRequest);
-        return ResponseEntity.ok("Event added.");
+        return ResponseEntity.ok(eventMessage.getEventAddedMessage());
     }
 
     @PutMapping("/events")
     public ResponseEntity<String> updateEvent(@Valid @RequestBody EventRequest eventRequest) throws Exception {
         eventService.save(eventRequest);
-        return ResponseEntity.ok("Event " + eventRequest.getId() + " updated");
+        return ResponseEntity.ok(eventMessage.getEventUpdatedMessage(eventRequest.getId()));
     }
 
     @DeleteMapping("/events/{eventId}")
-    public String deleteEvent(@PathVariable String eventId) throws Exception {
+    public ResponseEntity<String> deleteEvent(@PathVariable String eventId) throws Exception {
         eventService.deleteById(eventId);
-        return "Delete Event with ID: " + eventId;
+        return ResponseEntity.ok(eventMessage.getEventDeletedMessage() + eventId);
     }
 
     @PostMapping("/events/{email}/{eventId}")
-    public String joinEvent(@PathVariable String email, @PathVariable String eventId) throws Exception{
+    public ResponseEntity<String> joinEvent(@PathVariable String email, @PathVariable String eventId) throws Exception {
         eventService.joinEvent(email, eventId);
-        return "Account with email:" + email + " has joined event with ID:" + eventId + ".";
+        return ResponseEntity.ok(eventMessage.getEventJoinedMessage(eventId, email));
+    }
+
+    @GetMapping("/events/testjson")
+    public ResponseEntity<String> testJSONObject() throws Exception {
+        JSONObject json = new JSONObject();
+        json.put("name", "john doe");
+        JSONObject childObject = new JSONObject();
+        childObject.put("abc", "xyz");
+        json.put("child", childObject);
+        return ResponseEntity.ok(json.toString(2));
     }
 }

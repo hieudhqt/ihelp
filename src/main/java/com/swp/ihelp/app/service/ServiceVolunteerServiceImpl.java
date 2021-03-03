@@ -27,9 +27,6 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
     @Autowired
     private ServiceMapper mapper;
 
-//    @Value("${date.minStartDateFromCreate}")
-//    private int minStartDate;
-
     @Autowired
     public ServiceVolunteerServiceImpl(ServiceRepository serviceRepository, AccountRepository accountRepository, PointRepository pointRepository) {
         this.serviceRepository = serviceRepository;

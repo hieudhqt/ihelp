@@ -64,15 +64,22 @@ public class EventEntity {
     @Basic
     @Column(name = "point", nullable = true)
     private int point;
+
     @Basic
     @Column(name = "created_date", nullable = true)
     private long createdDate;
+
     @Basic
     @Column(name = "start_date", nullable = true)
     private long startDate;
+
     @Basic
     @Column(name = "end_date", nullable = true)
     private long endDate;
+
+    @Basic
+    @Column(name = "is_onsite", nullable = false)
+    private boolean isOnsite;
 
     @JsonBackReference
     @ManyToOne(fetch = FetchType.LAZY)

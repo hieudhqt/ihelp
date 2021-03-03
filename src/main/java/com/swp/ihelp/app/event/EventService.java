@@ -2,26 +2,27 @@ package com.swp.ihelp.app.event;
 
 import com.swp.ihelp.app.event.request.EventRequest;
 import com.swp.ihelp.app.event.response.EventDetailResponse;
-import com.swp.ihelp.app.event.response.EventResponse;
 
-import java.util.List;
+import java.util.Map;
 
 public interface EventService {
-    List<EventResponse> findAll() throws Exception;
+    Map<String, Object> findAll(int page) throws Exception;
 
     EventDetailResponse findById(String id) throws Exception;
 
-    List<EventResponse> findByTitle(String title) throws Exception;
+    Map<String, Object> findByTitle(String title, int page) throws Exception;
 
     void save(EventRequest event) throws Exception;
 
     void deleteById(String id) throws Exception;
 
-    List<EventResponse> findByCategoryId(int categoryId) throws Exception;
+    Map<String, Object> findByCategoryId(int categoryId, int page) throws Exception;
 
-    List<EventResponse> findByStatusId(int statusId) throws Exception;
+    Map<String, Object> findByStatusId(int statusId, int page) throws Exception;
 
-    List<EventResponse> findByAuthorEmail(String email) throws Exception;
+    Map<String, Object> findByAuthorEmail(String email, int page) throws Exception;
+
+    Map<String, Object> findByParticipantEmail(String email, int statusId, int page) throws Exception;
 
     void joinEvent(String email, String eventId) throws Exception;
 }

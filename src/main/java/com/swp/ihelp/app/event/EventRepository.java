@@ -1,22 +1,27 @@
 package com.swp.ihelp.app.event;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-import java.util.List;
-
 public interface EventRepository extends JpaRepository<EventEntity, String> {
+    Page<EventEntity> findAll(Pageable pageable);
+
     @Query("SELECT e from EventEntity e where e.title like %:title%")
-    List<EventEntity> findByTitle(String title);
+    Page<EventEntity> findByTitle(String title, Pageable pageable);
 
     @Query("SELECT e from EventEntity e where e.eventCategory.id = :categoryId")
-    List<EventEntity> findByCategoryId(int categoryId);
+    Page<EventEntity> findByCategoryId(int categoryId, Pageable pageable);
 
     @Query("SELECT e from EventEntity e where e.status.id = :statusId")
-    List<EventEntity> findByStatusId(int statusId);
+    Page<EventEntity> findByStatusId(int statusId, Pageable pageable);
 
     @Query("SELECT e from EventEntity e where e.authorAccount.email = :email")
-    List<EventEntity> findByAuthorEmail(String email);
+    Page<EventEntity> findByAuthorEmail(String email, Pageable pageable);
+
+    @Query("SELECT e.event from EventHasAccountEntity e where e.account.email = :email and e.event.status.id = :statusId")
+    Page<EventEntity> findByParticipantEmail(String email, int statusId, Pageable pageable);
 
     @Query("SELECT count(e.event.authorAccount) from EventHasAccountEntity e where e.event.id = :eventId")
     int getRemainingSpots(String eventId);
