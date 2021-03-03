@@ -4,7 +4,7 @@ import com.swp.ihelp.app.account.AccountEntity;
 import com.swp.ihelp.app.entity.StatusEntity;
 import com.swp.ihelp.app.event.EventEntity;
 import com.swp.ihelp.app.eventcategory.EventCategoryEntity;
-import com.swp.ihelp.app.image.ImageEntity;
+import com.swp.ihelp.app.image.request.ImageRequest;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -47,7 +47,7 @@ public class EventRequest {
     @NotNull(message = "Event Category ID cannot be null.")
     private int categoryId;
 
-    private List<ImageEntity> images;
+    private List<ImageRequest> images;
 
     public static EventEntity convertToEntity(EventRequest request) {
         AccountEntity authorAccount = new AccountEntity().setEmail(request.getAuthorEmail());
