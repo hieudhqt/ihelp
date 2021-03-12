@@ -3,6 +3,7 @@ package com.swp.ihelp.app.event;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 public interface EventRepository extends JpaRepository<EventEntity, String> {
@@ -28,5 +29,9 @@ public interface EventRepository extends JpaRepository<EventEntity, String> {
 
     @Query("SELECT e.quota from EventEntity e where e.id = :eventId")
     int getQuota(String eventId);
+
+    @Modifying
+    @Query("UPDATE EventEntity e Set e.status.id = :statusId Where e.id = :eventId ")
+    void updateStatus(String eventId, int statusId);
 }
 

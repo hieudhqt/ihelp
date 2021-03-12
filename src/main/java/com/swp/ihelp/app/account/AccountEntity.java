@@ -13,7 +13,7 @@ import java.util.Objects;
 import java.util.Set;
 
 @Entity
-@Table(name = "account", schema = "ihelp", catalog = "")
+@Table(name = "account", schema = "ihelp")
 @Data
 @Accessors(chain = true)
 public class AccountEntity {
@@ -77,6 +77,18 @@ public class AccountEntity {
                     CascadeType.DETACH, CascadeType.REFRESH}
     )
     private Set<ServiceHasAccountEntity> ServiceAccount = new HashSet<>();
+
+    public void addBalancePoint(int point) {
+        this.balancePoint += point;
+    }
+
+    public void decreaseBalancePoint(int point) {
+        this.balancePoint -= point;
+    }
+
+    public void addCumulativePoint(int point) {
+        this.cumulativePoint += point;
+    }
 
     @Override
     public boolean equals(Object o) {

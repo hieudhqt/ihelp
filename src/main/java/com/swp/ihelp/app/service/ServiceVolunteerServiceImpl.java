@@ -152,9 +152,9 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
 
         int servicePoint = service.getPoint();
 
-        userAccount.setBalancePoint(userAccount.getBalancePoint() - servicePoint);
-        authorAccount.setBalancePoint(authorAccount.getBalancePoint() + servicePoint);
-        authorAccount.setCumulativePoint(authorAccount.getCumulativePoint() + servicePoint);
+        userAccount.decreaseBalancePoint(servicePoint);
+        authorAccount.addBalancePoint(servicePoint);
+        authorAccount.addCumulativePoint(servicePoint);
         accountRepository.save(authorAccount);
         accountRepository.save(userAccount);
 

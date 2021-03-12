@@ -25,6 +25,16 @@ public class ServiceHasAccountEntity {
     @JoinColumn(name = "service_id")
     private ServiceEntity service;
 
+    public void setService(ServiceEntity service) {
+        if (this.service != null) {
+            this.service.internalRemoveServiceAccount(this);
+        }
+        this.service = service;
+        if (service != null) {
+            service.internalAddServiceAccount(this);
+        }
+    }
+
     @ManyToOne
     @MapsId("accountEmail")
     @JoinColumn(name = "account_email")

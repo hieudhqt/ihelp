@@ -7,7 +7,7 @@ import javax.persistence.*;
 import java.util.Objects;
 
 @Entity
-@Table(name = "status", schema = "ihelp", catalog = "")
+@Table(name = "status", schema = "ihelp")
 @Accessors(chain = true)
 @Data
 public class StatusEntity {

@@ -1,13 +1,18 @@
 package com.swp.ihelp.app.event;
 
 import com.swp.ihelp.app.account.AccountEntity;
+import com.swp.ihelp.app.account.AccountRepository;
+import com.swp.ihelp.app.event.request.EvaluationRequest;
 import com.swp.ihelp.app.event.request.EventRequest;
 import com.swp.ihelp.app.event.response.EventDetailResponse;
 import com.swp.ihelp.app.event.response.EventResponse;
 import com.swp.ihelp.app.eventjointable.EventHasAccountEntity;
+import com.swp.ihelp.app.eventjointable.EventHasAccountRepository;
 import com.swp.ihelp.app.image.ImageEntity;
 import com.swp.ihelp.app.image.ImageRepository;
 import com.swp.ihelp.app.image.request.ImageRequest;
+import com.swp.ihelp.app.point.PointEntity;
+import com.swp.ihelp.app.point.PointRepository;
 import com.swp.ihelp.exception.EntityNotFoundException;
 import com.swp.ihelp.message.EventMessage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,20 +32,44 @@ import java.util.Optional;
 @PropertySource("classpath:constant.properties")
 public class EventServiceImpl implements EventService {
 
-    private EventRepository eventRepository;
-
     @Value("${paging.page-size}")
     private int pageSize;
 
-    @Autowired
+    private EventRepository eventRepository;
+    private EventHasAccountRepository eventHasAccountRepository;
     private ImageRepository imageRepository;
-
-    @Autowired
     private EventMessage eventMessage;
+    private AccountRepository accountRepository;
+    private PointRepository pointRepository;
 
     @Autowired
-    public EventServiceImpl(EventRepository eventRepository) {
+    public void setEventRepository(EventRepository eventRepository) {
         this.eventRepository = eventRepository;
+    }
+
+    @Autowired
+    public void setEventHasAccountRepository(EventHasAccountRepository eventHasAccountRepository) {
+        this.eventHasAccountRepository = eventHasAccountRepository;
+    }
+
+    @Autowired
+    public void setImageRepository(ImageRepository imageRepository) {
+        this.imageRepository = imageRepository;
+    }
+
+    @Autowired
+    public void setEventMessage(EventMessage eventMessage) {
+        this.eventMessage = eventMessage;
+    }
+
+    @Autowired
+    public void setAccountRepository(AccountRepository accountRepository) {
+        this.accountRepository = accountRepository;
+    }
+
+    @Autowired
+    public void setPointRepository(PointRepository pointRepository) {
+        this.pointRepository = pointRepository;
     }
 
     @Override
@@ -113,9 +142,13 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public void save(EventRequest event) throws Exception {
+        String authorEmail = event.getAuthorEmail();
+        if (accountRepository.getOne(authorEmail).getBalancePoint() < event.getPoint()) {
+            throw new RuntimeException("Account " + authorEmail + " does not have enough point.");
+        }
         EventEntity eventEntity = EventRequest.convertToEntity(event);
         List<ImageRequest> imageRequests = event.getImages();
-        if (imageRequests != null || !imageRequests.isEmpty()) {
+        if (imageRequests != null) {
             for (ImageRequest imageRequest : imageRequests) {
                 ImageEntity imageEntity = ImageRequest.convertRequestToEntity(imageRequest);
                 imageEntity.setAuthorAccount(eventEntity.getAuthorAccount());
@@ -127,6 +160,67 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    public void updateStatus(String eventId, int statusId) throws Exception {
+        eventRepository.updateStatus(eventId, statusId);
+    }
+
+    //1. Save feedback
+    //2. Save PointEntity for both host and member
+    //3. Update balance and cumulative point for host and member.
+    @Override
+    public void evaluateMember(EvaluationRequest request) throws Exception {
+        EventEntity eventEntity = eventRepository.getOne(request.getEventId());
+        if (!eventEntity.getStatus().getName().equals("Completed")) {
+            throw new RuntimeException("Event is not yet completed.");
+        }
+        AccountEntity memberAccount = accountRepository.getOne(request.getMemberEmail());
+        boolean valid = false;
+        List<String> memberEmails = eventHasAccountRepository.findMemberEmailsByEventId(request.getEventId());
+        for (String email : memberEmails) {
+            if (email.equals(memberAccount.getEmail())) {
+                valid = true;
+                break;
+            }
+        }
+
+        if (!valid) {
+            throw new RuntimeException("Member account is invalid!");
+        } else {
+            AccountEntity hostAccount = eventEntity.getAuthorAccount();
+
+            int participationPoint = (int) Math.floor((request.getRating() / 5) * eventEntity.getPoint());
+            System.out.println(participationPoint);
+
+            PointEntity hostPointEntity = new PointEntity();
+            hostPointEntity.setIsReceived(false);
+            hostPointEntity.setDescription("Rating: " + request.getRating() + " stars\n" +
+                    "Description: " + request.getComment());
+            hostPointEntity.setCreatedDate(System.currentTimeMillis());
+            hostPointEntity.setAccount(hostAccount);
+            hostPointEntity.setEvent(eventEntity);
+            hostPointEntity.setAmount(participationPoint);
+            pointRepository.save(hostPointEntity);
+
+            PointEntity memberPointEntity = new PointEntity();
+            memberPointEntity.setIsReceived(true);
+            memberPointEntity.setDescription("Rating: " + request.getRating() + " stars\n" +
+                    "Description: " + request.getComment());
+            memberPointEntity.setCreatedDate(System.currentTimeMillis());
+            memberPointEntity.setAccount(memberAccount);
+            memberPointEntity.setEvent(eventEntity);
+            memberPointEntity.setAmount(participationPoint);
+            pointRepository.save(memberPointEntity);
+
+            memberAccount.addBalancePoint(participationPoint);
+            memberAccount.addCumulativePoint(participationPoint);
+            hostAccount.decreaseBalancePoint(participationPoint);
+            hostAccount.addCumulativePoint(participationPoint);
+            accountRepository.save(memberAccount);
+            accountRepository.save(hostAccount);
+        }
+    }
+
+    @Override
     public void deleteById(String id) throws Exception {
         Optional<EventEntity> event = eventRepository.findById(id);
         if (!event.isPresent()) {
@@ -135,25 +229,27 @@ public class EventServiceImpl implements EventService {
         eventRepository.deleteById(id);
     }
 
+    //1. Get EventEntity from eventId
+    //2. Check if event is available to join
+    //3. Save event and member in database
     @Override
     public void joinEvent(String email, String eventId) throws Exception {
-        Optional<EventEntity> eventEntityOptional = eventRepository.findById(eventId);
-        if (!eventEntityOptional.isPresent()) {
+        if (!eventRepository.existsById(eventId)) {
             throw new EntityNotFoundException(eventMessage.getEventNotFoundMessage() + eventId);
         }
-        EventEntity eventEntity = eventEntityOptional.get();
+
+        EventEntity eventEntity = eventRepository.getOne(eventId);
 
         if (!isEventAvailable(eventEntity, System.currentTimeMillis())) {
             throw new RuntimeException(eventMessage.getEventUnavailableMessage());
         }
 
         EventHasAccountEntity eventAccount = new EventHasAccountEntity();
-        eventAccount.setEvent(eventEntity);
+        eventAccount.setEvent(new EventEntity().setId(eventId));
         eventAccount.setAccount(new AccountEntity().setEmail(email));
+        eventEntity.addEventAccount(eventAccount);
 
-        eventEntity.getEventAccount().add(eventAccount);
-
-        EventEntity savedEvent = eventRepository.save(eventEntity);
+        eventRepository.save(eventEntity);
     }
 
     private boolean isEventAvailable(EventEntity event, long currentDateInMillis) throws Exception {

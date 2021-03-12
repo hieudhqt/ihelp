@@ -16,6 +16,7 @@ import org.hibernate.annotations.Parameter;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -94,7 +95,27 @@ public class ServiceEntity {
             cascade = {CascadeType.PERSIST, CascadeType.MERGE,
                     CascadeType.DETACH, CascadeType.REFRESH}
     )
-    private Set<ServiceHasAccountEntity> ServiceAccount = new HashSet<>();
+    private Set<ServiceHasAccountEntity> serviceAccount = new HashSet<>();
+
+    public Set<ServiceHasAccountEntity> getServiceAccount() {
+        return Collections.unmodifiableSet(serviceAccount);
+    }
+
+    public void addServiceAccount(ServiceHasAccountEntity serviceHasAccount) {
+        serviceHasAccount.setService(this);
+    }
+
+    public void removeServiceAccount(ServiceHasAccountEntity serviceHasAccount) {
+        serviceHasAccount.setService(null);
+    }
+
+    public void internalAddServiceAccount(ServiceHasAccountEntity serviceHasAccount) {
+        serviceAccount.add(serviceHasAccount);
+    }
+
+    public void internalRemoveServiceAccount(ServiceHasAccountEntity serviceHasAccount) {
+        serviceAccount.remove(serviceHasAccount);
+    }
 
     @ManyToMany(fetch = FetchType.LAZY,
             cascade = {CascadeType.PERSIST, CascadeType.MERGE,

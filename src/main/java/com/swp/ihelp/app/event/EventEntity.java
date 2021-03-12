@@ -7,20 +7,14 @@ import com.swp.ihelp.app.eventcategory.EventCategoryEntity;
 import com.swp.ihelp.app.eventjointable.EventHasAccountEntity;
 import com.swp.ihelp.app.image.ImageEntity;
 import com.swp.ihelp.config.StringPrefixedSequenceIdGenerator;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 import lombok.experimental.Accessors;
 import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Entity
 @Table(name = "event", schema = "ihelp")
@@ -95,11 +89,34 @@ public class EventEntity {
     private StatusEntity status;
 
     @OneToMany(
+            fetch = FetchType.LAZY,
             mappedBy = "event",
             cascade = {CascadeType.PERSIST, CascadeType.MERGE,
                     CascadeType.DETACH, CascadeType.REFRESH}
     )
-    private Set<EventHasAccountEntity> EventAccount = new HashSet<>();
+    @Getter(value = AccessLevel.NONE)
+    private Set<EventHasAccountEntity> eventAccount = new HashSet<>();
+
+    //Methods to add and remove EventHasAccount to avoid infinite loop.
+    public Set<EventHasAccountEntity> getEventAccount() {
+        return Collections.unmodifiableSet(eventAccount);
+    }
+
+    public void addEventAccount(EventHasAccountEntity eventHasAccount) {
+        eventHasAccount.setEvent(this);
+    }
+
+    public void removeEventAccount(EventHasAccountEntity eventHasAccount) {
+        eventHasAccount.setEvent(null);
+    }
+
+    public void internalAddEventAccount(EventHasAccountEntity eventHasAccount) {
+        eventAccount.add(eventHasAccount);
+    }
+
+    public void internalRemoveEventAccount(EventHasAccountEntity eventHasAccount) {
+        eventAccount.remove(eventHasAccount);
+    }
 
     @ManyToMany(fetch = FetchType.LAZY,
             cascade = {CascadeType.PERSIST, CascadeType.MERGE,

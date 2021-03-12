@@ -1,5 +1,6 @@
 package com.swp.ihelp.app.event;
 
+import com.swp.ihelp.app.event.request.EvaluationRequest;
 import com.swp.ihelp.app.event.request.EventRequest;
 import com.swp.ihelp.app.event.response.EventDetailResponse;
 
@@ -25,4 +26,8 @@ public interface EventService {
     Map<String, Object> findByParticipantEmail(String email, int statusId, int page) throws Exception;
 
     void joinEvent(String email, String eventId) throws Exception;
+
+    void updateStatus(String eventId, int statusId) throws Exception;
+
+    void evaluateMember(EvaluationRequest request) throws Exception;
 }

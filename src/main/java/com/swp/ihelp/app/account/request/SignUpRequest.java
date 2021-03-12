@@ -32,10 +32,7 @@ public class SignUpRequest implements Serializable {
 
     public static AccountEntity convertToEntity(SignUpRequest request) {
         PasswordEncoder encoder = new BCryptPasswordEncoder();
-        System.out.println("unencoded:" + request.getPassword());
-        System.out.println("encoded:" + encoder.encode(request.getPassword()));
         RoleEntity signUpRole = new RoleEntity("user", "User");
-        System.out.println("role:" + signUpRole);
         AccountStatusEntity signUpStatus = new AccountStatusEntity("1", "valid");
         return new AccountEntity()
                 .setEmail(request.getEmail())

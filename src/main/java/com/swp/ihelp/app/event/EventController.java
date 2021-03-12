@@ -1,5 +1,6 @@
 package com.swp.ihelp.app.event;
 
+import com.swp.ihelp.app.event.request.EvaluationRequest;
 import com.swp.ihelp.app.event.request.EventRequest;
 import com.swp.ihelp.app.event.response.EventDetailResponse;
 import com.swp.ihelp.message.EventMessage;
@@ -79,10 +80,24 @@ public class EventController {
         return ResponseEntity.ok(eventMessage.getEventAddedMessage());
     }
 
+    @PostMapping("/events/evaluation")
+    public ResponseEntity<String> evaluateMember(@Valid @RequestBody EvaluationRequest request)
+            throws Exception {
+        eventService.evaluateMember(request);
+        return ResponseEntity.ok("Evaluation completed.");
+    }
+
     @PutMapping("/events")
     public ResponseEntity<String> updateEvent(@Valid @RequestBody EventRequest eventRequest) throws Exception {
         eventService.save(eventRequest);
         return ResponseEntity.ok(eventMessage.getEventUpdatedMessage(eventRequest.getId()));
+    }
+
+    @PutMapping("/events/{eventId}/{statusId}")
+    public ResponseEntity<String> updateStatus(@PathVariable String eventId,
+                                               @PathVariable int statusId) throws Exception {
+        eventService.updateStatus(eventId, statusId);
+        return ResponseEntity.ok(eventMessage.getEventUpdatedMessage(eventId));
     }
 
     @DeleteMapping("/events/{eventId}")
@@ -106,4 +121,8 @@ public class EventController {
         json.put("child", childObject);
         return ResponseEntity.ok(json.toString(2));
     }
+
+
 }
+
+

@@ -16,29 +16,29 @@ public class EventCategoryController {
         this.eventCategoryService = eventCategoryService;
     }
 
-    @GetMapping("/event-category")
+    @GetMapping("/event-categories")
     public List<EventCategoryEntity> findAll() throws Exception {
         return eventCategoryService.findAll();
     }
 
-    @GetMapping("/event-category/{categoryId}")
+    @GetMapping("/event-categories/{categoryId}")
     public EventCategoryEntity findById(@PathVariable int categoryId) throws Exception {
         return eventCategoryService.findById(categoryId);
     }
 
-    @PostMapping("/event-category")
+    @PostMapping("/event-categories")
     public EventCategoryEntity addEventCategory(@RequestBody EventCategoryEntity category) throws Exception {
         eventCategoryService.save(category);
         return category;
     }
 
-    @PutMapping("/event-category")
+    @PutMapping("/event-categories")
     public EventCategoryEntity updateEventCategory(@RequestBody EventCategoryEntity category) throws Exception {
         eventCategoryService.save(category);
         return category;
     }
 
-    @DeleteMapping("/event-category/{categoryId}")
+    @DeleteMapping("/event-categories/{categoryId}")
     public String deleteEvent(@PathVariable int categoryId) throws Exception {
         EventCategoryEntity category = eventCategoryService.findById(categoryId);
         if (category == null) {
