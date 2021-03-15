@@ -1,7 +1,8 @@
 package com.swp.ihelp.app.event;
 
+import com.swp.ihelp.app.event.request.CreateEventRequest;
 import com.swp.ihelp.app.event.request.EvaluationRequest;
-import com.swp.ihelp.app.event.request.EventRequest;
+import com.swp.ihelp.app.event.request.UpdateEventRequest;
 import com.swp.ihelp.app.event.response.EventDetailResponse;
 
 import java.util.Map;
@@ -13,7 +14,9 @@ public interface EventService {
 
     Map<String, Object> findByTitle(String title, int page) throws Exception;
 
-    void save(EventRequest event) throws Exception;
+    void insert(CreateEventRequest event) throws Exception;
+
+    void update(UpdateEventRequest event) throws Exception;
 
     void deleteById(String id) throws Exception;
 

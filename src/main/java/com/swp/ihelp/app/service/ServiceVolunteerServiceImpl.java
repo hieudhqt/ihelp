@@ -9,13 +9,14 @@ import com.swp.ihelp.app.service.request.ServiceRequest;
 import com.swp.ihelp.app.service.response.ServiceDetailResponse;
 import com.swp.ihelp.app.service.response.ServiceResponse;
 import com.swp.ihelp.app.servicejointable.ServiceHasAccountEntity;
-import com.swp.ihelp.exception.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
@@ -23,6 +24,9 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
     private ServiceRepository serviceRepository;
     private AccountRepository accountRepository;
     private PointRepository pointRepository;
+
+    @Value("${paging.page-size}")
+    private int pageSize;
 
     @Autowired
     private ServiceMapper mapper;
@@ -35,9 +39,12 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
     }
 
     @Override
-    public List<ServiceResponse> findAll() throws Exception {
-        List<ServiceEntity> serviceEntityList = serviceRepository.findAll();
-        return getServiceResponses(serviceEntityList);
+    public Map<String, Object> findAll(int page) throws Exception {
+        Pageable paging = PageRequest.of(page, pageSize);
+        Page<ServiceEntity> pageServices = serviceRepository.findAll(paging);
+
+        Map<String, Object> response = getServiceResponseMap(pageServices);
+        return response;
     }
 
     @Override
@@ -60,27 +67,42 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
     }
 
     @Override
-    public List<ServiceResponse> findByTitle(String title) throws Exception {
-        List<ServiceEntity> serviceEntityList = serviceRepository.findByTitle(title);
-        return getServiceResponses(serviceEntityList);
+    public Map<String, Object> findByTitle(String title, int page) throws Exception {
+        Pageable paging = PageRequest.of(page, pageSize);
+        Page<ServiceEntity> pageServices = serviceRepository.findByTitle(title, paging);
+
+        Map<String, Object> response = getServiceResponseMap(pageServices);
+        return response;
     }
 
     @Override
-    public List<ServiceResponse> findByServiceTypeId(int serviceTypeId) throws Exception {
-        List<ServiceEntity> serviceEntityList = serviceRepository.findByServiceTypeId(serviceTypeId);
-        return getServiceResponses(serviceEntityList);
+    public Map<String, Object> findByServiceTypeId(int serviceTypeId, int page) throws Exception {
+        Pageable paging = PageRequest.of(page, pageSize);
+        Page<ServiceEntity> pageServices = serviceRepository
+                .findByServiceTypeId(serviceTypeId, paging);
+
+        Map<String, Object> response = getServiceResponseMap(pageServices);
+        return response;
     }
 
     @Override
-    public List<ServiceResponse> findByStatusId(int statusId) throws Exception {
-        List<ServiceEntity> serviceEntityList = serviceRepository.findByServiceStatusId(statusId);
-        return getServiceResponses(serviceEntityList);
+    public Map<String, Object> findByStatusId(int statusId, int page) throws Exception {
+        Pageable paging = PageRequest.of(page, pageSize);
+        Page<ServiceEntity> pageServices = serviceRepository
+                .findByServiceStatusId(statusId, paging);
+
+        Map<String, Object> response = getServiceResponseMap(pageServices);
+        return response;
     }
 
     @Override
-    public List<ServiceResponse> findByAuthorEmail(String email) throws Exception {
-        List<ServiceEntity> serviceEntityList = serviceRepository.findByAuthorEmail(email);
-        return getServiceResponses(serviceEntityList);
+    public Map<String, Object> findByAuthorEmail(String email, int page) throws Exception {
+        Pageable paging = PageRequest.of(page, pageSize);
+        Page<ServiceEntity> pageServices = serviceRepository
+                .findByAuthorEmail(email, paging);
+
+        Map<String, Object> response = getServiceResponseMap(pageServices);
+        return response;
     }
 
     @Override
@@ -201,39 +223,31 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
         pointRepository.save(receiverPoint);
     }
 
-    private List<ServiceResponse> convertToResponseObject(List<ServiceEntity> serviceEntityList)
+    private List<ServiceResponse> convertEntitesToResponses(List<ServiceEntity> serviceEntityList)
             throws Exception {
-        if (serviceEntityList.isEmpty()) {
-            throw new EntityNotFoundException("No service found.");
-        }
-        return ServiceResponse.convertToResponseList(serviceEntityList);
-    }
-
-    private List<ServiceDetailResponse> getServiceDetailResponses(List<ServiceEntity> serviceEntityList) throws Exception {
-        List<ServiceDetailResponse> result = ServiceDetailResponse.convertToResponseList(serviceEntityList);
-        for (ServiceDetailResponse response : result) {
-            int remainingSpots = serviceRepository.getRemainingSpots(response.getId());
-            int quota = response.getQuota();
-            if (quota >= remainingSpots) {
-                response.setSpot(quota - remainingSpots);
-            } else {
-                response.setSpot(0);
-            }
-        }
-        return result;
-    }
-
-    private List<ServiceResponse> getServiceResponses(List<ServiceEntity> serviceEntityList) throws Exception {
-        List<ServiceResponse> result = convertToResponseObject(serviceEntityList);
+        List<ServiceResponse> result = ServiceResponse.convertToResponseList(serviceEntityList);
         for (ServiceResponse response : result) {
-            int remainingSpots = serviceRepository.getRemainingSpots(response.getId());
+            int remainingSpot = serviceRepository.getRemainingSpots(response.getId());
             int quota = serviceRepository.getQuota(response.getId());
-            if (quota >= remainingSpots) {
-                response.setSpot(quota - remainingSpots);
+            if (quota >= remainingSpot) {
+                response.setSpot(quota - remainingSpot);
             } else {
                 response.setSpot(0);
             }
         }
         return result;
+    }
+
+    private Map<String, Object> getServiceResponseMap(Page<ServiceEntity> pageServices) throws Exception {
+        List<ServiceEntity> serviceEntityList = pageServices.getContent();
+        List<ServiceResponse> serviceResponses = convertEntitesToResponses(serviceEntityList);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("services", serviceResponses);
+        response.put("currentPage", pageServices.getNumber());
+        response.put("totalItems", pageServices.getTotalElements());
+        response.put("totalPages", pageServices.getTotalPages());
+
+        return response;
     }
 }

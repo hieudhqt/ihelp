@@ -1,8 +1,8 @@
 package com.swp.ihelp.app.service.response;
 
-import com.swp.ihelp.app.entity.StatusEntity;
 import com.swp.ihelp.app.service.ServiceEntity;
 import com.swp.ihelp.app.servicetype.ServiceTypeEntity;
+import com.swp.ihelp.app.status.StatusEntity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,6 +20,7 @@ public class ServiceResponse implements Serializable {
     private int spot;
     private long startDate;
     private long endDate;
+    private long createdDate;
     private String accountEmail;
     private StatusEntity status;
     private ServiceTypeEntity serviceType;
@@ -33,6 +34,7 @@ public class ServiceResponse implements Serializable {
         this.accountEmail = service.getAuthorAccount().getEmail();
         this.status = service.getStatus();
         this.serviceType = service.getServiceType();
+        this.createdDate = service.getCreatedDate();
     }
 
     public static List<ServiceResponse> convertToResponseList(List<ServiceEntity> serviceEntityList) {

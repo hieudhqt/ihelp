@@ -1,4 +1,4 @@
-package com.swp.ihelp.app.entity;
+package com.swp.ihelp.app.status;
 
 import lombok.Data;
 import lombok.experimental.Accessors;

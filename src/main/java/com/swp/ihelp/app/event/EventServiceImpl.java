@@ -2,8 +2,9 @@ package com.swp.ihelp.app.event;
 
 import com.swp.ihelp.app.account.AccountEntity;
 import com.swp.ihelp.app.account.AccountRepository;
+import com.swp.ihelp.app.event.request.CreateEventRequest;
 import com.swp.ihelp.app.event.request.EvaluationRequest;
-import com.swp.ihelp.app.event.request.EventRequest;
+import com.swp.ihelp.app.event.request.UpdateEventRequest;
 import com.swp.ihelp.app.event.response.EventDetailResponse;
 import com.swp.ihelp.app.event.response.EventResponse;
 import com.swp.ihelp.app.eventjointable.EventHasAccountEntity;
@@ -13,6 +14,7 @@ import com.swp.ihelp.app.image.ImageRepository;
 import com.swp.ihelp.app.image.request.ImageRequest;
 import com.swp.ihelp.app.point.PointEntity;
 import com.swp.ihelp.app.point.PointRepository;
+import com.swp.ihelp.app.status.StatusRepository;
 import com.swp.ihelp.exception.EntityNotFoundException;
 import com.swp.ihelp.message.EventMessage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,11 +24,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @PropertySource("classpath:constant.properties")
@@ -35,12 +35,19 @@ public class EventServiceImpl implements EventService {
     @Value("${paging.page-size}")
     private int pageSize;
 
+    @Value("${date.minStartDateFromNearestEndDate}")
+    private long minStartDateFromNearestEndDate;
+
+    @Value("${date.minStartDateFromCreate}")
+    private long minStartDateFromCreate;
+
     private EventRepository eventRepository;
     private EventHasAccountRepository eventHasAccountRepository;
     private ImageRepository imageRepository;
     private EventMessage eventMessage;
     private AccountRepository accountRepository;
     private PointRepository pointRepository;
+    private StatusRepository statusRepository;
 
     @Autowired
     public void setEventRepository(EventRepository eventRepository) {
@@ -70,6 +77,11 @@ public class EventServiceImpl implements EventService {
     @Autowired
     public void setPointRepository(PointRepository pointRepository) {
         this.pointRepository = pointRepository;
+    }
+
+    @Autowired
+    public void setStatusRepository(StatusRepository statusRepository) {
+        this.statusRepository = statusRepository;
     }
 
     @Override
@@ -141,12 +153,13 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public void save(EventRequest event) throws Exception {
-        String authorEmail = event.getAuthorEmail();
-        if (accountRepository.getOne(authorEmail).getBalancePoint() < event.getPoint()) {
-            throw new RuntimeException("Account " + authorEmail + " does not have enough point.");
+    public void insert(CreateEventRequest event) throws Exception {
+        String errorMsg = validateCreateEvent(event);
+        if (!errorMsg.isEmpty()) {
+            throw new RuntimeException(errorMsg);
         }
-        EventEntity eventEntity = EventRequest.convertToEntity(event);
+
+        EventEntity eventEntity = CreateEventRequest.convertToEntity(event);
         List<ImageRequest> imageRequests = event.getImages();
         if (imageRequests != null) {
             for (ImageRequest imageRequest : imageRequests) {
@@ -160,7 +173,30 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    public void update(UpdateEventRequest event) throws Exception {
+        EventEntity eventEntity = UpdateEventRequest.convertToEntity(event);
+        List<ImageRequest> imageRequests = event.getImages();
+        if (imageRequests != null) {
+            for (ImageRequest imageRequest : imageRequests) {
+                ImageEntity imageEntity = ImageRequest.convertRequestToEntity(imageRequest);
+                imageEntity.setAuthorAccount(eventEntity.getAuthorAccount());
+                ImageEntity savedImage = imageRepository.save(imageEntity);
+                eventEntity.addImage(savedImage);
+            }
+        }
+        eventRepository.save(eventEntity);
+    }
+
+    @Override
+    @Transactional
     public void updateStatus(String eventId, int statusId) throws Exception {
+        if (!eventRepository.existsById(eventId)) {
+            throw new EntityNotFoundException("Event with ID:" + eventId + " not found.");
+        }
+        if (!statusRepository.existsById(statusId)) {
+            throw new EntityNotFoundException("Status with ID:" + statusId + " not found.");
+        }
+
         eventRepository.updateStatus(eventId, statusId);
     }
 
@@ -222,9 +258,13 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public void deleteById(String id) throws Exception {
-        Optional<EventEntity> event = eventRepository.findById(id);
-        if (!event.isPresent()) {
+        if (!eventRepository.existsById(id)) {
             throw new EntityNotFoundException(eventMessage.getEventNotFoundMessage() + id);
+        }
+        EventEntity eventEntity = eventRepository.getOne(id);
+        if (!eventEntity.getStatus().getName().equals("Pending") ||
+                !eventEntity.getEventAccount().isEmpty()) {
+            throw new RuntimeException("Event can only be deleted if it is in pending state.");
         }
         eventRepository.deleteById(id);
     }
@@ -312,5 +352,40 @@ public class EventServiceImpl implements EventService {
             }
         }
         return result;
+    }
+
+    private String validateCreateEvent(CreateEventRequest event) {
+        String errorMsg = "";
+
+        Long nearestStartDate = eventRepository.getNearestEventStartDate(event.getAuthorEmail(),
+                event.getEndDate());
+        Long nearestEndDate = eventRepository.getNearestEventEndDate(event.getAuthorEmail(),
+                event.getStartDate());
+
+        if (nearestStartDate != null) {
+            if (nearestStartDate <= event.getEndDate()) {
+                errorMsg += "You have an event that starts on the same date as your end date; ";
+            }
+        }
+        if (nearestEndDate != null) {
+            System.out.println("nearest end date: " + new Date(nearestEndDate).toString());
+            if ((event.getStartDate() - nearestEndDate) <= minStartDateFromNearestEndDate) {
+                errorMsg += "Start date must be at least 1 day after the previous event ended; ";
+            }
+        }
+
+        if (event.getStartDate() - System.currentTimeMillis() < minStartDateFromCreate) {
+            errorMsg += "Start date must be at least 3 days after creation date; ";
+        }
+
+        String authorEmail = event.getAuthorEmail();
+        if (accountRepository.getOne(authorEmail).getBalancePoint() < event.getPoint()) {
+            errorMsg += "Account " + authorEmail + " does not have enough point; ";
+        }
+        if (event.getStartDate() >= event.getEndDate()) {
+            errorMsg += "Start date cannot be sooner than end date.";
+        }
+
+        return errorMsg;
     }
 }

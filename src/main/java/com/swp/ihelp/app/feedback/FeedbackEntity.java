@@ -1,9 +1,9 @@
 package com.swp.ihelp.app.feedback;
 
 import com.swp.ihelp.app.account.AccountEntity;
-import com.swp.ihelp.app.entity.StatusEntity;
 import com.swp.ihelp.app.event.EventEntity;
 import com.swp.ihelp.app.service.ServiceEntity;
+import com.swp.ihelp.app.status.StatusEntity;
 import com.swp.ihelp.config.StringPrefixedSequenceIdGenerator;
 import lombok.Data;
 import lombok.experimental.Accessors;

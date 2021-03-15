@@ -2,13 +2,13 @@ package com.swp.ihelp.app.service;
 
 import com.swp.ihelp.app.service.request.ServiceRequest;
 import com.swp.ihelp.app.service.response.ServiceDetailResponse;
-import com.swp.ihelp.app.service.response.ServiceResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
@@ -22,8 +22,9 @@ public class ServiceController {
     }
 
     @GetMapping("/services")
-    public List<ServiceResponse> findAll() throws Exception {
-        return serviceVolunteerService.findAll();
+    public ResponseEntity<Map<String, Object>> findAll(@RequestParam(value = "page") int page) throws Exception {
+        Map<String, Object> response = serviceVolunteerService.findAll(page);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping("/services/{serviceId}")
@@ -32,23 +33,31 @@ public class ServiceController {
     }
 
     @GetMapping("/services/title/{serviceTitle}")
-    public List<ServiceResponse> findByTitle(@PathVariable String serviceTitle) throws Exception {
-        return serviceVolunteerService.findByTitle(serviceTitle);
+    public ResponseEntity<Map<String, Object>> findByTitle(@PathVariable String serviceTitle,
+                                                           @RequestParam(value = "page") int page) throws Exception {
+        Map<String, Object> response = serviceVolunteerService.findByTitle(serviceTitle, page);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping("/services/type/{typeId}")
-    public List<ServiceResponse> findByServiceTypeId(@PathVariable int typeId) throws Exception {
-        return serviceVolunteerService.findByServiceTypeId(typeId);
+    public ResponseEntity<Map<String, Object>> findByServiceTypeId(@PathVariable int typeId,
+                                                                   @RequestParam(value = "page") int page) throws Exception {
+        Map<String, Object> response = serviceVolunteerService.findByServiceTypeId(typeId, page);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping("/services/status/{statusId}")
-    public List<ServiceResponse> findByStatusId(@PathVariable int statusId) throws Exception {
-        return serviceVolunteerService.findByStatusId(statusId);
+    public ResponseEntity<Map<String, Object>> findByStatusId(@PathVariable int statusId,
+                                                              @RequestParam(value = "page") int page) throws Exception {
+        Map<String, Object> response = serviceVolunteerService.findByStatusId(statusId, page);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping("/services/account/{email}")
-    public List<ServiceResponse> findByAuthorEmail(@PathVariable String email) throws Exception {
-        return serviceVolunteerService.findByAuthorEmail(email);
+    public ResponseEntity<Map<String, Object>> findByAuthorEmail(@PathVariable String email,
+                                                                 @RequestParam(value = "page") int page) throws Exception {
+        Map<String, Object> response = serviceVolunteerService.findByAuthorEmail(email, page);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @PostMapping("/services")

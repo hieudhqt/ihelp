@@ -1,10 +1,10 @@
 package com.swp.ihelp.app.service;
 
 import com.swp.ihelp.app.account.AccountEntity;
-import com.swp.ihelp.app.entity.StatusEntity;
 import com.swp.ihelp.app.image.ImageEntity;
 import com.swp.ihelp.app.servicejointable.ServiceHasAccountEntity;
 import com.swp.ihelp.app.servicetype.ServiceTypeEntity;
+import com.swp.ihelp.app.status.StatusEntity;
 import com.swp.ihelp.config.StringPrefixedSequenceIdGenerator;
 import lombok.AllArgsConstructor;
 import lombok.Data;

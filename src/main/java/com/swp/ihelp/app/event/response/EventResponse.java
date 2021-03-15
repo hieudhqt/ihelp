@@ -1,10 +1,9 @@
 package com.swp.ihelp.app.event.response;
 
-import com.swp.ihelp.app.account.response.AccountGeneralResponse;
-import com.swp.ihelp.app.entity.StatusEntity;
 import com.swp.ihelp.app.event.EventEntity;
 import com.swp.ihelp.app.eventcategory.EventCategoryEntity;
 import com.swp.ihelp.app.image.response.ImageResponse;
+import com.swp.ihelp.app.status.StatusEntity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -22,9 +21,12 @@ public class EventResponse implements Serializable {
     private int spot;
     private long startDate;
     private long endDate;
-    private AccountGeneralResponse authorAccount;
+    //    private AccountGeneralResponse authorAccount;
+    private String authorEmail;
+    private String authorFullName;
     private StatusEntity status;
     private boolean isOnsite;
+    private long createdDate;
     private EventCategoryEntity category;
     private List<ImageResponse> images;
 
@@ -33,11 +35,13 @@ public class EventResponse implements Serializable {
         this.title = eventEntity.getTitle();
         this.startDate = eventEntity.getStartDate();
         this.endDate = eventEntity.getEndDate();
-        this.authorAccount = new AccountGeneralResponse(eventEntity.getAuthorAccount());
+        this.authorEmail = eventEntity.getAuthorAccount().getEmail();
+        this.authorFullName = eventEntity.getAuthorAccount().getFullName();
         this.status = eventEntity.getStatus();
         this.category = eventEntity.getEventCategory();
         this.images = ImageResponse.convertToResponseList(eventEntity.getImages());
         this.isOnsite = eventEntity.isOnsite();
+        this.createdDate = eventEntity.getCreatedDate();
     }
 
     public static List<EventResponse> convertToResponseList(List<EventEntity> eventEntityList) {

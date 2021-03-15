@@ -96,8 +96,6 @@ public class GlobalControllerExceptionHandler {
         response.setMessage(exc.getMessage());
         response.setTimeStamp(timeStamp);
 
-        exc.printStackTrace();
-
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 

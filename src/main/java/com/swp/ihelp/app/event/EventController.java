@@ -1,7 +1,8 @@
 package com.swp.ihelp.app.event;
 
+import com.swp.ihelp.app.event.request.CreateEventRequest;
 import com.swp.ihelp.app.event.request.EvaluationRequest;
-import com.swp.ihelp.app.event.request.EventRequest;
+import com.swp.ihelp.app.event.request.UpdateEventRequest;
 import com.swp.ihelp.app.event.response.EventDetailResponse;
 import com.swp.ihelp.message.EventMessage;
 import org.json.JSONObject;
@@ -75,8 +76,8 @@ public class EventController {
     }
 
     @PostMapping("/events")
-    public ResponseEntity<String> addEvent(@Valid @RequestBody EventRequest eventRequest) throws Exception {
-        eventService.save(eventRequest);
+    public ResponseEntity<String> addEvent(@Valid @RequestBody CreateEventRequest eventRequest) throws Exception {
+        eventService.insert(eventRequest);
         return ResponseEntity.ok(eventMessage.getEventAddedMessage());
     }
 
@@ -88,8 +89,8 @@ public class EventController {
     }
 
     @PutMapping("/events")
-    public ResponseEntity<String> updateEvent(@Valid @RequestBody EventRequest eventRequest) throws Exception {
-        eventService.save(eventRequest);
+    public ResponseEntity<String> updateEvent(@Valid @RequestBody UpdateEventRequest eventRequest) throws Exception {
+        eventService.update(eventRequest);
         return ResponseEntity.ok(eventMessage.getEventUpdatedMessage(eventRequest.getId()));
     }
 

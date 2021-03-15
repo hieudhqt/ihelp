@@ -1,9 +1,9 @@
 package com.swp.ihelp.app.service.mapper;
 
-import com.swp.ihelp.app.entity.StatusEntity;
 import com.swp.ihelp.app.service.ServiceEntity;
 import com.swp.ihelp.app.service.request.ServiceRequest;
 import com.swp.ihelp.app.servicetype.ServiceTypeEntity;
+import com.swp.ihelp.app.status.StatusEntity;
 import org.springframework.stereotype.Component;
 
 @Component

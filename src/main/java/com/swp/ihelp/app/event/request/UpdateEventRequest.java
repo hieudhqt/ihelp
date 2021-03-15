@@ -1,21 +1,21 @@
 package com.swp.ihelp.app.event.request;
 
 import com.swp.ihelp.app.account.AccountEntity;
-import com.swp.ihelp.app.entity.StatusEntity;
 import com.swp.ihelp.app.event.EventEntity;
 import com.swp.ihelp.app.eventcategory.EventCategoryEntity;
 import com.swp.ihelp.app.image.request.ImageRequest;
+import com.swp.ihelp.app.status.StatusEntity;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.io.Serializable;
 import java.util.List;
 
 @Data
-@NoArgsConstructor
-public class EventRequest {
+public class UpdateEventRequest implements Serializable {
+    @NotBlank(message = "ID is required.")
     private String id;
 
     @NotBlank(message = "Title is required.")
@@ -49,11 +49,12 @@ public class EventRequest {
 
     private List<ImageRequest> images;
 
-    public static EventEntity convertToEntity(EventRequest request) {
+    public static EventEntity convertToEntity(UpdateEventRequest request) {
         AccountEntity authorAccount = new AccountEntity().setEmail(request.getAuthorEmail());
         StatusEntity serviceStatus = new StatusEntity().setId(request.getStatusId());
         EventCategoryEntity eventCategory = new EventCategoryEntity().setId(request.getCategoryId());
         return new EventEntity()
+                .setId(request.getId())
                 .setTitle(request.getTitle())
                 .setDescription(request.getDescription())
                 .setLocation(request.getLocation())
@@ -66,4 +67,5 @@ public class EventRequest {
                 .setStatus(serviceStatus)
                 .setEventCategory(eventCategory);
     }
+
 }
