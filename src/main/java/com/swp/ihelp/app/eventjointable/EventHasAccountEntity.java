@@ -7,7 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import java.util.Date;
+import java.sql.Timestamp;
 
 @Entity
 @Table(name = "event_has_account", schema = "ihelp")
@@ -44,7 +44,7 @@ public class EventHasAccountEntity {
     }
 
     @Column(name = "join_date")
-    private long joinDate = new Date().getTime();
+    private Timestamp joinDate = new Timestamp(System.currentTimeMillis());
 
 //    @Override
 //    public boolean equals(Object o) {

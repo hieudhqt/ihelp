@@ -5,6 +5,7 @@ import com.swp.ihelp.app.feedback.FeedbackEntity;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.sql.Timestamp;
 
 @Data
 public class FeedbackRequest implements Serializable {
@@ -17,7 +18,7 @@ public class FeedbackRequest implements Serializable {
         return new FeedbackEntity()
                 .setRating(request.getRating())
                 .setComment(request.getComment())
-                .setCreatedDate(System.currentTimeMillis())
+                .setCreatedDate(new Timestamp(System.currentTimeMillis()))
                 .setAccount(accountEntity);
     }
 }

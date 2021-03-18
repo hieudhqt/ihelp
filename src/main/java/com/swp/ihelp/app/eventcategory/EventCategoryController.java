@@ -12,8 +12,8 @@ public class EventCategoryController {
     private EventCategoryService eventCategoryService;
 
     @Autowired
-    public EventCategoryController(EventCategoryService eventCategoryService) {
-        this.eventCategoryService = eventCategoryService;
+    public EventCategoryController(EventCategoryServiceImpl eventCategoryServiceImpl) {
+        this.eventCategoryService = eventCategoryServiceImpl;
     }
 
     @GetMapping("/event-categories")

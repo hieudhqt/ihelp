@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
 import java.io.Serializable;
+import java.sql.Date;
 
 @Data
 @AllArgsConstructor
@@ -20,15 +21,15 @@ public class AccountGeneralResponse implements Serializable {
 
     private String phone;
 
-    private long dateOfBirth;
+    private Date dateOfBirth;
 
     private boolean gender;
 
     private int balancePoint;
 
-    private int cumulativePoint;
+    private int contributionPoint;
 
-    private long createdDate;
+    private Date createdDate;
 
     public AccountGeneralResponse(AccountEntity accountEntity) {
         this.email = accountEntity.getEmail();
@@ -37,7 +38,7 @@ public class AccountGeneralResponse implements Serializable {
         this.dateOfBirth = accountEntity.getDateOfBirth();
         this.gender = accountEntity.getGender();
         this.balancePoint = accountEntity.getBalancePoint();
-        this.cumulativePoint = accountEntity.getCumulativePoint();
+        this.contributionPoint = accountEntity.getContributionPoint();
         this.createdDate = accountEntity.getCreatedDate();
     }
 }

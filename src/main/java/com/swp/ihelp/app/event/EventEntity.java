@@ -14,6 +14,7 @@ import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 
 import javax.persistence.*;
+import java.sql.Timestamp;
 import java.util.*;
 
 @Entity
@@ -61,15 +62,15 @@ public class EventEntity {
 
     @Basic
     @Column(name = "created_date", nullable = true)
-    private long createdDate;
+    private Timestamp createdDate;
 
     @Basic
     @Column(name = "start_date", nullable = true)
-    private long startDate;
+    private Timestamp startDate;
 
     @Basic
     @Column(name = "end_date", nullable = true)
-    private long endDate;
+    private Timestamp endDate;
 
     @Basic
     @Column(name = "is_onsite", nullable = false)
@@ -80,9 +81,20 @@ public class EventEntity {
     @JoinColumn(name = "account_email", referencedColumnName = "email", nullable = false)
     private AccountEntity authorAccount;
 
-    @ManyToOne
-    @JoinColumn(name = "event_category_id", referencedColumnName = "id", nullable = false)
-    private EventCategoryEntity eventCategory;
+    @ManyToMany(fetch = FetchType.LAZY,
+            cascade = {CascadeType.MERGE,
+                    CascadeType.DETACH, CascadeType.REFRESH})
+    @JoinTable(name = "event_category_has_event",
+            joinColumns = @JoinColumn(name = "event_id"),
+            inverseJoinColumns = @JoinColumn(name = "event_category_id"))
+    private List<EventCategoryEntity> eventCategories = new ArrayList<>();
+
+    public void addCategory(EventCategoryEntity eventCategoryEntity) {
+        if (eventCategories.contains(eventCategoryEntity)) {
+            return;
+        }
+        eventCategories.add(eventCategoryEntity);
+    }
 
     @ManyToOne
     @JoinColumn(name = "status_id", referencedColumnName = "id", nullable = false)

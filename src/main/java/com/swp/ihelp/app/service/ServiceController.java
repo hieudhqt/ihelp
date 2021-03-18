@@ -1,6 +1,7 @@
 package com.swp.ihelp.app.service;
 
-import com.swp.ihelp.app.service.request.ServiceRequest;
+import com.swp.ihelp.app.service.request.CreateServiceRequest;
+import com.swp.ihelp.app.service.request.UpdateServiceRequest;
 import com.swp.ihelp.app.service.response.ServiceDetailResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -39,12 +40,12 @@ public class ServiceController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @GetMapping("/services/type/{typeId}")
-    public ResponseEntity<Map<String, Object>> findByServiceTypeId(@PathVariable int typeId,
-                                                                   @RequestParam(value = "page") int page) throws Exception {
-        Map<String, Object> response = serviceVolunteerService.findByServiceTypeId(typeId, page);
-        return new ResponseEntity<>(response, HttpStatus.OK);
-    }
+//    @GetMapping("/services/type/{typeId}")
+//    public ResponseEntity<Map<String, Object>> findByServiceTypeId(@PathVariable int typeId,
+//                                                                   @RequestParam(value = "page") int page) throws Exception {
+//        Map<String, Object> response = serviceVolunteerService.findByServiceTypeId(typeId, page);
+//        return new ResponseEntity<>(response, HttpStatus.OK);
+//    }
 
     @GetMapping("/services/status/{statusId}")
     public ResponseEntity<Map<String, Object>> findByStatusId(@PathVariable int statusId,
@@ -61,21 +62,21 @@ public class ServiceController {
     }
 
     @PostMapping("/services")
-    public ResponseEntity<String> addService(@Valid @RequestBody ServiceRequest serviceRequest) throws Exception {
-        serviceVolunteerService.insert(serviceRequest);
+    public ResponseEntity<String> addService(@Valid @RequestBody CreateServiceRequest createServiceRequest) throws Exception {
+        serviceVolunteerService.insert(createServiceRequest);
         return ResponseEntity.ok("Service added.");
     }
 
     @PutMapping("/services")
-    public ResponseEntity<String> updateService(@RequestBody ServiceRequest serviceRequest) throws Exception {
-        serviceVolunteerService.update(serviceRequest);
-        return ResponseEntity.ok("Service " + serviceRequest.getId() + " updated.");
+    public ResponseEntity<String> updateService(@RequestBody UpdateServiceRequest request) throws Exception {
+        serviceVolunteerService.update(request);
+        return ResponseEntity.ok("Service " + request.getId() + " updated.");
     }
 
     @PatchMapping("/services")
-    public ResponseEntity<String> patchService(@RequestBody ServiceRequest serviceRequest) throws Exception {
-        serviceVolunteerService.patch(serviceRequest);
-        return ResponseEntity.ok("Service " + serviceRequest.getId() + " patched.");
+    public ResponseEntity<String> patchService(@RequestBody UpdateServiceRequest request) throws Exception {
+        serviceVolunteerService.patch(request);
+        return ResponseEntity.ok("Service " + request.getId() + " patched.");
     }
 
 //    @PutMapping("/services")

@@ -5,7 +5,6 @@ import com.swp.ihelp.app.event.request.EvaluationRequest;
 import com.swp.ihelp.app.event.request.UpdateEventRequest;
 import com.swp.ihelp.app.event.response.EventDetailResponse;
 import com.swp.ihelp.message.EventMessage;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -111,16 +110,6 @@ public class EventController {
     public ResponseEntity<String> joinEvent(@PathVariable String email, @PathVariable String eventId) throws Exception {
         eventService.joinEvent(email, eventId);
         return ResponseEntity.ok(eventMessage.getEventJoinedMessage(eventId, email));
-    }
-
-    @GetMapping("/events/testjson")
-    public ResponseEntity<String> testJSONObject() throws Exception {
-        JSONObject json = new JSONObject();
-        json.put("name", "john doe");
-        JSONObject childObject = new JSONObject();
-        childObject.put("abc", "xyz");
-        json.put("child", childObject);
-        return ResponseEntity.ok(json.toString(2));
     }
 
 

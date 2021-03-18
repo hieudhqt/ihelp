@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 
 import javax.persistence.*;
+import java.sql.Date;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -36,7 +37,7 @@ public class AccountEntity {
 
     @Basic
     @Column(name = "date_of_birth", nullable = true)
-    private long dateOfBirth;
+    private Date dateOfBirth;
 
     @Basic
     @Column(name = "gender", nullable = true)
@@ -47,12 +48,12 @@ public class AccountEntity {
     private int balancePoint;
 
     @Basic
-    @Column(name = "cumulative_point", nullable = true)
-    private int cumulativePoint;
+    @Column(name = "contribution_point", nullable = true)
+    private int contributionPoint;
 
     @Basic
     @Column(name = "created_date", nullable = true)
-    private long createdDate;
+    private Date createdDate;
 
     @ManyToOne
     @JoinColumn(name = "role_id", referencedColumnName = "id", nullable = false)
@@ -86,8 +87,8 @@ public class AccountEntity {
         this.balancePoint -= point;
     }
 
-    public void addCumulativePoint(int point) {
-        this.cumulativePoint += point;
+    public void addContributionPoint(int point) {
+        this.contributionPoint += point;
     }
 
     @Override
@@ -102,12 +103,12 @@ public class AccountEntity {
                 Objects.equals(dateOfBirth, that.dateOfBirth) &&
                 Objects.equals(gender, that.gender) &&
                 Objects.equals(balancePoint, that.balancePoint) &&
-                Objects.equals(cumulativePoint, that.cumulativePoint) &&
+                Objects.equals(contributionPoint, that.contributionPoint) &&
                 Objects.equals(createdDate, that.createdDate);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(email, password, fullName, phone, dateOfBirth, gender, balancePoint, cumulativePoint, createdDate);
+        return Objects.hash(email, password, fullName, phone, dateOfBirth, gender, balancePoint, contributionPoint, createdDate);
     }
 }

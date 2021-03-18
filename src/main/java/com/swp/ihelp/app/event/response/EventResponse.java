@@ -1,5 +1,6 @@
 package com.swp.ihelp.app.event.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.swp.ihelp.app.event.EventEntity;
 import com.swp.ihelp.app.eventcategory.EventCategoryEntity;
 import com.swp.ihelp.app.image.response.ImageResponse;
@@ -9,6 +10,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,17 +19,33 @@ import java.util.List;
 @AllArgsConstructor
 public class EventResponse implements Serializable {
     private String id;
+
     private String title;
+
     private int spot;
-    private long startDate;
-    private long endDate;
-    //    private AccountGeneralResponse authorAccount;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING,
+            pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Ho_Chi_Minh")
+    private Timestamp startDate;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING,
+            pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Ho_Chi_Minh")
+    private Timestamp endDate;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING,
+            pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Ho_Chi_Minh")
+    private Timestamp createdDate;
+
     private String authorEmail;
+
     private String authorFullName;
+
     private StatusEntity status;
+
     private boolean isOnsite;
-    private long createdDate;
-    private EventCategoryEntity category;
+
+    private List<EventCategoryEntity> categories;
+
     private List<ImageResponse> images;
 
     public EventResponse(EventEntity eventEntity) {
@@ -38,7 +56,7 @@ public class EventResponse implements Serializable {
         this.authorEmail = eventEntity.getAuthorAccount().getEmail();
         this.authorFullName = eventEntity.getAuthorAccount().getFullName();
         this.status = eventEntity.getStatus();
-        this.category = eventEntity.getEventCategory();
+        this.categories = eventEntity.getEventCategories();
         this.images = ImageResponse.convertToResponseList(eventEntity.getImages());
         this.isOnsite = eventEntity.isOnsite();
         this.createdDate = eventEntity.getCreatedDate();

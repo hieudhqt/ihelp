@@ -11,6 +11,7 @@ import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 
 import javax.persistence.*;
+import java.sql.Timestamp;
 
 @Entity
 @Table(name = "point", schema = "ihelp")
@@ -47,7 +48,7 @@ public class PointEntity {
 
     @Basic
     @Column(name = "created_date", nullable = true)
-    private long createdDate;
+    private Timestamp createdDate;
 
     @ManyToOne
     @JoinColumn(name = "account_email", referencedColumnName = "email", nullable = false)
@@ -61,11 +62,4 @@ public class PointEntity {
     @JoinColumn(name = "service_id", referencedColumnName = "id", nullable = true)
     private ServiceEntity service;
 
-    public PointEntity(int amount, String description, Boolean isReceived, long createdDate, AccountEntity account) {
-        this.amount = amount;
-        this.description = description;
-        this.isReceived = isReceived;
-        this.createdDate = createdDate;
-        this.account = account;
-    }
 }

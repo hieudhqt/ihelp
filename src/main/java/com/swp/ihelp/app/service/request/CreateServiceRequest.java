@@ -1,8 +1,13 @@
-package com.swp.ihelp.app.event.request;
+package com.swp.ihelp.app.service.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.swp.ihelp.app.event.EventEntity;
+import com.swp.ihelp.app.account.AccountEntity;
+import com.swp.ihelp.app.service.ServiceEntity;
+import com.swp.ihelp.app.servicecategory.ServiceCategoryEntity;
+import com.swp.ihelp.app.status.StatusEntity;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
@@ -10,10 +15,12 @@ import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.List;
 
 @Data
-public class UpdateEventRequest implements Serializable {
-    @NotBlank(message = "ID is required.")
+@NoArgsConstructor
+@ToString
+public class CreateServiceRequest implements Serializable {
     private String id;
 
     @NotBlank(message = "Title is required.")
@@ -40,19 +47,29 @@ public class UpdateEventRequest implements Serializable {
             pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Ho_Chi_Minh")
     private Date endDate;
 
-    private boolean onsite;
+    @NotNull(message = "Author email cannot be null.")
+    private String authorEmail;
 
-    public static EventEntity convertToEntity(UpdateEventRequest request) {
-        return new EventEntity()
-                .setId(request.getId())
+    @NotNull(message = "Status ID cannot be null.")
+    private int statusId;
+
+    private List<ServiceCategoryEntity> categories;
+
+    public static ServiceEntity convertToEntity(CreateServiceRequest request) {
+        AccountEntity authorAccount = new AccountEntity().setEmail(request.getAuthorEmail());
+        StatusEntity serviceStatus = new StatusEntity().setId(request.getStatusId());
+        Timestamp currentTimestamp = new Timestamp(System.currentTimeMillis());
+        return new ServiceEntity()
                 .setTitle(request.getTitle())
                 .setDescription(request.getDescription())
                 .setLocation(request.getLocation())
                 .setQuota(request.getQuota())
                 .setPoint(request.getPoint())
+                .setCreatedDate(currentTimestamp)
                 .setStartDate(new Timestamp(request.getStartDate().getTime()))
                 .setEndDate(new Timestamp(request.getEndDate().getTime()))
-                .setOnsite(request.isOnsite());
+                .setAuthorAccount(authorAccount)
+                .setStatus(serviceStatus)
+                .setCategories(request.getCategories());
     }
-
 }

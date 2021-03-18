@@ -5,10 +5,11 @@ import com.swp.ihelp.app.event.EventEntity;
 import lombok.Data;
 
 import javax.persistence.*;
+import java.sql.Date;
 import java.util.Objects;
 
 @Entity
-@Table(name = "reward", schema = "ihelp", catalog = "")
+@Table(name = "reward", schema = "ihelp")
 @Data
 public class RewardEntity {
 
@@ -30,7 +31,7 @@ public class RewardEntity {
 
     @Basic
     @Column(name = "created_date", nullable = true)
-    private long createdDate;
+    private Date createdDate;
 
     @ManyToOne
     @JoinColumn(name = "event_id", referencedColumnName = "id", nullable = false)

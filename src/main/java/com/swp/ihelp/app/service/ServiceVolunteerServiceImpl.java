@@ -5,7 +5,8 @@ import com.swp.ihelp.app.account.AccountRepository;
 import com.swp.ihelp.app.point.PointEntity;
 import com.swp.ihelp.app.point.PointRepository;
 import com.swp.ihelp.app.service.mapper.ServiceMapper;
-import com.swp.ihelp.app.service.request.ServiceRequest;
+import com.swp.ihelp.app.service.request.CreateServiceRequest;
+import com.swp.ihelp.app.service.request.UpdateServiceRequest;
 import com.swp.ihelp.app.service.response.ServiceDetailResponse;
 import com.swp.ihelp.app.service.response.ServiceResponse;
 import com.swp.ihelp.app.servicejointable.ServiceHasAccountEntity;
@@ -16,7 +17,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.sql.Timestamp;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
@@ -53,7 +58,7 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
         ServiceDetailResponse service = null;
         if (result.isPresent()) {
             service = new ServiceDetailResponse(result.get());
-            int remainingSpots = serviceRepository.getRemainingSpots(id);
+            int remainingSpots = serviceRepository.getUsedSpot(id);
             int quota = service.getQuota();
             if (quota >= remainingSpots) {
                 service.setSpot(quota - remainingSpots);
@@ -75,15 +80,15 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
         return response;
     }
 
-    @Override
-    public Map<String, Object> findByServiceTypeId(int serviceTypeId, int page) throws Exception {
-        Pageable paging = PageRequest.of(page, pageSize);
-        Page<ServiceEntity> pageServices = serviceRepository
-                .findByServiceTypeId(serviceTypeId, paging);
-
-        Map<String, Object> response = getServiceResponseMap(pageServices);
-        return response;
-    }
+//    @Override
+//    public Map<String, Object> findByServiceTypeId(int serviceTypeId, int page) throws Exception {
+//        Pageable paging = PageRequest.of(page, pageSize);
+//        Page<ServiceEntity> pageServices = serviceRepository
+//                .findByServiceTypeId(serviceTypeId, paging);
+//
+//        Map<String, Object> response = getServiceResponseMap(pageServices);
+//        return response;
+//    }
 
     @Override
     public Map<String, Object> findByStatusId(int statusId, int page) throws Exception {
@@ -106,11 +111,11 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
     }
 
     @Override
-    public void insert(ServiceRequest request) throws Exception {
-        ServiceEntity serviceEntity = ServiceRequest.convertToEntity(request);
-        if (serviceEntity.getStartDate() >= serviceEntity.getEndDate()) {
-            throw new RuntimeException("Start date must be before end date.");
-        }
+    public void insert(CreateServiceRequest request) throws Exception {
+        ServiceEntity serviceEntity = CreateServiceRequest.convertToEntity(request);
+//        if (serviceEntity.getStartDate() >= serviceEntity.getEndDate()) {
+//            throw new RuntimeException("Start date must be before end date.");
+//        }
 //        if (serviceEntity.getStartDate() < minStartDate) {
 //            throw new RuntimeException("Start date must be at least 3 days after create date.");
 //        }
@@ -119,16 +124,16 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
     }
 
     @Override
-    public void patch(ServiceRequest request) throws Exception {
+    public void patch(UpdateServiceRequest request) throws Exception {
         ServiceEntity entity = serviceRepository.getOne(request.getId());
         mapper.updateServiceFromRequest(request, entity);
         serviceRepository.save(entity);
     }
 
     @Override
-    public void update(ServiceRequest request) throws Exception {
-        ServiceEntity entity = ServiceRequest.convertToEntityWithId(request);
-        serviceRepository.save(entity);
+    public void update(UpdateServiceRequest request) throws Exception {
+        ServiceEntity entity = UpdateServiceRequest.convertToEntityWithId(request);
+        serviceRepository.update(entity);
     }
 
     @Override
@@ -176,7 +181,7 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
 
         userAccount.decreaseBalancePoint(servicePoint);
         authorAccount.addBalancePoint(servicePoint);
-        authorAccount.addCumulativePoint(servicePoint);
+        authorAccount.addContributionPoint(servicePoint);
         accountRepository.save(authorAccount);
         accountRepository.save(userAccount);
 
@@ -191,32 +196,36 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
         if (!service.getStatus().getName().equals("Approved")) {
             check = false;
         }
-        if (service.getStartDate() > currentDateInMillis
-                || service.getEndDate() < currentDateInMillis) {
-            check = false;
-        }
-        int remainingSpots = serviceRepository.getRemainingSpots(service.getId());
-        if (remainingSpots < 1) {
+//        if (service.getStartDate() > currentDateInMillis
+//                || service.getEndDate() < currentDateInMillis) {
+//            check = false;
+//        }
+        int remainingSpots = serviceRepository.getUsedSpot(service.getId());
+        if (remainingSpots == service.getQuota()) {
             check = false;
         }
         return check;
     }
 
     private void savePoint(int amount, AccountEntity authorAccount, AccountEntity userAccount, ServiceEntity serviceEntity) throws Exception {
+        Timestamp currentTimestamp = new Timestamp(System.currentTimeMillis());
+
         PointEntity senderPoint = new PointEntity();
         senderPoint.setAmount(amount);
         senderPoint.setAccount(userAccount);
-        senderPoint.setCreatedDate(new Date().getTime());
+        senderPoint.setCreatedDate(currentTimestamp);
         senderPoint.setIsReceived(false);
-        senderPoint.setDescription("Account " + userAccount.getEmail() + " used service: " + serviceEntity.getId());
+        senderPoint.setDescription("Account " + userAccount.getEmail() +
+                " used service: " + serviceEntity.getId());
         senderPoint.setService(serviceEntity);
 
         PointEntity receiverPoint = new PointEntity();
         receiverPoint.setAmount(amount);
         receiverPoint.setAccount(authorAccount);
-        receiverPoint.setCreatedDate(new Date().getTime());
+        receiverPoint.setCreatedDate(currentTimestamp);
         receiverPoint.setIsReceived(true);
-        receiverPoint.setDescription("Account " + authorAccount.getEmail() + " received point for providing service: " + serviceEntity.getId());
+        receiverPoint.setDescription("Account " + authorAccount.getEmail() +
+                " received point for providing service: " + serviceEntity.getId());
         receiverPoint.setService(serviceEntity);
 
         pointRepository.save(senderPoint);
@@ -227,7 +236,7 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
             throws Exception {
         List<ServiceResponse> result = ServiceResponse.convertToResponseList(serviceEntityList);
         for (ServiceResponse response : result) {
-            int remainingSpot = serviceRepository.getRemainingSpots(response.getId());
+            int remainingSpot = serviceRepository.getUsedSpot(response.getId());
             int quota = serviceRepository.getQuota(response.getId());
             if (quota >= remainingSpot) {
                 response.setSpot(quota - remainingSpot);

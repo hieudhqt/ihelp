@@ -11,6 +11,7 @@ import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 
 import javax.persistence.*;
+import java.sql.Timestamp;
 import java.util.Objects;
 
 @Entity
@@ -44,7 +45,7 @@ public class FeedbackEntity {
 
     @Basic
     @Column(name = "created_date", nullable = true)
-    private long createdDate;
+    private Timestamp createdDate;
 
     @ManyToOne
     @JoinColumn(name = "account_email", referencedColumnName = "email", nullable = false)

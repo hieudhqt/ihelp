@@ -1,13 +1,14 @@
 package com.swp.ihelp.app.service.response;
 
 import com.swp.ihelp.app.service.ServiceEntity;
-import com.swp.ihelp.app.servicetype.ServiceTypeEntity;
+import com.swp.ihelp.app.servicecategory.ServiceCategoryEntity;
 import com.swp.ihelp.app.status.StatusEntity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,12 +23,12 @@ public class ServiceDetailResponse implements Serializable {
     private int point;
     private int quota;
     private int spot;
-    private long createdDate;
-    private long startDate;
-    private long endDate;
+    private Timestamp createdDate;
+    private Timestamp startDate;
+    private Timestamp endDate;
     private String accountEmail;
     private StatusEntity status;
-    private ServiceTypeEntity serviceType;
+    private List<ServiceCategoryEntity> categories;
 
 
     public ServiceDetailResponse(ServiceEntity service) {
@@ -42,7 +43,7 @@ public class ServiceDetailResponse implements Serializable {
         this.endDate = service.getEndDate();
         this.accountEmail = service.getAuthorAccount().getEmail();
         this.status = service.getStatus();
-        this.serviceType = service.getServiceType();
+        this.categories = service.getCategories();
     }
 
     public static List<ServiceDetailResponse> convertToResponseList(List<ServiceEntity> serviceEntityList) {

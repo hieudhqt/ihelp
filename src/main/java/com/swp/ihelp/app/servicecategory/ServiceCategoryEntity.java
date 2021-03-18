@@ -1,4 +1,4 @@
-package com.swp.ihelp.app.servicetype;
+package com.swp.ihelp.app.servicecategory;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,14 +9,14 @@ import javax.persistence.*;
 import java.util.Objects;
 
 @Entity
-@Table(name = "service_type", schema = "ihelp")
+@Table(name = "service_category", schema = "ihelp")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
-public class ServiceTypeEntity {
+public class ServiceCategoryEntity {
     @Id
-    @GeneratedValue (strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false, length = 20)
     private int id;
 
@@ -28,7 +28,7 @@ public class ServiceTypeEntity {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        ServiceTypeEntity that = (ServiceTypeEntity) o;
+        ServiceCategoryEntity that = (ServiceCategoryEntity) o;
         return Objects.equals(id, that.id) &&
                 Objects.equals(name, that.name);
     }

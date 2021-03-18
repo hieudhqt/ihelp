@@ -1,5 +1,6 @@
 package com.swp.ihelp.app.event.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.swp.ihelp.app.event.EventEntity;
 import com.swp.ihelp.app.eventcategory.EventCategoryEntity;
 import com.swp.ihelp.app.status.StatusEntity;
@@ -8,6 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,12 +24,18 @@ public class EventDetailResponse implements Serializable {
     private int point;
     private int quota;
     private int spot;
-    private long createdDate;
-    private long startDate;
-    private long endDate;
+    @JsonFormat(shape = JsonFormat.Shape.STRING,
+            pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Ho_Chi_Minh")
+    private Timestamp createdDate;
+    @JsonFormat(shape = JsonFormat.Shape.STRING,
+            pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Ho_Chi_Minh")
+    private Timestamp startDate;
+    @JsonFormat(shape = JsonFormat.Shape.STRING,
+            pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Ho_Chi_Minh")
+    private Timestamp endDate;
     private String accountEmail;
     private StatusEntity status;
-    private EventCategoryEntity category;
+    private List<EventCategoryEntity> categories;
 
     public EventDetailResponse(EventEntity eventEntity) {
         this.id = eventEntity.getId();
@@ -41,7 +49,7 @@ public class EventDetailResponse implements Serializable {
         this.endDate = eventEntity.getEndDate();
         this.accountEmail = eventEntity.getAuthorAccount().getEmail();
         this.status = eventEntity.getStatus();
-        this.category = eventEntity.getEventCategory();
+        this.categories = eventEntity.getEventCategories();
     }
 
     public static List<EventDetailResponse> convertToResponseList(List<EventEntity> eventEntityList) {
