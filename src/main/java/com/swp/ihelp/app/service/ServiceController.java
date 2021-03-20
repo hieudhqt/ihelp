@@ -63,8 +63,8 @@ public class ServiceController {
 
     @PostMapping("/services")
     public ResponseEntity<String> addService(@Valid @RequestBody CreateServiceRequest createServiceRequest) throws Exception {
-        serviceVolunteerService.insert(createServiceRequest);
-        return ResponseEntity.ok("Service added.");
+        String serviceId = serviceVolunteerService.insert(createServiceRequest);
+        return ResponseEntity.ok("Service with ID: " + serviceId + " added.");
     }
 
     @PutMapping("/services")
@@ -72,18 +72,6 @@ public class ServiceController {
         serviceVolunteerService.update(request);
         return ResponseEntity.ok("Service " + request.getId() + " updated.");
     }
-
-    @PatchMapping("/services")
-    public ResponseEntity<String> patchService(@RequestBody UpdateServiceRequest request) throws Exception {
-        serviceVolunteerService.patch(request);
-        return ResponseEntity.ok("Service " + request.getId() + " patched.");
-    }
-
-//    @PutMapping("/services")
-//    public ResponseEntity<String> updateService(@RequestBody ServiceEntity entity) throws Exception {
-//        serviceVolunteerService.update(entity);
-//        return ResponseEntity.ok("Service " + entity.getId() + " updated.");
-//    }
 
     @DeleteMapping("/services/{serviceId}")
     public String deleteService(@PathVariable String serviceId) throws Exception {

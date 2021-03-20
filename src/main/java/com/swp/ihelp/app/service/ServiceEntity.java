@@ -17,10 +17,7 @@ import org.hibernate.annotations.Parameter;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.sql.Timestamp;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Entity
 @Table(name = "service", schema = "ihelp")
@@ -88,12 +85,33 @@ public class ServiceEntity {
     private StatusEntity status;
 
     @ManyToMany(fetch = FetchType.LAZY,
-            cascade = {CascadeType.PERSIST, CascadeType.MERGE,
+            cascade = {CascadeType.MERGE,
                     CascadeType.DETACH, CascadeType.REFRESH})
     @JoinTable(name = "service_category_has_service",
             joinColumns = @JoinColumn(name = "service_id"),
             inverseJoinColumns = @JoinColumn(name = "service_category_id"))
-    private List<ServiceCategoryEntity> categories;
+    private List<ServiceCategoryEntity> categories = new ArrayList<>();
+    @ManyToMany(fetch = FetchType.LAZY,
+            cascade = {CascadeType.PERSIST, CascadeType.MERGE,
+                    CascadeType.DETACH, CascadeType.REFRESH})
+    @JoinTable(name = "service_has_image",
+            joinColumns = @JoinColumn(name = "service_id"),
+            inverseJoinColumns = @JoinColumn(name = "image_id"))
+    private List<ImageEntity> images = new ArrayList<>();
+
+    public void addCategory(ServiceCategoryEntity category) {
+        if (categories.contains(category)) {
+            return;
+        }
+        categories.add(category);
+    }
+
+    public void addImage(ImageEntity imageEntity) {
+        if (images.contains(imageEntity)) {
+            return;
+        }
+        images.add(imageEntity);
+    }
 
     @OneToMany(
             mappedBy = "service",
@@ -122,11 +140,4 @@ public class ServiceEntity {
         serviceAccount.remove(serviceHasAccount);
     }
 
-    @ManyToMany(fetch = FetchType.LAZY,
-            cascade = {CascadeType.PERSIST, CascadeType.MERGE,
-                    CascadeType.DETACH, CascadeType.REFRESH})
-    @JoinTable(name = "service_has_image",
-            joinColumns = @JoinColumn(name = "service_id"),
-            inverseJoinColumns = @JoinColumn(name = "image_id"))
-    private List<ImageEntity> images;
 }

@@ -1,5 +1,6 @@
 package com.swp.ihelp.app.service.response;
 
+import com.swp.ihelp.app.image.response.ImageResponse;
 import com.swp.ihelp.app.service.ServiceEntity;
 import com.swp.ihelp.app.servicecategory.ServiceCategoryEntity;
 import com.swp.ihelp.app.status.StatusEntity;
@@ -25,7 +26,7 @@ public class ServiceResponse implements Serializable {
     private String accountEmail;
     private StatusEntity status;
     private List<ServiceCategoryEntity> categories;
-
+    private List<ImageResponse> images;
 
     public ServiceResponse(ServiceEntity service) {
         this.id = service.getId();
@@ -35,6 +36,7 @@ public class ServiceResponse implements Serializable {
         this.accountEmail = service.getAuthorAccount().getEmail();
         this.status = service.getStatus();
         this.categories = service.getCategories();
+        this.images = ImageResponse.convertToResponseList(service.getImages());
         this.createdDate = service.getCreatedDate();
     }
 

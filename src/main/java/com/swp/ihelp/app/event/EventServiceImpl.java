@@ -91,6 +91,9 @@ public class EventServiceImpl implements EventService {
     public Map<String, Object> findAll(int page) throws Exception {
         Pageable paging = PageRequest.of(page, pageSize);
         Page<EventEntity> pageEvents = eventRepository.findAll(paging);
+        if (pageEvents.isEmpty()) {
+            throw new EntityNotFoundException("Event not found.");
+        }
 
         Map<String, Object> response = getEventResponseMap(pageEvents);
         return response;
@@ -119,7 +122,9 @@ public class EventServiceImpl implements EventService {
     public Map<String, Object> findByTitle(String title, int page) throws Exception {
         Pageable paging = PageRequest.of(page, pageSize);
         Page<EventEntity> pageEvents = eventRepository.findByTitle(title, paging);
-
+        if (pageEvents.isEmpty()) {
+            throw new EntityNotFoundException("Event with title: " + title + " not found.");
+        }
         return getEventResponseMap(pageEvents);
     }
 
@@ -127,7 +132,9 @@ public class EventServiceImpl implements EventService {
     public Map<String, Object> findByCategoryId(int categoryId, int page) throws Exception {
         Pageable paging = PageRequest.of(page, pageSize);
         Page<EventEntity> pageEvents = eventRepository.findByCategoryId(categoryId, paging);
-
+        if (pageEvents.isEmpty()) {
+            throw new EntityNotFoundException("Event with category ID: " + categoryId + " not found.");
+        }
         return getEventResponseMap(pageEvents);
     }
 
@@ -135,7 +142,9 @@ public class EventServiceImpl implements EventService {
     public Map<String, Object> findByStatusId(int statusId, int page) throws Exception {
         Pageable paging = PageRequest.of(page, pageSize);
         Page<EventEntity> pageEvents = eventRepository.findByStatusId(statusId, paging);
-
+        if (pageEvents.isEmpty()) {
+            throw new EntityNotFoundException("Event with status ID: " + statusId + " not found.");
+        }
         return getEventResponseMap(pageEvents);
     }
 
@@ -143,7 +152,9 @@ public class EventServiceImpl implements EventService {
     public Map<String, Object> findByAuthorEmail(String email, int page) throws Exception {
         Pageable paging = PageRequest.of(page, pageSize);
         Page<EventEntity> pageEvents = eventRepository.findByAuthorEmail(email, paging);
-
+        if (pageEvents.isEmpty()) {
+            throw new EntityNotFoundException("Event with author email: " + email + " not found.");
+        }
         return getEventResponseMap(pageEvents);
     }
 
@@ -151,12 +162,14 @@ public class EventServiceImpl implements EventService {
     public Map<String, Object> findByParticipantEmail(String email, int statusId, int page) throws Exception {
         Pageable paging = PageRequest.of(page, pageSize);
         Page<EventEntity> pageEvents = eventRepository.findByParticipantEmail(email, statusId, paging);
-
+        if (pageEvents.isEmpty()) {
+            throw new EntityNotFoundException("Account " + email + " has not joined any event.");
+        }
         return getEventResponseMap(pageEvents);
     }
 
     @Override
-    public void insert(CreateEventRequest event) throws Exception {
+    public String insert(CreateEventRequest event) throws Exception {
         String errorMsg = validateCreateEvent(event);
         if (!errorMsg.isEmpty()) {
             throw new RuntimeException(errorMsg);
@@ -164,7 +177,6 @@ public class EventServiceImpl implements EventService {
 
         EventEntity eventEntity = CreateEventRequest.convertToEntity(event);
         List<ImageRequest> imageRequests = event.getImages();
-        System.out.println("size:" + eventEntity.getEventCategories().size());
         if (imageRequests != null) {
             for (ImageRequest imageRequest : imageRequests) {
                 ImageEntity imageEntity = ImageRequest.convertRequestToEntity(imageRequest);
@@ -173,14 +185,19 @@ public class EventServiceImpl implements EventService {
                 eventEntity.addImage(savedImage);
             }
         }
-        eventRepository.save(eventEntity);
+        EventEntity savedEvent = eventRepository.save(eventEntity);
+        return savedEvent.getId();
     }
 
     @Override
     @Transactional
-    public void update(UpdateEventRequest event) throws Exception {
+    public EventDetailResponse update(UpdateEventRequest event) throws Exception {
+        if (!eventRepository.existsById(event.getId())) {
+            throw new EntityNotFoundException("Event with ID:" + event.getId() + " not found.");
+        }
         EventEntity eventEntity = UpdateEventRequest.convertToEntity(event);
         eventRepository.update(eventEntity);
+        return new EventDetailResponse(eventEntity);
     }
 
     @Override

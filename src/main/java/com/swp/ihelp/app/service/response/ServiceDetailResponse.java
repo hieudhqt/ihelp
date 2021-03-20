@@ -1,5 +1,6 @@
 package com.swp.ihelp.app.service.response;
 
+import com.swp.ihelp.app.image.response.ImageResponse;
 import com.swp.ihelp.app.service.ServiceEntity;
 import com.swp.ihelp.app.servicecategory.ServiceCategoryEntity;
 import com.swp.ihelp.app.status.StatusEntity;
@@ -9,7 +10,6 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -29,7 +29,7 @@ public class ServiceDetailResponse implements Serializable {
     private String accountEmail;
     private StatusEntity status;
     private List<ServiceCategoryEntity> categories;
-
+    private List<ImageResponse> images;
 
     public ServiceDetailResponse(ServiceEntity service) {
         this.id = service.getId();
@@ -42,15 +42,8 @@ public class ServiceDetailResponse implements Serializable {
         this.startDate = service.getStartDate();
         this.endDate = service.getEndDate();
         this.accountEmail = service.getAuthorAccount().getEmail();
+        this.images = ImageResponse.convertToResponseList(service.getImages());
         this.status = service.getStatus();
         this.categories = service.getCategories();
-    }
-
-    public static List<ServiceDetailResponse> convertToResponseList(List<ServiceEntity> serviceEntityList) {
-        List<ServiceDetailResponse> responseList = new ArrayList<>();
-        for (ServiceEntity serviceEntity : serviceEntityList) {
-            responseList.add(new ServiceDetailResponse(serviceEntity));
-        }
-        return responseList;
     }
 }

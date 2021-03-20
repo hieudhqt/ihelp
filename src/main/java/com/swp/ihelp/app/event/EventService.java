@@ -14,9 +14,9 @@ public interface EventService {
 
     Map<String, Object> findByTitle(String title, int page) throws Exception;
 
-    void insert(CreateEventRequest event) throws Exception;
+    String insert(CreateEventRequest event) throws Exception;
 
-    void update(UpdateEventRequest event) throws Exception;
+    EventDetailResponse update(UpdateEventRequest event) throws Exception;
 
     void deleteById(String id) throws Exception;
 

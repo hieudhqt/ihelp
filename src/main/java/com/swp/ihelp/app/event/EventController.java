@@ -76,8 +76,8 @@ public class EventController {
 
     @PostMapping("/events")
     public ResponseEntity<String> addEvent(@Valid @RequestBody CreateEventRequest eventRequest) throws Exception {
-        eventService.insert(eventRequest);
-        return ResponseEntity.ok(eventMessage.getEventAddedMessage());
+        String eventId = eventService.insert(eventRequest);
+        return ResponseEntity.ok(eventMessage.getEventAddedMessage(eventId));
     }
 
     @PostMapping("/events/evaluation")
@@ -88,9 +88,9 @@ public class EventController {
     }
 
     @PutMapping("/events")
-    public ResponseEntity<String> updateEvent(@Valid @RequestBody UpdateEventRequest eventRequest) throws Exception {
-        eventService.update(eventRequest);
-        return ResponseEntity.ok(eventMessage.getEventUpdatedMessage(eventRequest.getId()));
+    public ResponseEntity<EventDetailResponse> updateEvent(@Valid @RequestBody UpdateEventRequest eventRequest) throws Exception {
+        EventDetailResponse updatedEvent = eventService.update(eventRequest);
+        return new ResponseEntity<>(updatedEvent, HttpStatus.OK);
     }
 
     @PutMapping("/events/{eventId}/{statusId}")
