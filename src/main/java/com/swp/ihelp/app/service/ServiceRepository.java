@@ -43,6 +43,14 @@ public interface ServiceRepository extends JpaRepository<ServiceEntity, String> 
     @Query("SELECT s.quota from ServiceEntity s where s.id = :serviceId")
     int getQuota(String serviceId);
 
+    @Query(value =
+            "SELECT (s.quota - (SELECT count(account_email) " +
+                    "            FROM ihelp.service_has_account " +
+                    "            Where service_id = :serviceId)) AS RemainingSpot " +
+                    "FROM ihelp.service s " +
+                    "Where s.id = :serviceId ", nativeQuery = true)
+    int getRemainingSpot(String serviceId);
+
     @Modifying
     @Query(value = "UPDATE ihelp.service s SET s.status_id = :statusId WHERE s.id = :serviceId",
             nativeQuery = true)

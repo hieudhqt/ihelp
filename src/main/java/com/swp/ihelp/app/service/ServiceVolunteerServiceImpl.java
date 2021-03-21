@@ -78,13 +78,8 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
         ServiceDetailResponse service = null;
         if (result.isPresent()) {
             service = new ServiceDetailResponse(result.get());
-            int remainingSpots = serviceRepository.getUsedSpot(id);
-            int quota = service.getQuota();
-            if (quota >= remainingSpots) {
-                service.setSpot(quota - remainingSpots);
-            } else {
-                service.setSpot(0);
-            }
+            int remainingSpots = serviceRepository.getRemainingSpot(id);
+            service.setSpot(remainingSpots);
         } else {
             throw new RuntimeException("Did not find service with id:" + id);
         }
@@ -161,9 +156,27 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
 
     @Override
     @Transactional
-    public void update(UpdateServiceRequest request) throws Exception {
-        ServiceEntity entity = UpdateServiceRequest.convertToEntityWithId(request);
-        serviceRepository.update(entity);
+    public ServiceDetailResponse update(UpdateServiceRequest serviceRequest) throws Exception {
+        if (serviceRepository.existsById(serviceRequest.getId())) {
+            throw new EntityNotFoundException("Service with ID: "
+                    + serviceRequest.getId() + " not found.");
+        }
+        ServiceEntity serviceToUpdate = serviceRepository.getOne(serviceRequest.getId());
+        serviceToUpdate.setTitle(serviceRequest.getTitle());
+        serviceToUpdate.setDescription(serviceRequest.getDescription());
+        serviceToUpdate.setLocation(serviceRequest.getLocation());
+        serviceToUpdate.setPoint(serviceRequest.getPoint());
+        serviceToUpdate.setQuota(serviceRequest.getQuota());
+        serviceToUpdate.setStartDate(new Timestamp(serviceRequest.getStartDate().getTime()));
+        serviceToUpdate.setEndDate(new Timestamp(serviceRequest.getEndDate().getTime()));
+
+        serviceRepository.save(serviceToUpdate);
+
+        ServiceDetailResponse serviceResponse = new ServiceDetailResponse(serviceToUpdate);
+        int remainingSpot = serviceRepository.getRemainingSpot(serviceResponse.getId());
+        serviceResponse.setSpot(remainingSpot);
+
+        return serviceResponse;
     }
 
     @Override
@@ -251,7 +264,6 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
         senderPoint.setIsReceived(false);
         senderPoint.setDescription("Account " + userAccount.getEmail() +
                 " used service: " + serviceEntity.getId());
-        senderPoint.setService(serviceEntity);
 
         PointEntity receiverPoint = new PointEntity();
         receiverPoint.setAmount(amount);
@@ -260,7 +272,6 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
         receiverPoint.setIsReceived(true);
         receiverPoint.setDescription("Account " + authorAccount.getEmail() +
                 " received point for providing service: " + serviceEntity.getId());
-        receiverPoint.setService(serviceEntity);
 
         pointRepository.save(senderPoint);
         pointRepository.save(receiverPoint);
@@ -270,13 +281,8 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
             throws Exception {
         List<ServiceResponse> result = ServiceResponse.convertToResponseList(serviceEntityList);
         for (ServiceResponse response : result) {
-            int remainingSpot = serviceRepository.getUsedSpot(response.getId());
-            int quota = serviceRepository.getQuota(response.getId());
-            if (quota >= remainingSpot) {
-                response.setSpot(quota - remainingSpot);
-            } else {
-                response.setSpot(0);
-            }
+            int remainingSpot = serviceRepository.getRemainingSpot(response.getId());
+            response.setSpot(remainingSpot);
         }
         return result;
     }

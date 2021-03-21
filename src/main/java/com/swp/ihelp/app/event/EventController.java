@@ -5,6 +5,7 @@ import com.swp.ihelp.app.event.request.EvaluationRequest;
 import com.swp.ihelp.app.event.request.UpdateEventRequest;
 import com.swp.ihelp.app.event.response.EventDetailResponse;
 import com.swp.ihelp.message.EventMessage;
+import com.swp.ihelp.scheduler.EventScheduler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +22,9 @@ public class EventController {
 
     @Autowired
     private EventMessage eventMessage;
+
+    @Autowired
+    private EventScheduler eventScheduler;
 
     @Autowired
     public EventController(EventService eventService) {
@@ -111,7 +115,6 @@ public class EventController {
         eventService.joinEvent(email, eventId);
         return ResponseEntity.ok(eventMessage.getEventJoinedMessage(eventId, email));
     }
-
 
 }
 

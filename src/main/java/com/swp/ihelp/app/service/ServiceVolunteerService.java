@@ -16,7 +16,7 @@ public interface ServiceVolunteerService {
 
     String insert(@Valid CreateServiceRequest request) throws Exception;
 
-    void update(@Valid UpdateServiceRequest request) throws Exception;
+    ServiceDetailResponse update(@Valid UpdateServiceRequest request) throws Exception;
 
     void deleteById(String id) throws Exception;
 

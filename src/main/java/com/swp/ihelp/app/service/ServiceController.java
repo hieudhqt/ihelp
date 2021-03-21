@@ -68,9 +68,9 @@ public class ServiceController {
     }
 
     @PutMapping("/services")
-    public ResponseEntity<String> updateService(@RequestBody UpdateServiceRequest request) throws Exception {
-        serviceVolunteerService.update(request);
-        return ResponseEntity.ok("Service " + request.getId() + " updated.");
+    public ResponseEntity<ServiceDetailResponse> updateService(@RequestBody UpdateServiceRequest request) throws Exception {
+        ServiceDetailResponse updatedService = serviceVolunteerService.update(request);
+        return new ResponseEntity<>(updatedService, HttpStatus.OK);
     }
 
     @DeleteMapping("/services/{serviceId}")

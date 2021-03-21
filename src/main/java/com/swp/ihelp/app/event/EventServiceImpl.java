@@ -42,7 +42,10 @@ public class EventServiceImpl implements EventService {
     private long minStartDateFromNearestEndDate;
 
     @Value("${date.minStartDateFromCreate}")
-    private long minStartDateFromCreate;
+    private int minStartDateFromCreate;
+
+    @Value("${date.startDateFromEndRegistration}")
+    private int startDateFromEndRegistration;
 
     private EventRepository eventRepository;
     private EventHasAccountRepository eventHasAccountRepository;
@@ -102,20 +105,15 @@ public class EventServiceImpl implements EventService {
     @Override
     public EventDetailResponse findById(String id) throws Exception {
         Optional<EventEntity> result = eventRepository.findById(id);
-        EventDetailResponse event = null;
+        EventDetailResponse eventDetailResponse = null;
         if (result.isPresent()) {
-            event = new EventDetailResponse(result.get());
-            int remainingSpot = eventRepository.getSpotUsed(id);
-            int quota = eventRepository.getQuota(id);
-            if (quota >= remainingSpot) {
-                event.setSpot(quota - remainingSpot);
-            } else {
-                event.setSpot(0);
-            }
+            eventDetailResponse = new EventDetailResponse(result.get());
+            int remainingSpot = eventRepository.getRemainingSpot(id);
+            eventDetailResponse.setSpot(remainingSpot);
         } else {
             throw new EntityNotFoundException(eventMessage.getEventNotFoundMessage() + id);
         }
-        return event;
+        return eventDetailResponse;
     }
 
     @Override
@@ -191,13 +189,28 @@ public class EventServiceImpl implements EventService {
 
     @Override
     @Transactional
-    public EventDetailResponse update(UpdateEventRequest event) throws Exception {
-        if (!eventRepository.existsById(event.getId())) {
-            throw new EntityNotFoundException("Event with ID:" + event.getId() + " not found.");
+    public EventDetailResponse update(UpdateEventRequest eventRequest) throws Exception {
+        if (!eventRepository.existsById(eventRequest.getId())) {
+            throw new EntityNotFoundException("Event with ID:" + eventRequest.getId() + " not found.");
         }
-        EventEntity eventEntity = UpdateEventRequest.convertToEntity(event);
-        eventRepository.update(eventEntity);
-        return new EventDetailResponse(eventEntity);
+        EventEntity eventToUpdate = eventRepository.getOne(eventRequest.getId());
+
+        eventToUpdate.setTitle(eventRequest.getTitle());
+        eventToUpdate.setDescription(eventRequest.getDescription());
+        eventToUpdate.setLocation(eventRequest.getLocation());
+        eventToUpdate.setPoint(eventRequest.getPoint());
+        eventToUpdate.setQuota(eventRequest.getQuota());
+        eventToUpdate.setOnsite(eventRequest.isOnsite());
+        eventToUpdate.setStartDate(new Timestamp(eventRequest.getStartDate().getTime()));
+        eventToUpdate.setEndDate(new Timestamp(eventRequest.getEndDate().getTime()));
+
+        eventRepository.save(eventToUpdate);
+
+        EventDetailResponse eventDetailResponse = new EventDetailResponse(eventToUpdate);
+        int remainingSpot = eventRepository.getRemainingSpot(eventDetailResponse.getId());
+        eventDetailResponse.setSpot(remainingSpot);
+
+        return eventDetailResponse;
     }
 
     @Override
@@ -238,7 +251,7 @@ public class EventServiceImpl implements EventService {
         } else {
             AccountEntity hostAccount = eventEntity.getAuthorAccount();
 
-            int participationPoint = (int) Math.floor((request.getRating() / 5) * eventEntity.getPoint());
+            int participationPoint = (int) Math.floor((request.getRating() / 5f) * eventEntity.getPoint());
 
             Timestamp currentTimestamp = new Timestamp(System.currentTimeMillis());
 
@@ -248,7 +261,6 @@ public class EventServiceImpl implements EventService {
                     "Description: " + request.getComment());
             hostPointEntity.setCreatedDate(currentTimestamp);
             hostPointEntity.setAccount(hostAccount);
-            hostPointEntity.setEvent(eventEntity);
             hostPointEntity.setAmount(participationPoint);
             pointRepository.save(hostPointEntity);
 
@@ -258,7 +270,6 @@ public class EventServiceImpl implements EventService {
                     "Description: " + request.getComment());
             memberPointEntity.setCreatedDate(currentTimestamp);
             memberPointEntity.setAccount(memberAccount);
-            memberPointEntity.setEvent(eventEntity);
             memberPointEntity.setAmount(participationPoint);
             pointRepository.save(memberPointEntity);
 
@@ -289,19 +300,12 @@ public class EventServiceImpl implements EventService {
     //3. Save event and member in database
     @Override
     public void joinEvent(String email, String eventId) throws Exception {
-        if (!eventRepository.existsById(eventId)) {
-            throw new EntityNotFoundException(eventMessage.getEventNotFoundMessage() + eventId);
+        String errorMsg = validateJoinEvent(eventId, email);
+        if (!errorMsg.isEmpty()) {
+            throw new RuntimeException(errorMsg);
         }
 
         EventEntity eventEntity = eventRepository.getOne(eventId);
-
-        if (email.equals(eventEntity.getAuthorAccount().getEmail())) {
-            throw new RuntimeException("Event host cannot join his/her own event.");
-        }
-
-        if (!isEventAvailable(eventEntity, System.currentTimeMillis())) {
-            throw new RuntimeException(eventMessage.getEventUnavailableMessage());
-        }
 
         EventHasAccountEntity eventAccount = new EventHasAccountEntity();
         eventAccount.setEvent(new EventEntity().setId(eventId));
@@ -311,42 +315,39 @@ public class EventServiceImpl implements EventService {
         eventRepository.save(eventEntity);
     }
 
-    private boolean isEventAvailable(EventEntity event, long currentDateInMillis) throws Exception {
-        boolean check = true;
+    private String validateJoinEvent(String eventId, String email) throws Exception {
+        String errorMsg = "";
+        if (!eventRepository.existsById(eventId)) {
+            throw new EntityNotFoundException(eventMessage.getEventNotFoundMessage() + eventId);
+        }
+
+        EventEntity event = eventRepository.getOne(eventId);
         if (!event.getStatus().getName().equals("Approved")) {
-            check = false;
-            System.out.println("Event is not approved.");
+            errorMsg += "Event is not approved;";
         }
         int spotUsed = eventRepository.getSpotUsed(event.getId());
         if (spotUsed == event.getQuota()) {
-            check = false;
-            System.out.println("Event is full.");
+            errorMsg += "Event is full;";
         }
-        return check;
+        if (email.equals(event.getAuthorAccount().getEmail())) {
+            errorMsg += "Event host cannot join his/her own event;";
+        }
+
+        Calendar endRegistrationDate = Calendar.getInstance();
+        endRegistrationDate.setTime(event.getStartDate());
+        endRegistrationDate.add(Calendar.DAY_OF_MONTH, -startDateFromEndRegistration);
+        endRegistrationDate.set(Calendar.HOUR_OF_DAY, 0);
+        endRegistrationDate.set(Calendar.MINUTE, 0);
+        endRegistrationDate.set(Calendar.SECOND, 0);
+        endRegistrationDate.set(Calendar.MILLISECOND, 0);
+
+        Calendar currentDate = Calendar.getInstance();
+        if (currentDate.compareTo(endRegistrationDate) > 0) {
+            errorMsg += "Registration deadline is due.";
+        }
+
+        return errorMsg;
     }
-
-
-//    private List<EventDetailResponse> convertToEventDetailResponses(List<EventEntity> eventEntityList)
-//            throws Exception {
-//        if (eventEntityList.isEmpty()) {
-//            throw new EntityNotFoundException("No event found.");
-//        }
-//        return EventDetailResponse.convertToResponseList(eventEntityList);
-//    }
-
-//    private List<EventDetailResponse> getEventDetailResponses(List<EventEntity> eventEntityList) throws Exception {
-//        List<EventDetailResponse> result = convertToEventDetailResponses(eventEntityList);
-//        for (EventDetailResponse response : result) {
-//            int remainingSpot = eventRepository.getRemainingSpots(response.getId());
-//            int quota = response.getQuota();
-//            if (quota >= remainingSpot) {
-//                response.setSpot(quota - remainingSpot);
-//            } else {
-//                response.setSpot(0);
-//            }
-//        }
-//        return result;
-//    }
 
     private Map<String, Object> getEventResponseMap(Page<EventEntity> pageEvents) throws Exception {
         List<EventEntity> eventEntityList = pageEvents.getContent();
@@ -364,14 +365,8 @@ public class EventServiceImpl implements EventService {
     private List<EventResponse> convertEntitesToEventResponses(List<EventEntity> eventEntityList) throws Exception {
         List<EventResponse> result = EventResponse.convertToResponseList(eventEntityList);
         for (EventResponse response : result) {
-            int remainingSpot = eventRepository.getSpotUsed(response.getId());
-            int quota = eventRepository.getQuota(response.getId());
-            if (quota >= remainingSpot) {
-                response.setSpot(quota - remainingSpot);
-            } else {
-                response.setSpot(0);
-            }
-//            int remainingSpot = eventRepository.getRemainingSpot(response.getId());
+            int remainingSpot = eventRepository.getRemainingSpot(response.getId());
+            response.setSpot(remainingSpot);
         }
         return result;
     }
@@ -401,7 +396,8 @@ public class EventServiceImpl implements EventService {
         }
 
         if (event.getStartDate().getTime() - System.currentTimeMillis() < minStartDateFromCreate) {
-            errorMsg += "Start date must be at least 3 days after creation date; ";
+            errorMsg += "Start date must be at least " + minStartDateFromCreate +
+                    " days after creation date; ";
         }
 
         String authorEmail = event.getAuthorEmail();
