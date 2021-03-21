@@ -14,16 +14,13 @@ public interface ServiceVolunteerService {
 
     Map<String, Object> findByTitle(String title, int page) throws Exception;
 
-    void insert(@Valid CreateServiceRequest request) throws Exception;
+    String insert(@Valid CreateServiceRequest request) throws Exception;
 
-    void update(@Valid UpdateServiceRequest request) throws Exception;
+    ServiceDetailResponse update(@Valid UpdateServiceRequest request) throws Exception;
 
-    void patch(@Valid UpdateServiceRequest request) throws Exception;
-
-    //    void update(ServiceEntity serviceEntity) throws Exception;
     void deleteById(String id) throws Exception;
 
-//    Map<String, Object> findByServiceTypeId(int id, int page) throws Exception;
+    Map<String, Object> findByCategoryId(int id, int page) throws Exception;
 
     Map<String, Object> findByStatusId(int id, int page) throws Exception;
 

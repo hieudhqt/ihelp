@@ -3,6 +3,7 @@ package com.swp.ihelp.app.event.response;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.swp.ihelp.app.event.EventEntity;
 import com.swp.ihelp.app.eventcategory.EventCategoryEntity;
+import com.swp.ihelp.app.image.response.ImageResponse;
 import com.swp.ihelp.app.status.StatusEntity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -10,7 +11,6 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -36,6 +36,7 @@ public class EventDetailResponse implements Serializable {
     private String accountEmail;
     private StatusEntity status;
     private List<EventCategoryEntity> categories;
+    private List<ImageResponse> images;
 
     public EventDetailResponse(EventEntity eventEntity) {
         this.id = eventEntity.getId();
@@ -48,15 +49,9 @@ public class EventDetailResponse implements Serializable {
         this.startDate = eventEntity.getStartDate();
         this.endDate = eventEntity.getEndDate();
         this.accountEmail = eventEntity.getAuthorAccount().getEmail();
+        this.images = ImageResponse.convertToResponseList(eventEntity.getImages());
         this.status = eventEntity.getStatus();
         this.categories = eventEntity.getEventCategories();
     }
 
-    public static List<EventDetailResponse> convertToResponseList(List<EventEntity> eventEntityList) {
-        List<EventDetailResponse> responseList = new ArrayList<>();
-        for (EventEntity eventEntity : eventEntityList) {
-            responseList.add(new EventDetailResponse(eventEntity));
-        }
-        return responseList;
-    }
 }

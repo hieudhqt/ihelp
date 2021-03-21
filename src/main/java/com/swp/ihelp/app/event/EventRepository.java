@@ -5,9 +5,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 
+import java.sql.Timestamp;
 import java.util.Date;
+import java.util.List;
 
 public interface EventRepository extends JpaRepository<EventEntity, String> {
     @Query("SELECT e from EventEntity e order by e.status.id")
@@ -33,29 +34,19 @@ public interface EventRepository extends JpaRepository<EventEntity, String> {
     @Query("SELECT count(e.event.authorAccount) from EventHasAccountEntity e where e.event.id = :eventId")
     int getSpotUsed(String eventId);
 
-//    @Query(value = "SELECT @usedSpot = (SELECT count(account_email) "+
-//            "FROM ihelp.event_has_account " +
-//            "Where event_id = :eventId); " +
-//            "SELECT (e.quota - :@usedSpot) AS RemainingSpot  " +
-//            "FROM ihelp.event e " +
-//            "Where e.id = :eventId ", nativeQuery = true)
-//    int getRemainingSpot(String eventId);
+    @Query("SELECT e.startDate From EventEntity e")
+    List<Timestamp> getAllStartDates();
+
+    @Query(value =
+            "SELECT (e.quota - (SELECT count(account_email) " +
+                    "            FROM ihelp.event_has_account " +
+                    "            Where event_id = :eventId)) AS RemainingSpot " +
+                    "FROM ihelp.event e " +
+                    "Where e.id = :eventId ", nativeQuery = true)
+    int getRemainingSpot(String eventId);
 
     @Query("SELECT e.quota from EventEntity e where e.id = :eventId")
     int getQuota(String eventId);
-
-    @Modifying
-    @Query(value = "update EventEntity e " +
-            "Set e.title = :#{#event.title}, " +
-            "e.description = :#{#event.description}, " +
-            "e.startDate = :#{#event.startDate}, " +
-            "e.endDate = :#{#event.startDate}, " +
-            "e.point = :#{#event.point}, " +
-            "e.quota = :#{#event.quota}, " +
-            "e.location = :#{#event.location}, " +
-            "e.isOnsite = :#{#event.onsite} " +
-            "Where e.id = :#{#event.id} ")
-    void update(@Param("event") EventEntity event);
 
     @Modifying
     @Query(value = "UPDATE ihelp.event e Set e.status_id = :statusId Where e.id = :eventId ", nativeQuery = true)

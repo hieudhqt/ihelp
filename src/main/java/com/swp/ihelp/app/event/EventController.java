@@ -5,6 +5,7 @@ import com.swp.ihelp.app.event.request.EvaluationRequest;
 import com.swp.ihelp.app.event.request.UpdateEventRequest;
 import com.swp.ihelp.app.event.response.EventDetailResponse;
 import com.swp.ihelp.message.EventMessage;
+import com.swp.ihelp.scheduler.EventScheduler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +22,9 @@ public class EventController {
 
     @Autowired
     private EventMessage eventMessage;
+
+    @Autowired
+    private EventScheduler eventScheduler;
 
     @Autowired
     public EventController(EventService eventService) {
@@ -76,8 +80,8 @@ public class EventController {
 
     @PostMapping("/events")
     public ResponseEntity<String> addEvent(@Valid @RequestBody CreateEventRequest eventRequest) throws Exception {
-        eventService.insert(eventRequest);
-        return ResponseEntity.ok(eventMessage.getEventAddedMessage());
+        String eventId = eventService.insert(eventRequest);
+        return ResponseEntity.ok(eventMessage.getEventAddedMessage(eventId));
     }
 
     @PostMapping("/events/evaluation")
@@ -88,9 +92,9 @@ public class EventController {
     }
 
     @PutMapping("/events")
-    public ResponseEntity<String> updateEvent(@Valid @RequestBody UpdateEventRequest eventRequest) throws Exception {
-        eventService.update(eventRequest);
-        return ResponseEntity.ok(eventMessage.getEventUpdatedMessage(eventRequest.getId()));
+    public ResponseEntity<EventDetailResponse> updateEvent(@Valid @RequestBody UpdateEventRequest eventRequest) throws Exception {
+        EventDetailResponse updatedEvent = eventService.update(eventRequest);
+        return new ResponseEntity<>(updatedEvent, HttpStatus.OK);
     }
 
     @PutMapping("/events/{eventId}/{statusId}")
@@ -111,7 +115,6 @@ public class EventController {
         eventService.joinEvent(email, eventId);
         return ResponseEntity.ok(eventMessage.getEventJoinedMessage(eventId, email));
     }
-
 
 }
 

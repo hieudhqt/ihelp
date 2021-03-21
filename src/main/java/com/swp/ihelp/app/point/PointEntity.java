@@ -1,8 +1,6 @@
 package com.swp.ihelp.app.point;
 
 import com.swp.ihelp.app.account.AccountEntity;
-import com.swp.ihelp.app.event.EventEntity;
-import com.swp.ihelp.app.service.ServiceEntity;
 import com.swp.ihelp.config.StringPrefixedSequenceIdGenerator;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -53,13 +51,5 @@ public class PointEntity {
     @ManyToOne
     @JoinColumn(name = "account_email", referencedColumnName = "email", nullable = false)
     private AccountEntity account;
-
-    @ManyToOne
-    @JoinColumn(name = "event_id", referencedColumnName = "id", nullable = true)
-    private EventEntity event;
-
-    @ManyToOne
-    @JoinColumn(name = "service_id", referencedColumnName = "id", nullable = true)
-    private ServiceEntity service;
 
 }

@@ -2,20 +2,24 @@ package com.swp.ihelp.app.service;
 
 import com.swp.ihelp.app.account.AccountEntity;
 import com.swp.ihelp.app.account.AccountRepository;
+import com.swp.ihelp.app.image.ImageEntity;
+import com.swp.ihelp.app.image.ImageRepository;
+import com.swp.ihelp.app.image.request.ImageRequest;
 import com.swp.ihelp.app.point.PointEntity;
 import com.swp.ihelp.app.point.PointRepository;
-import com.swp.ihelp.app.service.mapper.ServiceMapper;
 import com.swp.ihelp.app.service.request.CreateServiceRequest;
 import com.swp.ihelp.app.service.request.UpdateServiceRequest;
 import com.swp.ihelp.app.service.response.ServiceDetailResponse;
 import com.swp.ihelp.app.service.response.ServiceResponse;
 import com.swp.ihelp.app.servicejointable.ServiceHasAccountEntity;
+import com.swp.ihelp.exception.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.util.HashMap;
@@ -29,25 +33,41 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
     private ServiceRepository serviceRepository;
     private AccountRepository accountRepository;
     private PointRepository pointRepository;
+    private ImageRepository imageRepository;
 
     @Value("${paging.page-size}")
     private int pageSize;
 
-    @Autowired
-    private ServiceMapper mapper;
+    @Value("${date.minStartDateFromCreate}")
+    private long minStartDateFromCreate;
 
     @Autowired
-    public ServiceVolunteerServiceImpl(ServiceRepository serviceRepository, AccountRepository accountRepository, PointRepository pointRepository) {
+    public void setServiceRepository(ServiceRepository serviceRepository) {
         this.serviceRepository = serviceRepository;
+    }
+
+    @Autowired
+    public void setAccountRepository(AccountRepository accountRepository) {
         this.accountRepository = accountRepository;
+    }
+
+    @Autowired
+    public void setPointRepository(PointRepository pointRepository) {
         this.pointRepository = pointRepository;
+    }
+
+    @Autowired
+    public void setImageRepository(ImageRepository imageRepository) {
+        this.imageRepository = imageRepository;
     }
 
     @Override
     public Map<String, Object> findAll(int page) throws Exception {
         Pageable paging = PageRequest.of(page, pageSize);
         Page<ServiceEntity> pageServices = serviceRepository.findAll(paging);
-
+        if (pageServices.isEmpty()) {
+            throw new EntityNotFoundException("Service not found.");
+        }
         Map<String, Object> response = getServiceResponseMap(pageServices);
         return response;
     }
@@ -58,13 +78,8 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
         ServiceDetailResponse service = null;
         if (result.isPresent()) {
             service = new ServiceDetailResponse(result.get());
-            int remainingSpots = serviceRepository.getUsedSpot(id);
-            int quota = service.getQuota();
-            if (quota >= remainingSpots) {
-                service.setSpot(quota - remainingSpots);
-            } else {
-                service.setSpot(0);
-            }
+            int remainingSpots = serviceRepository.getRemainingSpot(id);
+            service.setSpot(remainingSpots);
         } else {
             throw new RuntimeException("Did not find service with id:" + id);
         }
@@ -75,27 +90,33 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
     public Map<String, Object> findByTitle(String title, int page) throws Exception {
         Pageable paging = PageRequest.of(page, pageSize);
         Page<ServiceEntity> pageServices = serviceRepository.findByTitle(title, paging);
-
+        if (pageServices.isEmpty()) {
+            throw new EntityNotFoundException("Service with title: " + title + " not found.");
+        }
         Map<String, Object> response = getServiceResponseMap(pageServices);
         return response;
     }
 
-//    @Override
-//    public Map<String, Object> findByServiceTypeId(int serviceTypeId, int page) throws Exception {
-//        Pageable paging = PageRequest.of(page, pageSize);
-//        Page<ServiceEntity> pageServices = serviceRepository
-//                .findByServiceTypeId(serviceTypeId, paging);
-//
-//        Map<String, Object> response = getServiceResponseMap(pageServices);
-//        return response;
-//    }
+    @Override
+    public Map<String, Object> findByCategoryId(int categoryId, int page) throws Exception {
+        Pageable paging = PageRequest.of(page, pageSize);
+        Page<ServiceEntity> pageServices = serviceRepository
+                .findByCategoryId(categoryId, paging);
+        if (pageServices.isEmpty()) {
+            throw new EntityNotFoundException("Service with category ID: " + categoryId + " not found.");
+        }
+        Map<String, Object> response = getServiceResponseMap(pageServices);
+        return response;
+    }
 
     @Override
     public Map<String, Object> findByStatusId(int statusId, int page) throws Exception {
         Pageable paging = PageRequest.of(page, pageSize);
         Page<ServiceEntity> pageServices = serviceRepository
                 .findByServiceStatusId(statusId, paging);
-
+        if (pageServices.isEmpty()) {
+            throw new EntityNotFoundException("Service with status ID: " + statusId + " not found.");
+        }
         Map<String, Object> response = getServiceResponseMap(pageServices);
         return response;
     }
@@ -111,29 +132,51 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
     }
 
     @Override
-    public void insert(CreateServiceRequest request) throws Exception {
+    public String insert(CreateServiceRequest request) throws Exception {
+        if (request.getStartDate().after(request.getEndDate())) {
+            throw new RuntimeException("Start date must be before end date.");
+        }
+        if ((request.getStartDate().getTime() - System.currentTimeMillis())
+                < minStartDateFromCreate) {
+            throw new RuntimeException("Start date must be at least 3 days after create date.");
+        }
         ServiceEntity serviceEntity = CreateServiceRequest.convertToEntity(request);
-//        if (serviceEntity.getStartDate() >= serviceEntity.getEndDate()) {
-//            throw new RuntimeException("Start date must be before end date.");
-//        }
-//        if (serviceEntity.getStartDate() < minStartDate) {
-//            throw new RuntimeException("Start date must be at least 3 days after create date.");
-//        }
-
-        serviceRepository.save(serviceEntity);
+        List<ImageRequest> imageRequests = request.getImages();
+        if (imageRequests != null) {
+            for (ImageRequest imageRequest : imageRequests) {
+                ImageEntity imageEntity = ImageRequest.convertRequestToEntity(imageRequest);
+                imageEntity.setAuthorAccount(serviceEntity.getAuthorAccount());
+                ImageEntity savedImage = imageRepository.save(imageEntity);
+                serviceEntity.addImage(savedImage);
+            }
+        }
+        ServiceEntity savedService = serviceRepository.save(serviceEntity);
+        return savedService.getId();
     }
 
     @Override
-    public void patch(UpdateServiceRequest request) throws Exception {
-        ServiceEntity entity = serviceRepository.getOne(request.getId());
-        mapper.updateServiceFromRequest(request, entity);
-        serviceRepository.save(entity);
-    }
+    @Transactional
+    public ServiceDetailResponse update(UpdateServiceRequest serviceRequest) throws Exception {
+        if (serviceRepository.existsById(serviceRequest.getId())) {
+            throw new EntityNotFoundException("Service with ID: "
+                    + serviceRequest.getId() + " not found.");
+        }
+        ServiceEntity serviceToUpdate = serviceRepository.getOne(serviceRequest.getId());
+        serviceToUpdate.setTitle(serviceRequest.getTitle());
+        serviceToUpdate.setDescription(serviceRequest.getDescription());
+        serviceToUpdate.setLocation(serviceRequest.getLocation());
+        serviceToUpdate.setPoint(serviceRequest.getPoint());
+        serviceToUpdate.setQuota(serviceRequest.getQuota());
+        serviceToUpdate.setStartDate(new Timestamp(serviceRequest.getStartDate().getTime()));
+        serviceToUpdate.setEndDate(new Timestamp(serviceRequest.getEndDate().getTime()));
 
-    @Override
-    public void update(UpdateServiceRequest request) throws Exception {
-        ServiceEntity entity = UpdateServiceRequest.convertToEntityWithId(request);
-        serviceRepository.update(entity);
+        serviceRepository.save(serviceToUpdate);
+
+        ServiceDetailResponse serviceResponse = new ServiceDetailResponse(serviceToUpdate);
+        int remainingSpot = serviceRepository.getRemainingSpot(serviceResponse.getId());
+        serviceResponse.setSpot(remainingSpot);
+
+        return serviceResponse;
     }
 
     @Override
@@ -150,6 +193,10 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
 
         Optional<ServiceEntity> serviceOptional = serviceRepository.findById(serviceId);
         ServiceEntity service = serviceOptional.get();
+
+        if (service.getAuthorAccount().getEmail().equals(email)) {
+            throw new RuntimeException("You cannot use your own service.");
+        }
 
         boolean check = isServiceAvailable(service, System.currentTimeMillis());
         if (!check) {
@@ -196,10 +243,10 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
         if (!service.getStatus().getName().equals("Approved")) {
             check = false;
         }
-//        if (service.getStartDate() > currentDateInMillis
-//                || service.getEndDate() < currentDateInMillis) {
-//            check = false;
-//        }
+        if (service.getStartDate().getTime() > currentDateInMillis
+                || service.getEndDate().getTime() < currentDateInMillis) {
+            check = false;
+        }
         int remainingSpots = serviceRepository.getUsedSpot(service.getId());
         if (remainingSpots == service.getQuota()) {
             check = false;
@@ -217,7 +264,6 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
         senderPoint.setIsReceived(false);
         senderPoint.setDescription("Account " + userAccount.getEmail() +
                 " used service: " + serviceEntity.getId());
-        senderPoint.setService(serviceEntity);
 
         PointEntity receiverPoint = new PointEntity();
         receiverPoint.setAmount(amount);
@@ -226,7 +272,6 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
         receiverPoint.setIsReceived(true);
         receiverPoint.setDescription("Account " + authorAccount.getEmail() +
                 " received point for providing service: " + serviceEntity.getId());
-        receiverPoint.setService(serviceEntity);
 
         pointRepository.save(senderPoint);
         pointRepository.save(receiverPoint);
@@ -236,13 +281,8 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
             throws Exception {
         List<ServiceResponse> result = ServiceResponse.convertToResponseList(serviceEntityList);
         for (ServiceResponse response : result) {
-            int remainingSpot = serviceRepository.getUsedSpot(response.getId());
-            int quota = serviceRepository.getQuota(response.getId());
-            if (quota >= remainingSpot) {
-                response.setSpot(quota - remainingSpot);
-            } else {
-                response.setSpot(0);
-            }
+            int remainingSpot = serviceRepository.getRemainingSpot(response.getId());
+            response.setSpot(remainingSpot);
         }
         return result;
     }

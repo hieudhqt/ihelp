@@ -33,4 +33,9 @@ public class EventMessage {
         String result = this.eventUpdatedMessage.replaceFirst("#", eventId);
         return result;
     }
+
+    public String getEventAddedMessage(String eventId) {
+        String result = this.eventAddedMessage.replaceFirst("#", eventId);
+        return result;
+    }
 }
