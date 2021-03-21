@@ -66,12 +66,14 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                         "/**/*.js",
                         // swagger
                         "/swagger-ui.html**", "/swagger-resources/**",
-                        "/v2/api-docs**", "/webjars/**"
-                )
-                .permitAll()
+                        "/v2/api-docs**", "/webjars/**").permitAll()
                 .antMatchers("/login", "/signup").permitAll()
-                .antMatchers(HttpMethod.GET, "/api/events/**", "/api/services/**").permitAll()
-                .anyRequest().authenticated()
+                .antMatchers(HttpMethod.GET, "/api/events/**", "/api/services/**", "/api/event-category/**", "/api/service-type/**").permitAll()
+                .antMatchers(HttpMethod.DELETE, "/accounts/**").hasRole("ADMIN")
+                .anyRequest().authenticated().and()
+                .requiresChannel()
+                .anyRequest()
+                .requiresSecure()
                 .and()
                 .exceptionHandling().authenticationEntryPoint(restAuthenticationEntryPoint)
                 .and()

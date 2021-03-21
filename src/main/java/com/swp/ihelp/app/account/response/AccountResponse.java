@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
+import java.sql.Date;
 
 @Getter
 @Setter
@@ -14,11 +15,11 @@ public class AccountResponse implements Serializable {
     private String email;
     private String fullName;
     private String phone;
-    private long dateOfBirth;
+    private Date dateOfBirth;
     private boolean gender;
     private int balancePoint;
-    private int cumulativePoint;
-    private long createDate;
+    private int contributionPoint;
+    private Date createDate;
     private AccountStatusEntity status;
     private RoleEntity role;
 
@@ -29,7 +30,7 @@ public class AccountResponse implements Serializable {
         this.dateOfBirth = accountEntity.getDateOfBirth();
         this.gender = accountEntity.getGender();
         this.balancePoint = accountEntity.getBalancePoint();
-        this.cumulativePoint = accountEntity.getCumulativePoint();
+        this.contributionPoint = accountEntity.getContributionPoint();
         this.createDate = accountEntity.getCreatedDate();
         this.status = accountEntity.getStatus();
         this.role = accountEntity.getRole();
@@ -43,7 +44,7 @@ public class AccountResponse implements Serializable {
         accountEntity.setDateOfBirth(this.dateOfBirth);
         accountEntity.setGender(this.gender);
         accountEntity.setBalancePoint(this.balancePoint);
-        accountEntity.setCumulativePoint(this.cumulativePoint);
+        accountEntity.setContributionPoint(this.contributionPoint);
         accountEntity.setCreatedDate(this.createDate);
         accountEntity.setStatus(this.status);
         accountEntity.setRole(this.role);

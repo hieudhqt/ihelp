@@ -1,7 +1,7 @@
 package com.swp.ihelp.app.service.mapper;
 
 import com.swp.ihelp.app.service.ServiceEntity;
-import com.swp.ihelp.app.service.request.ServiceRequest;
+import com.swp.ihelp.app.service.request.UpdateServiceRequest;
 import org.mapstruct.*;
 
 @Mapper(componentModel = "spring",
@@ -9,5 +9,5 @@ import org.mapstruct.*;
         unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface ServiceMapper {
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    void updateServiceFromRequest(ServiceRequest serviceRequest, @MappingTarget ServiceEntity entity);
+    void updateServiceFromRequest(UpdateServiceRequest request, @MappingTarget ServiceEntity entity);
 }

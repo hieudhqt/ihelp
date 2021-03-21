@@ -2,25 +2,20 @@ package com.swp.ihelp.app.event;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.swp.ihelp.app.account.AccountEntity;
-import com.swp.ihelp.app.entity.StatusEntity;
 import com.swp.ihelp.app.eventcategory.EventCategoryEntity;
 import com.swp.ihelp.app.eventjointable.EventHasAccountEntity;
 import com.swp.ihelp.app.image.ImageEntity;
+import com.swp.ihelp.app.status.StatusEntity;
 import com.swp.ihelp.config.StringPrefixedSequenceIdGenerator;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 import lombok.experimental.Accessors;
 import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.sql.Timestamp;
+import java.util.*;
 
 @Entity
 @Table(name = "event", schema = "ihelp")
@@ -67,15 +62,15 @@ public class EventEntity {
 
     @Basic
     @Column(name = "created_date", nullable = true)
-    private long createdDate;
+    private Timestamp createdDate;
 
     @Basic
     @Column(name = "start_date", nullable = true)
-    private long startDate;
+    private Timestamp startDate;
 
     @Basic
     @Column(name = "end_date", nullable = true)
-    private long endDate;
+    private Timestamp endDate;
 
     @Basic
     @Column(name = "is_onsite", nullable = false)
@@ -86,20 +81,54 @@ public class EventEntity {
     @JoinColumn(name = "account_email", referencedColumnName = "email", nullable = false)
     private AccountEntity authorAccount;
 
-    @ManyToOne
-    @JoinColumn(name = "event_category_id", referencedColumnName = "id", nullable = false)
-    private EventCategoryEntity eventCategory;
+    @ManyToMany(fetch = FetchType.LAZY,
+            cascade = {CascadeType.MERGE,
+                    CascadeType.DETACH, CascadeType.REFRESH})
+    @JoinTable(name = "event_category_has_event",
+            joinColumns = @JoinColumn(name = "event_id"),
+            inverseJoinColumns = @JoinColumn(name = "event_category_id"))
+    private List<EventCategoryEntity> eventCategories = new ArrayList<>();
+
+    public void addCategory(EventCategoryEntity eventCategoryEntity) {
+        if (eventCategories.contains(eventCategoryEntity)) {
+            return;
+        }
+        eventCategories.add(eventCategoryEntity);
+    }
 
     @ManyToOne
     @JoinColumn(name = "status_id", referencedColumnName = "id", nullable = false)
     private StatusEntity status;
 
     @OneToMany(
+            fetch = FetchType.LAZY,
             mappedBy = "event",
             cascade = {CascadeType.PERSIST, CascadeType.MERGE,
                     CascadeType.DETACH, CascadeType.REFRESH}
     )
-    private Set<EventHasAccountEntity> EventAccount = new HashSet<>();
+    @Getter(value = AccessLevel.NONE)
+    private Set<EventHasAccountEntity> eventAccount = new HashSet<>();
+
+    //Methods to add and remove EventHasAccount to avoid infinite loop.
+    public Set<EventHasAccountEntity> getEventAccount() {
+        return Collections.unmodifiableSet(eventAccount);
+    }
+
+    public void addEventAccount(EventHasAccountEntity eventHasAccount) {
+        eventHasAccount.setEvent(this);
+    }
+
+    public void removeEventAccount(EventHasAccountEntity eventHasAccount) {
+        eventHasAccount.setEvent(null);
+    }
+
+    public void internalAddEventAccount(EventHasAccountEntity eventHasAccount) {
+        eventAccount.add(eventHasAccount);
+    }
+
+    public void internalRemoveEventAccount(EventHasAccountEntity eventHasAccount) {
+        eventAccount.remove(eventHasAccount);
+    }
 
     @ManyToMany(fetch = FetchType.LAZY,
             cascade = {CascadeType.PERSIST, CascadeType.MERGE,

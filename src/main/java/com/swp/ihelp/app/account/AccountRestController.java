@@ -2,11 +2,17 @@ package com.swp.ihelp.app.account;
 
 import com.swp.ihelp.app.account.request.LoginRequest;
 import com.swp.ihelp.app.account.request.SignUpRequest;
+import com.swp.ihelp.app.account.response.AccountGeneralResponse;
 import com.swp.ihelp.app.account.response.LoginResponse;
+import com.swp.ihelp.app.account.response.ProfileResponse;
 import com.swp.ihelp.security.JwtTokenUtil;
 import com.swp.ihelp.security.UserDetailsServiceImpl;
 import io.jsonwebtoken.impl.DefaultClaims;
+import io.swagger.annotations.ApiImplicitParam;
+import org.apache.tomcat.util.json.JSONParser;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -17,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -35,7 +42,6 @@ public class AccountRestController {
     @Autowired
     private final AccountService accountService;
 
-
     public AccountRestController(AccountService accountService) {
         this.accountService = accountService;
     }
@@ -48,14 +54,15 @@ public class AccountRestController {
         return new LoginResponse(accessToken);
     }
 
+    @ApiImplicitParam(name = "isRefreshToken", value = "Set refresh token header", required = true, dataType = "string", paramType = "header", defaultValue = "true")
     @PostMapping("/refreshtoken")
-    public ResponseEntity refreshToken(HttpServletRequest request) throws Exception {
+    public LoginResponse refreshToken(HttpServletRequest request) throws Exception {
         DefaultClaims claims = (DefaultClaims) request.getAttribute("claims");
 
         Map<String, Object> expectedMap = getMapFromJwtToken(claims);
         String token = jwtTokenUtil.regenerateAccessToken(expectedMap, expectedMap.get("sub").toString());
 
-        return ResponseEntity.ok(token);
+        return new LoginResponse(token);
     }
 
     @PostMapping("/signup")
@@ -65,13 +72,48 @@ public class AccountRestController {
     }
 
     @GetMapping("/accounts/{email}")
-    public ResponseEntity findById(@PathVariable String email) throws Exception {
-        accountService.findById(email);
-        return ResponseEntity.ok("Found");
+    public ResponseEntity<ProfileResponse> findById(@PathVariable String email) throws Exception {
+        System.out.println(email);
+        ProfileResponse response = accountService.findById(email);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-//    @GetMapping("/accounts")
-//    public Page<AccountGeneralResponse>
+    @GetMapping("/accounts")
+    public ResponseEntity<List<AccountGeneralResponse>> findAll() throws Exception {
+        return new ResponseEntity<>(accountService.findAll(), HttpStatus.OK);
+    }
+
+    @GetMapping("/accounts/{email}/role")
+    public ResponseEntity<Map<String, Object>> findRoleById(@PathVariable String email) throws Exception {
+        String role = accountService.findRoleById(email);
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("role", role);
+        Map<String, Object> map = jsonObject.toMap();
+        return new ResponseEntity<>(map, HttpStatus.OK);
+    }
+
+    @GetMapping("/accounts/event/{eventId}")
+    public List<AccountGeneralResponse> findByEventId(@PathVariable String eventId) throws Exception {
+        return accountService.findByEventId(eventId);
+    }
+
+    @GetMapping("/accounts/service/{serviceId}")
+    public List<AccountGeneralResponse> findByServiceId(@PathVariable String serviceId) throws Exception {
+        return accountService.findByServiceId(serviceId);
+    }
+
+    @PutMapping("/accounts/{email}/status")
+    public void updateStatus(@PathVariable String email, @RequestBody String statusId) throws Exception {
+        accountService.updateStatus(email, statusId);
+    }
+
+    @PutMapping("/accounts/{email}/reset_password")
+    public void updatePassword(@PathVariable String email, @RequestBody String password) throws Exception {
+        accountService.updatePassword(email, password);
+    }
+
+//    @PutMapping("/accounts")
+//    public ProfileResponse update(@RequestBody ProfileUpdateRequest request) throws Exception {
 
     private void authenticate(String email, String password) throws Exception {
         try {

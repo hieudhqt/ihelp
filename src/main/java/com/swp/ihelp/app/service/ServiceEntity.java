@@ -1,10 +1,10 @@
 package com.swp.ihelp.app.service;
 
 import com.swp.ihelp.app.account.AccountEntity;
-import com.swp.ihelp.app.entity.StatusEntity;
 import com.swp.ihelp.app.image.ImageEntity;
+import com.swp.ihelp.app.servicecategory.ServiceCategoryEntity;
 import com.swp.ihelp.app.servicejointable.ServiceHasAccountEntity;
-import com.swp.ihelp.app.servicetype.ServiceTypeEntity;
+import com.swp.ihelp.app.status.StatusEntity;
 import com.swp.ihelp.config.StringPrefixedSequenceIdGenerator;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -16,6 +16,8 @@ import org.hibernate.annotations.Parameter;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.sql.Timestamp;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -67,15 +69,15 @@ public class ServiceEntity {
 
     @Basic
     @Column(name = "created_date", nullable = false)
-    private long createdDate;
+    private Timestamp createdDate;
 
     @Basic
     @Column(name = "start_date", nullable = false)
-    private long startDate;
+    private Timestamp startDate;
 
     @Basic
     @Column(name = "end_date", nullable = false)
-    private long endDate;
+    private Timestamp endDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_email", referencedColumnName = "email", nullable = false)
@@ -85,16 +87,40 @@ public class ServiceEntity {
     @JoinColumn(name = "status_id", referencedColumnName = "id", nullable = false)
     private StatusEntity status;
 
-    @ManyToOne
-    @JoinColumn(name = "service_type_id", referencedColumnName = "id", nullable = false)
-    private ServiceTypeEntity serviceType;
+    @ManyToMany(fetch = FetchType.LAZY,
+            cascade = {CascadeType.PERSIST, CascadeType.MERGE,
+                    CascadeType.DETACH, CascadeType.REFRESH})
+    @JoinTable(name = "service_category_has_service",
+            joinColumns = @JoinColumn(name = "service_id"),
+            inverseJoinColumns = @JoinColumn(name = "service_category_id"))
+    private List<ServiceCategoryEntity> categories;
 
     @OneToMany(
             mappedBy = "service",
             cascade = {CascadeType.PERSIST, CascadeType.MERGE,
                     CascadeType.DETACH, CascadeType.REFRESH}
     )
-    private Set<ServiceHasAccountEntity> ServiceAccount = new HashSet<>();
+    private Set<ServiceHasAccountEntity> serviceAccount = new HashSet<>();
+
+    public Set<ServiceHasAccountEntity> getServiceAccount() {
+        return Collections.unmodifiableSet(serviceAccount);
+    }
+
+    public void addServiceAccount(ServiceHasAccountEntity serviceHasAccount) {
+        serviceHasAccount.setService(this);
+    }
+
+    public void removeServiceAccount(ServiceHasAccountEntity serviceHasAccount) {
+        serviceHasAccount.setService(null);
+    }
+
+    public void internalAddServiceAccount(ServiceHasAccountEntity serviceHasAccount) {
+        serviceAccount.add(serviceHasAccount);
+    }
+
+    public void internalRemoveServiceAccount(ServiceHasAccountEntity serviceHasAccount) {
+        serviceAccount.remove(serviceHasAccount);
+    }
 
     @ManyToMany(fetch = FetchType.LAZY,
             cascade = {CascadeType.PERSIST, CascadeType.MERGE,

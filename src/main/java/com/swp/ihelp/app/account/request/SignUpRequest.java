@@ -11,6 +11,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.io.Serializable;
+import java.sql.Date;
 
 @Data
 @NoArgsConstructor
@@ -26,16 +27,13 @@ public class SignUpRequest implements Serializable {
 
     private String phone;
 
-    private long dateOfBirth;
+    private Date dateOfBirth;
 
     private boolean gender;
 
     public static AccountEntity convertToEntity(SignUpRequest request) {
         PasswordEncoder encoder = new BCryptPasswordEncoder();
-        System.out.println("unencoded:" + request.getPassword());
-        System.out.println("encoded:" + encoder.encode(request.getPassword()));
         RoleEntity signUpRole = new RoleEntity("user", "User");
-        System.out.println("role:" + signUpRole);
         AccountStatusEntity signUpStatus = new AccountStatusEntity("1", "valid");
         return new AccountEntity()
                 .setEmail(request.getEmail())
@@ -45,8 +43,8 @@ public class SignUpRequest implements Serializable {
                 .setDateOfBirth(request.getDateOfBirth())
                 .setGender(request.isGender())
                 .setBalancePoint(0)
-                .setCumulativePoint(0)
-                .setCreatedDate(System.currentTimeMillis())
+                .setContributionPoint(0)
+                .setCreatedDate(new Date(System.currentTimeMillis()))
                 .setRole(signUpRole)
                 .setStatus(signUpStatus);
     }

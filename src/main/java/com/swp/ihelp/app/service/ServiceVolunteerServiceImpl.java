@@ -5,16 +5,22 @@ import com.swp.ihelp.app.account.AccountRepository;
 import com.swp.ihelp.app.point.PointEntity;
 import com.swp.ihelp.app.point.PointRepository;
 import com.swp.ihelp.app.service.mapper.ServiceMapper;
-import com.swp.ihelp.app.service.request.ServiceRequest;
+import com.swp.ihelp.app.service.request.CreateServiceRequest;
+import com.swp.ihelp.app.service.request.UpdateServiceRequest;
 import com.swp.ihelp.app.service.response.ServiceDetailResponse;
 import com.swp.ihelp.app.service.response.ServiceResponse;
 import com.swp.ihelp.app.servicejointable.ServiceHasAccountEntity;
-import com.swp.ihelp.exception.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
+import java.sql.Timestamp;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -23,6 +29,9 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
     private ServiceRepository serviceRepository;
     private AccountRepository accountRepository;
     private PointRepository pointRepository;
+
+    @Value("${paging.page-size}")
+    private int pageSize;
 
     @Autowired
     private ServiceMapper mapper;
@@ -35,9 +44,12 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
     }
 
     @Override
-    public List<ServiceResponse> findAll() throws Exception {
-        List<ServiceEntity> serviceEntityList = serviceRepository.findAll();
-        return getServiceResponses(serviceEntityList);
+    public Map<String, Object> findAll(int page) throws Exception {
+        Pageable paging = PageRequest.of(page, pageSize);
+        Page<ServiceEntity> pageServices = serviceRepository.findAll(paging);
+
+        Map<String, Object> response = getServiceResponseMap(pageServices);
+        return response;
     }
 
     @Override
@@ -46,7 +58,7 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
         ServiceDetailResponse service = null;
         if (result.isPresent()) {
             service = new ServiceDetailResponse(result.get());
-            int remainingSpots = serviceRepository.getRemainingSpots(id);
+            int remainingSpots = serviceRepository.getUsedSpot(id);
             int quota = service.getQuota();
             if (quota >= remainingSpots) {
                 service.setSpot(quota - remainingSpots);
@@ -60,35 +72,50 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
     }
 
     @Override
-    public List<ServiceResponse> findByTitle(String title) throws Exception {
-        List<ServiceEntity> serviceEntityList = serviceRepository.findByTitle(title);
-        return getServiceResponses(serviceEntityList);
+    public Map<String, Object> findByTitle(String title, int page) throws Exception {
+        Pageable paging = PageRequest.of(page, pageSize);
+        Page<ServiceEntity> pageServices = serviceRepository.findByTitle(title, paging);
+
+        Map<String, Object> response = getServiceResponseMap(pageServices);
+        return response;
+    }
+
+//    @Override
+//    public Map<String, Object> findByServiceTypeId(int serviceTypeId, int page) throws Exception {
+//        Pageable paging = PageRequest.of(page, pageSize);
+//        Page<ServiceEntity> pageServices = serviceRepository
+//                .findByServiceTypeId(serviceTypeId, paging);
+//
+//        Map<String, Object> response = getServiceResponseMap(pageServices);
+//        return response;
+//    }
+
+    @Override
+    public Map<String, Object> findByStatusId(int statusId, int page) throws Exception {
+        Pageable paging = PageRequest.of(page, pageSize);
+        Page<ServiceEntity> pageServices = serviceRepository
+                .findByServiceStatusId(statusId, paging);
+
+        Map<String, Object> response = getServiceResponseMap(pageServices);
+        return response;
     }
 
     @Override
-    public List<ServiceResponse> findByServiceTypeId(int serviceTypeId) throws Exception {
-        List<ServiceEntity> serviceEntityList = serviceRepository.findByServiceTypeId(serviceTypeId);
-        return getServiceResponses(serviceEntityList);
+    public Map<String, Object> findByAuthorEmail(String email, int page) throws Exception {
+        Pageable paging = PageRequest.of(page, pageSize);
+        Page<ServiceEntity> pageServices = serviceRepository
+                .findByAuthorEmail(email, paging);
+
+        Map<String, Object> response = getServiceResponseMap(pageServices);
+        return response;
     }
 
     @Override
-    public List<ServiceResponse> findByStatusId(int statusId) throws Exception {
-        List<ServiceEntity> serviceEntityList = serviceRepository.findByServiceStatusId(statusId);
-        return getServiceResponses(serviceEntityList);
-    }
-
-    @Override
-    public List<ServiceResponse> findByAuthorEmail(String email) throws Exception {
-        List<ServiceEntity> serviceEntityList = serviceRepository.findByAuthorEmail(email);
-        return getServiceResponses(serviceEntityList);
-    }
-
-    @Override
-    public void insert(ServiceRequest request) throws Exception {
-        ServiceEntity serviceEntity = ServiceRequest.convertToEntity(request);
-        if (serviceEntity.getStartDate() >= serviceEntity.getEndDate()) {
-            throw new RuntimeException("Start date must be before end date.");
-        }
+    public void insert(CreateServiceRequest request) throws Exception {
+        ServiceEntity serviceEntity = CreateServiceRequest.convertToEntity(request);
+//        if (serviceEntity.getStartDate() >= serviceEntity.getEndDate()) {
+//            throw new RuntimeException("Start date must be before end date.");
+//        }
 //        if (serviceEntity.getStartDate() < minStartDate) {
 //            throw new RuntimeException("Start date must be at least 3 days after create date.");
 //        }
@@ -97,16 +124,16 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
     }
 
     @Override
-    public void patch(ServiceRequest request) throws Exception {
+    public void patch(UpdateServiceRequest request) throws Exception {
         ServiceEntity entity = serviceRepository.getOne(request.getId());
         mapper.updateServiceFromRequest(request, entity);
         serviceRepository.save(entity);
     }
 
     @Override
-    public void update(ServiceRequest request) throws Exception {
-        ServiceEntity entity = ServiceRequest.convertToEntityWithId(request);
-        serviceRepository.save(entity);
+    public void update(UpdateServiceRequest request) throws Exception {
+        ServiceEntity entity = UpdateServiceRequest.convertToEntityWithId(request);
+        serviceRepository.update(entity);
     }
 
     @Override
@@ -152,9 +179,9 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
 
         int servicePoint = service.getPoint();
 
-        userAccount.setBalancePoint(userAccount.getBalancePoint() - servicePoint);
-        authorAccount.setBalancePoint(authorAccount.getBalancePoint() + servicePoint);
-        authorAccount.setCumulativePoint(authorAccount.getCumulativePoint() + servicePoint);
+        userAccount.decreaseBalancePoint(servicePoint);
+        authorAccount.addBalancePoint(servicePoint);
+        authorAccount.addContributionPoint(servicePoint);
         accountRepository.save(authorAccount);
         accountRepository.save(userAccount);
 
@@ -169,71 +196,67 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
         if (!service.getStatus().getName().equals("Approved")) {
             check = false;
         }
-        if (service.getStartDate() > currentDateInMillis
-                || service.getEndDate() < currentDateInMillis) {
-            check = false;
-        }
-        int remainingSpots = serviceRepository.getRemainingSpots(service.getId());
-        if (remainingSpots < 1) {
+//        if (service.getStartDate() > currentDateInMillis
+//                || service.getEndDate() < currentDateInMillis) {
+//            check = false;
+//        }
+        int remainingSpots = serviceRepository.getUsedSpot(service.getId());
+        if (remainingSpots == service.getQuota()) {
             check = false;
         }
         return check;
     }
 
     private void savePoint(int amount, AccountEntity authorAccount, AccountEntity userAccount, ServiceEntity serviceEntity) throws Exception {
+        Timestamp currentTimestamp = new Timestamp(System.currentTimeMillis());
+
         PointEntity senderPoint = new PointEntity();
         senderPoint.setAmount(amount);
         senderPoint.setAccount(userAccount);
-        senderPoint.setCreatedDate(new Date().getTime());
+        senderPoint.setCreatedDate(currentTimestamp);
         senderPoint.setIsReceived(false);
-        senderPoint.setDescription("Account " + userAccount.getEmail() + " used service: " + serviceEntity.getId());
+        senderPoint.setDescription("Account " + userAccount.getEmail() +
+                " used service: " + serviceEntity.getId());
         senderPoint.setService(serviceEntity);
 
         PointEntity receiverPoint = new PointEntity();
         receiverPoint.setAmount(amount);
         receiverPoint.setAccount(authorAccount);
-        receiverPoint.setCreatedDate(new Date().getTime());
+        receiverPoint.setCreatedDate(currentTimestamp);
         receiverPoint.setIsReceived(true);
-        receiverPoint.setDescription("Account " + authorAccount.getEmail() + " received point for providing service: " + serviceEntity.getId());
+        receiverPoint.setDescription("Account " + authorAccount.getEmail() +
+                " received point for providing service: " + serviceEntity.getId());
         receiverPoint.setService(serviceEntity);
 
         pointRepository.save(senderPoint);
         pointRepository.save(receiverPoint);
     }
 
-    private List<ServiceResponse> convertToResponseObject(List<ServiceEntity> serviceEntityList)
+    private List<ServiceResponse> convertEntitesToResponses(List<ServiceEntity> serviceEntityList)
             throws Exception {
-        if (serviceEntityList.isEmpty()) {
-            throw new EntityNotFoundException("No service found.");
-        }
-        return ServiceResponse.convertToResponseList(serviceEntityList);
-    }
-
-    private List<ServiceDetailResponse> getServiceDetailResponses(List<ServiceEntity> serviceEntityList) throws Exception {
-        List<ServiceDetailResponse> result = ServiceDetailResponse.convertToResponseList(serviceEntityList);
-        for (ServiceDetailResponse response : result) {
-            int remainingSpots = serviceRepository.getRemainingSpots(response.getId());
-            int quota = response.getQuota();
-            if (quota >= remainingSpots) {
-                response.setSpot(quota - remainingSpots);
-            } else {
-                response.setSpot(0);
-            }
-        }
-        return result;
-    }
-
-    private List<ServiceResponse> getServiceResponses(List<ServiceEntity> serviceEntityList) throws Exception {
-        List<ServiceResponse> result = convertToResponseObject(serviceEntityList);
+        List<ServiceResponse> result = ServiceResponse.convertToResponseList(serviceEntityList);
         for (ServiceResponse response : result) {
-            int remainingSpots = serviceRepository.getRemainingSpots(response.getId());
+            int remainingSpot = serviceRepository.getUsedSpot(response.getId());
             int quota = serviceRepository.getQuota(response.getId());
-            if (quota >= remainingSpots) {
-                response.setSpot(quota - remainingSpots);
+            if (quota >= remainingSpot) {
+                response.setSpot(quota - remainingSpot);
             } else {
                 response.setSpot(0);
             }
         }
         return result;
+    }
+
+    private Map<String, Object> getServiceResponseMap(Page<ServiceEntity> pageServices) throws Exception {
+        List<ServiceEntity> serviceEntityList = pageServices.getContent();
+        List<ServiceResponse> serviceResponses = convertEntitesToResponses(serviceEntityList);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("services", serviceResponses);
+        response.put("currentPage", pageServices.getNumber());
+        response.put("totalItems", pageServices.getTotalElements());
+        response.put("totalPages", pageServices.getTotalPages());
+
+        return response;
     }
 }
