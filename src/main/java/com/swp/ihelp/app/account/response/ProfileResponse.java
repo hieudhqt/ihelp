@@ -7,15 +7,13 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
 import java.io.Serializable;
-import java.sql.Date;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Date;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Accessors(chain = true)
-public class AccountGeneralResponse implements Serializable {
+public class ProfileResponse implements Serializable  {
 
     private String email;
 
@@ -33,9 +31,15 @@ public class AccountGeneralResponse implements Serializable {
 
     private int contributionPoint;
 
-    private Date createdDate;
+    private int totalJoinedEvents;
 
-    public AccountGeneralResponse(AccountEntity accountEntity) {
+    private int totalHostEvents;
+
+    private int totalUsedServices;
+
+    private int totalHostServices;
+
+    public ProfileResponse(AccountEntity accountEntity) {
         this.email = accountEntity.getEmail();
         this.fullname = accountEntity.getFullName();
         this.phone = accountEntity.getPhone();
@@ -43,14 +47,6 @@ public class AccountGeneralResponse implements Serializable {
         this.gender = accountEntity.getGender();
         this.balancePoint = accountEntity.getBalancePoint();
         this.contributionPoint = accountEntity.getContributionPoint();
-        this.createdDate = accountEntity.getCreatedDate();
     }
 
-    public static List<AccountGeneralResponse> convertToListResponse(List<AccountEntity> entityList) {
-        List<AccountGeneralResponse> result = new ArrayList<>();
-        for (AccountEntity accountEntity : entityList) {
-            result.add(new AccountGeneralResponse(accountEntity));
-        }
-        return result;
-    }
 }

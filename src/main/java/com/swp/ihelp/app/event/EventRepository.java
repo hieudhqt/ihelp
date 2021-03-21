@@ -71,5 +71,10 @@ public interface EventRepository extends JpaRepository<EventEntity, String> {
             "ORDER BY e.start_date ASC Limit 1 ", nativeQuery = true)
     Date getNearestEventStartDate(String email, String date);
 
+    @Query("SELECT COUNT(e.id.accountEmail) FROM EventHasAccountEntity e WHERE e.id.accountEmail=:email")
+    int getTotalJoinedEvents(String email);
+
+    @Query("SELECT COUNT(e) FROM EventEntity e WHERE e.authorAccount.email=:email")
+    int getTotalHostEvents(String email);
 }
 

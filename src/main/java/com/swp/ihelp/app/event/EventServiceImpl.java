@@ -164,7 +164,6 @@ public class EventServiceImpl implements EventService {
 
         EventEntity eventEntity = CreateEventRequest.convertToEntity(event);
         List<ImageRequest> imageRequests = event.getImages();
-        System.out.println("size:" + eventEntity.getEventCategories().size());
         if (imageRequests != null) {
             for (ImageRequest imageRequest : imageRequests) {
                 ImageEntity imageEntity = ImageRequest.convertRequestToEntity(imageRequest);

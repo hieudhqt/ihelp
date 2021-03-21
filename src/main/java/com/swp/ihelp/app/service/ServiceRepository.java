@@ -45,4 +45,10 @@ public interface ServiceRepository extends JpaRepository<ServiceEntity, String> 
     @Query(value = "UPDATE ihelp.service s SET s.status_id = :statusId WHERE s.id = :serviceId",
             nativeQuery = true)
     void updateStatus(String serviceId, int statusId);
+
+    @Query("SELECT COUNT(s.id.serviceId) FROM ServiceHasAccountEntity s WHERE s.id.accountEmail=:email")
+    int getTotalUsedServices(String email);
+
+    @Query("SELECT COUNT(s) FROM ServiceEntity s WHERE s.authorAccount.email=:email")
+    int getTotalHostServices(String email);
 }

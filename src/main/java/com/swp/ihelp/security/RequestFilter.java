@@ -51,7 +51,7 @@ public class RequestFilter extends OncePerRequestFilter {
                     httpServletRequest.setAttribute("Exception", ex);
                 }
             } catch (BadCredentialsException ex) {
-                logger.warn("JWT Token has bad credentials.");
+                httpServletRequest.setAttribute("Exception", ex);
             }
         } else {
             logger.warn("JWT Token does not begin with Bearer String.");
