@@ -1,5 +1,6 @@
 package com.swp.ihelp.app.account.request;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.swp.ihelp.app.account.AccountEntity;
 import com.swp.ihelp.app.entity.AccountStatusEntity;
 import com.swp.ihelp.app.entity.RoleEntity;
@@ -27,6 +28,7 @@ public class SignUpRequest implements Serializable {
 
     private String phone;
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Ho-Chi-Minh")
     private Date dateOfBirth;
 
     private boolean gender;
