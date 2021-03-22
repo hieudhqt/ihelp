@@ -1,5 +1,6 @@
 package com.swp.ihelp.app.account.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.swp.ihelp.app.account.AccountEntity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -21,6 +22,7 @@ public class ProfileResponse implements Serializable  {
 
     private String phone;
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Ho-Chi-Minh")
     private Date dateOfBirth;
 
     private String imageUrl;
