@@ -27,11 +27,11 @@ public class AccountGeneralResponse implements Serializable {
 
     private String imageUrl;
 
-    private boolean gender;
+    private Boolean gender;
 
-    private int balancePoint;
+    private Integer balancePoint;
 
-    private int contributionPoint;
+    private Integer contributionPoint;
 
     private Date createdDate;
 

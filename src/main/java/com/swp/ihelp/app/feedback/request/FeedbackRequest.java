@@ -9,7 +9,7 @@ import java.sql.Timestamp;
 
 @Data
 public class FeedbackRequest implements Serializable {
-    private int rating;
+    private Integer rating;
     private String comment;
     private String accountEmail;
 

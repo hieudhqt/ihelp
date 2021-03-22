@@ -54,11 +54,11 @@ public class EventEntity {
 
     @Basic
     @Column(name = "quota", nullable = true)
-    private int quota;
+    private Integer quota;
 
     @Basic
     @Column(name = "point", nullable = true)
-    private int point;
+    private Integer point;
 
     @Basic
     @Column(name = "created_date", nullable = true)

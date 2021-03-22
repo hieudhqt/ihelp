@@ -1,6 +1,7 @@
 package com.swp.ihelp.app.account;
 
 import com.swp.ihelp.app.account.request.LoginRequest;
+import com.swp.ihelp.app.account.request.ProfileUpdateRequest;
 import com.swp.ihelp.app.account.request.SignUpRequest;
 import com.swp.ihelp.app.account.response.AccountGeneralResponse;
 import com.swp.ihelp.app.account.response.LoginResponse;
@@ -54,7 +55,7 @@ public class AccountRestController {
         return new LoginResponse(accessToken);
     }
 
-    @ApiImplicitParam(name = "isRefreshToken", value = "Set refresh token header", required = true, dataType = "string", paramType = "header", defaultValue = "true")
+    @ApiImplicitParam(name = "isRefreshToken", value = "Set refresh token header", required = true, dataTypeClass = String.class, paramType = "header", defaultValue = "true")
     @PostMapping("/refreshtoken")
     public LoginResponse refreshToken(HttpServletRequest request) throws Exception {
         DefaultClaims claims = (DefaultClaims) request.getAttribute("claims");
@@ -112,8 +113,10 @@ public class AccountRestController {
         accountService.updatePassword(email, password);
     }
 
-//    @PutMapping("/accounts")
-//    public ProfileResponse update(@RequestBody ProfileUpdateRequest request) throws Exception {
+    @PutMapping("/accounts")
+    public ProfileResponse update(@RequestBody ProfileUpdateRequest request) throws Exception {
+        return accountService.update(request);
+    }
 
     private void authenticate(String email, String password) throws Exception {
         try {

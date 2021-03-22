@@ -13,7 +13,7 @@ public class EvaluationRequest implements Serializable {
     @NotBlank
     private String memberEmail;
     @Min(1)
-    private int rating;
+    private Integer rating;
     private String comment;
 
 }

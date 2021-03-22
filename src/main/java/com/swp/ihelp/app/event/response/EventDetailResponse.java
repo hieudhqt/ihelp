@@ -21,9 +21,9 @@ public class EventDetailResponse implements Serializable {
     private String title;
     private String description;
     private String location;
-    private int point;
-    private int quota;
-    private int spot;
+    private Integer point;
+    private Integer quota;
+    private Integer spot;
     @JsonFormat(shape = JsonFormat.Shape.STRING,
             pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Ho_Chi_Minh")
     private Timestamp createdDate;

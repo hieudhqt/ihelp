@@ -18,7 +18,7 @@ public class ServiceCategoryEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false, length = 20)
-    private int id;
+    private Integer id;
 
     @Basic
     @Column(name = "name", nullable = false, length = 50)

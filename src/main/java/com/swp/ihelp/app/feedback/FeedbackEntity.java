@@ -37,7 +37,7 @@ public class FeedbackEntity {
 
     @Basic
     @Column(name = "rating", nullable = true)
-    private int rating;
+    private Integer rating;
 
     @Basic
     @Column(name = "comment", nullable = true, length = 200)

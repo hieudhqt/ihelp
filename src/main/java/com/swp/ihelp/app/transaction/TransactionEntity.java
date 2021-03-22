@@ -32,7 +32,7 @@ public class TransactionEntity {
 
     @Basic
     @Column(name = "point", nullable = false)
-    private int point;
+    private Integer point;
 
     @Basic
     @Column(name = "description", nullable = true, length = 200)

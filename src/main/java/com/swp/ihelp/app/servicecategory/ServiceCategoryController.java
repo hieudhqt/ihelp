@@ -16,29 +16,29 @@ public class ServiceCategoryController {
         this.serviceCategoryService = serviceCategoryService;
     }
 
-    @GetMapping("/service-type")
+    @GetMapping("/service-categories")
     public List<ServiceCategoryEntity> findAll() throws Exception {
         return serviceCategoryService.findAll();
     }
 
-    @GetMapping("/service-type/{typeId}")
+    @GetMapping("/service-categories/{typeId}")
     public ServiceCategoryEntity findById(@PathVariable int typeId) throws Exception {
         return serviceCategoryService.findById(typeId);
     }
 
-    @PostMapping("/service-type")
+    @PostMapping("/service-categories")
     public ServiceCategoryEntity addServiceType(@RequestBody ServiceCategoryEntity type) throws Exception {
         serviceCategoryService.save(type);
         return type;
     }
 
-    @PutMapping("/service-type")
+    @PutMapping("/service-categories")
     public ServiceCategoryEntity updateEventCategory(@RequestBody ServiceCategoryEntity type) throws Exception {
         serviceCategoryService.save(type);
         return type;
     }
 
-    @DeleteMapping("/service-type/{typeId}")
+    @DeleteMapping("/service-categories/{typeId}")
     public String deleteEvent(@PathVariable int typeId) throws Exception {
         ServiceCategoryEntity category = serviceCategoryService.findById(typeId);
         if (category == null) {

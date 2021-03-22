@@ -1,5 +1,6 @@
 package com.swp.ihelp.app.account;
 
+import com.swp.ihelp.app.account.request.ProfileUpdateRequest;
 import com.swp.ihelp.app.account.request.SignUpRequest;
 import com.swp.ihelp.app.account.response.AccountGeneralResponse;
 import com.swp.ihelp.app.account.response.ProfileResponse;
@@ -17,7 +18,7 @@ public interface AccountService {
 
     String findRoleById(String email) throws Exception;
 
-//    ProfileResponse update(ProfileUpdateRequest request) throws Exception;
+    ProfileResponse update(ProfileUpdateRequest request) throws Exception;
 
     boolean delete(String email) throws Exception;
 

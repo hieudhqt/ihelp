@@ -8,7 +8,7 @@ import java.io.Serializable;
 
 @Data
 public class TransactionRequest implements Serializable {
-    private int point;
+    private Integer point;
     private String description;
     private String senderEmail;
     private String receiverEmail;

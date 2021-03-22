@@ -58,11 +58,11 @@ public class ServiceEntity {
 
     @Basic
     @Column(name = "quota", nullable = false)
-    private int quota;
+    private Integer quota;
 
     @Basic
     @Column(name = "point", nullable = false)
-    private int point;
+    private Integer point;
 
     @Basic
     @Column(name = "created_date", nullable = false)

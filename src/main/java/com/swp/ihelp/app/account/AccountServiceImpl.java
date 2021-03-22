@@ -1,5 +1,6 @@
 package com.swp.ihelp.app.account;
 
+import com.swp.ihelp.app.account.request.ProfileUpdateRequest;
 import com.swp.ihelp.app.account.request.SignUpRequest;
 import com.swp.ihelp.app.account.response.AccountGeneralResponse;
 import com.swp.ihelp.app.account.response.ProfileResponse;
@@ -7,12 +8,14 @@ import com.swp.ihelp.app.event.EventRepository;
 import com.swp.ihelp.app.image.ImageRepository;
 import com.swp.ihelp.app.service.ServiceRepository;
 import com.swp.ihelp.exception.EntityExistedException;
+import com.swp.ihelp.exception.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -60,7 +63,6 @@ public class AccountServiceImpl implements AccountService {
             totalUsedServices = serviceRepository.getTotalUsedServices(email);
             totalHostServices = serviceRepository.getTotalHostServices(email);
             imageUrl = imageRepository.findAvatarByEmail(email);
-            System.out.println(totalJoinedEvents + " " + totalHostEvents + " " + totalUsedServices + " " + totalHostServices + " " + imageUrl);
         } else {
             throw new RuntimeException("Do not find account!");
         }
@@ -86,6 +88,31 @@ public class AccountServiceImpl implements AccountService {
             role = accountRepository.findRoleByEmail(email);
         }
         return role;
+    }
+
+    @Override
+    public ProfileResponse update(ProfileUpdateRequest request) throws Exception {
+        if (!accountRepository.existsById(request.getEmail())) {
+            throw new EntityNotFoundException("Account " + request.getEmail() + " does not exist");
+        }
+        AccountEntity accountEntity = accountRepository.getOne(request.getEmail());
+        accountEntity.setFullName(request.getFullname());
+        accountEntity.setPhone(request.getPhone());
+        accountEntity.setGender(request.getGender());
+        accountEntity.setDateOfBirth(new Date(request.getDateOfBirth().getTime()));
+
+        int totalJoinedEvents = eventRepository.getTotalJoinedEvents(request.getEmail());
+        int totalHostEvents = eventRepository.getTotalHostEvents(request.getEmail());
+        int totalUsedServices = serviceRepository.getTotalUsedServices(request.getEmail());
+        int totalHostServices = serviceRepository.getTotalHostServices(request.getEmail());
+        String imageUrl = imageRepository.findAvatarByEmail(request.getEmail());
+
+        return new ProfileResponse(accountRepository.save(accountEntity))
+                .setTotalJoinedEvents(totalJoinedEvents)
+                .setTotalHostEvents(totalHostEvents)
+                .setTotalUsedServices(totalUsedServices)
+                .setTotalHostServices(totalHostServices)
+                .setImageUrl(imageUrl);
     }
 
     @Override

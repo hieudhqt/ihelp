@@ -34,7 +34,7 @@ public class PointEntity {
 
     @Basic
     @Column(name = "amount", nullable = true)
-    private int amount;
+    private Integer amount;
 
     @Basic
     @Column(name = "description", nullable = true, length = 1000)

@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
 import java.io.Serializable;
-import java.util.Date;
+import java.sql.Date;
 
 @Data
 @AllArgsConstructor
@@ -25,11 +25,11 @@ public class ProfileResponse implements Serializable  {
 
     private String imageUrl;
 
-    private boolean gender;
+    private Boolean gender;
 
-    private int balancePoint;
+    private Integer balancePoint;
 
-    private int contributionPoint;
+    private Integer contributionPoint;
 
     private int totalJoinedEvents;
 

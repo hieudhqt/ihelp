@@ -28,10 +28,10 @@ public class UpdateServiceRequest implements Serializable {
     private String location;
 
     @Min(0)
-    private int quota;
+    private Integer quota;
 
     @Min(0)
-    private int point;
+    private Integer point;
 
     @NotNull
     @JsonFormat(shape = JsonFormat.Shape.STRING,

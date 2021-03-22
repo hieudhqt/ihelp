@@ -29,10 +29,10 @@ public class CreateEventRequest implements Serializable {
     private String location;
 
     @Min(0)
-    private int quota;
+    private Integer quota;
 
     @Min(0)
-    private int point;
+    private Integer point;
 
     @NotNull
     @JsonFormat(shape = JsonFormat.Shape.STRING,
@@ -48,7 +48,7 @@ public class CreateEventRequest implements Serializable {
     private String authorEmail;
 
     @NotNull(message = "Status ID cannot be null.")
-    private int statusId;
+    private Integer statusId;
 
     private List<Integer> categoryIds;
 

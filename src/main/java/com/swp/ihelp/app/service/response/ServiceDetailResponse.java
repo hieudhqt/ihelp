@@ -20,9 +20,9 @@ public class ServiceDetailResponse implements Serializable {
     private String title;
     private String description;
     private String location;
-    private int point;
-    private int quota;
-    private int spot;
+    private Integer point;
+    private Integer quota;
+    private Integer spot;
     private Timestamp createdDate;
     private Timestamp startDate;
     private Timestamp endDate;
