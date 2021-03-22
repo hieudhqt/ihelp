@@ -74,7 +74,6 @@ public class AccountRestController {
 
     @GetMapping("/accounts/{email}")
     public ResponseEntity<ProfileResponse> findById(@PathVariable String email) throws Exception {
-        System.out.println(email);
         ProfileResponse response = accountService.findById(email);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
