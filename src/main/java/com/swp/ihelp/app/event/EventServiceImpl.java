@@ -375,25 +375,25 @@ public class EventServiceImpl implements EventService {
         String errorMsg = "";
 
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
-        String startDateString = dateFormat.format(event.getStartDate());
-        String endDateString = dateFormat.format(event.getEndDate());
-
-        Date nearestStartDate = eventRepository.getNearestEventStartDate(event.getAuthorEmail(),
-                startDateString);
-        Date nearestEndDate = eventRepository.getNearestEventEndDate(event.getAuthorEmail(),
-                endDateString);
-
-        if (nearestStartDate != null) {
-            if (nearestStartDate.before(event.getEndDate())) {
-                errorMsg += "You have an event that starts on the same date as your end date; ";
-            }
-        }
-        if (nearestEndDate != null) {
-            if ((event.getStartDate().getTime() - nearestEndDate.getTime()) <= minStartDateFromNearestEndDate) {
-                errorMsg += "Start date must be at least 1 day after the previous event ended; ";
-            }
-        }
+//
+//        String startDateString = dateFormat.format(event.getStartDate());
+//        String endDateString = dateFormat.format(event.getEndDate());
+//
+//        Date nearestStartDate = eventRepository.getNearestEventStartDate(event.getAuthorEmail(),
+//                startDateString);
+//        Date nearestEndDate = eventRepository.getNearestEventEndDate(event.getAuthorEmail(),
+//                endDateString);
+//
+//        if (nearestStartDate != null) {
+//            if (nearestStartDate.before(event.getEndDate())) {
+//                errorMsg += "You have an event that starts on the same date as your end date; ";
+//            }
+//        }
+//        if (nearestEndDate != null) {
+//            if ((event.getStartDate().getTime() - nearestEndDate.getTime()) <= minStartDateFromNearestEndDate) {
+//                errorMsg += "Start date must be at least 1 day after the previous event ended; ";
+//            }
+//        }
 
         if (event.getStartDate().getTime() - System.currentTimeMillis() < minStartDateFromCreate) {
             errorMsg += "Start date must be at least " + minStartDateFromCreate +
