@@ -38,7 +38,7 @@ public class EventResponse implements Serializable {
 
     private String authorEmail;
 
-    private String authorFullName;
+//    private String authorFullName;
 
     private StatusEntity status;
 
@@ -54,7 +54,7 @@ public class EventResponse implements Serializable {
         this.startDate = eventEntity.getStartDate();
         this.endDate = eventEntity.getEndDate();
         this.authorEmail = eventEntity.getAuthorAccount().getEmail();
-        this.authorFullName = eventEntity.getAuthorAccount().getFullName();
+//        this.authorFullName = eventEntity.getAuthorAccount().getFullName();
         this.status = eventEntity.getStatus();
         this.categories = eventEntity.getEventCategories();
         this.images = ImageResponse.convertToResponseList(eventEntity.getImages());

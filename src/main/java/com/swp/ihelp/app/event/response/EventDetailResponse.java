@@ -34,6 +34,8 @@ public class EventDetailResponse implements Serializable {
             pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Ho_Chi_Minh")
     private Timestamp endDate;
     private String accountEmail;
+    private String fullName;
+    private boolean isOnsite;
     private StatusEntity status;
     private List<EventCategoryEntity> categories;
     private List<ImageResponse> images;
@@ -48,7 +50,9 @@ public class EventDetailResponse implements Serializable {
         this.createdDate = eventEntity.getCreatedDate();
         this.startDate = eventEntity.getStartDate();
         this.endDate = eventEntity.getEndDate();
+        this.isOnsite = eventEntity.isOnsite();
         this.accountEmail = eventEntity.getAuthorAccount().getEmail();
+        this.fullName = eventEntity.getAuthorAccount().getFullName();
         this.images = ImageResponse.convertToResponseList(eventEntity.getImages());
         this.status = eventEntity.getStatus();
         this.categories = eventEntity.getEventCategories();

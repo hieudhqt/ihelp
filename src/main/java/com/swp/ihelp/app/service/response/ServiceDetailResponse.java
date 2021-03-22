@@ -27,6 +27,7 @@ public class ServiceDetailResponse implements Serializable {
     private Timestamp startDate;
     private Timestamp endDate;
     private String accountEmail;
+    private String fullName;
     private StatusEntity status;
     private List<ServiceCategoryEntity> categories;
     private List<ImageResponse> images;
@@ -42,6 +43,7 @@ public class ServiceDetailResponse implements Serializable {
         this.startDate = service.getStartDate();
         this.endDate = service.getEndDate();
         this.accountEmail = service.getAuthorAccount().getEmail();
+        this.fullName = service.getAuthorAccount().getFullName();
         this.images = ImageResponse.convertToResponseList(service.getImages());
         this.status = service.getStatus();
         this.categories = service.getCategories();
