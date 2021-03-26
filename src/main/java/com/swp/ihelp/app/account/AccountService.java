@@ -7,6 +7,7 @@ import com.swp.ihelp.app.account.response.ProfileResponse;
 import com.swp.ihelp.app.entity.AccountStatusEntity;
 
 import java.util.List;
+import java.util.Map;
 
 public interface AccountService {
 
@@ -22,9 +23,9 @@ public interface AccountService {
 
     boolean delete(String email) throws Exception;
 
-    List<AccountGeneralResponse> findByEventId(String eventId) throws Exception;
+    List<Map<String, Object>> findByEventId(String eventId) throws Exception;
 
-    List<AccountGeneralResponse> findByServiceId(String serviceId) throws Exception;
+    List<Map<String, Object>> findByServiceId(String serviceId) throws Exception;
 
     void updateStatus(String email, String statusId) throws Exception;
 

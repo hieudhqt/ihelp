@@ -1,4 +1,4 @@
-package com.swp.ihelp.app.entity;
+package com.swp.ihelp.app.reward;
 
 import com.swp.ihelp.app.account.AccountEntity;
 import com.swp.ihelp.app.event.EventEntity;

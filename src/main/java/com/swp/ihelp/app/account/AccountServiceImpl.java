@@ -3,6 +3,7 @@ package com.swp.ihelp.app.account;
 import com.swp.ihelp.app.account.request.ProfileUpdateRequest;
 import com.swp.ihelp.app.account.request.SignUpRequest;
 import com.swp.ihelp.app.account.response.AccountGeneralResponse;
+import com.swp.ihelp.app.account.response.ParticipantsMapping;
 import com.swp.ihelp.app.account.response.ProfileResponse;
 import com.swp.ihelp.app.event.EventRepository;
 import com.swp.ihelp.app.image.ImageRepository;
@@ -16,8 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class AccountServiceImpl implements AccountService {
@@ -127,15 +127,15 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public List<AccountGeneralResponse> findByEventId(String eventId) throws Exception {
-        List<AccountEntity> result = accountRepository.findByEventId(eventId);
-        return AccountGeneralResponse.convertToListResponse(result);
+    public List<Map<String, Object>> findByEventId(String eventId) throws Exception {
+        List<ParticipantsMapping> joinedAccount = accountRepository.findByEventId(eventId);
+        return convertMappingToParticipantResponse(joinedAccount);
     }
 
     @Override
-    public List<AccountGeneralResponse> findByServiceId(String serviceId) throws Exception {
-        List<AccountEntity> result = accountRepository.findByServiceId(serviceId);
-        return AccountGeneralResponse.convertToListResponse(result);
+    public List<Map<String, Object>> findByServiceId(String serviceId) throws Exception {
+        List<ParticipantsMapping> usedAccount = accountRepository.findByServiceId(serviceId);
+        return convertMappingToParticipantResponse(usedAccount);
     }
 
     @Override
@@ -147,6 +147,40 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public void updatePassword(String email, String password) throws Exception {
         accountRepository.updatePassword(email, encoder.encode(password));
+    }
+
+//    private List<Map<String, Object>> convertObjectToParticipantResponse(List<Object[]> participants) {
+//        List<Map<String, Object>> result = new ArrayList<>();
+//        if (!participants.isEmpty()) {
+//            for (Object obj[] : participants) {
+//                String email = (String) obj[0];
+//                String imageUrl = (String) obj[1];
+//                Map<String, Object> map = new HashMap<>();
+//                map.put("email", email);
+//                map.put("imageUrl", imageUrl);
+//                result.add(map);
+//            }
+//        }
+//        return result;
+//    }
+
+    private List<Map<String, Object>> convertMappingToParticipantResponse(List<ParticipantsMapping> participants) {
+        List<Map<String, Object>> result = new ArrayList<>();
+        if (!participants.isEmpty()) {
+            for (ParticipantsMapping obj : participants) {
+                String email = obj.getEmail();
+                String fullname = obj.getFullname();
+                String phone = obj.getPhone();
+                String imageUrl = obj.getImageUrl();
+                Map<String, Object> map = new HashMap<>();
+                map.put("email", email);
+                map.put("fullname", fullname);
+                map.put("phone", phone);
+                map.put("imageUrl", imageUrl);
+                result.add(map);
+            }
+        }
+        return result;
     }
 
 }
