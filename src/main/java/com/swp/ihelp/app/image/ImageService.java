@@ -14,6 +14,8 @@ public interface ImageService {
 
     void deleteById(String imageId) throws Exception;
 
+    String findAvatarByEmail(String email) throws Exception;
+
     List<ImageResponse> findByAuthorEmail(String email) throws Exception;
 //    List<ImageEntity> findByEventId(String email) throws Exception;
 //    List<ImageEntity> findByServiceId(String email) throws Exception;

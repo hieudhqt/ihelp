@@ -44,5 +44,10 @@ public class ImageServiceImpl implements ImageService {
         imageRepository.deleteById(imageId);
     }
 
+    @Override
+    public String findAvatarByEmail(String email) throws Exception {
+        return imageRepository.findAvatarByEmail(email);
+    }
+
 
 }

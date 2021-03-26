@@ -6,6 +6,7 @@ import com.swp.ihelp.app.account.request.SignUpRequest;
 import com.swp.ihelp.app.account.response.AccountGeneralResponse;
 import com.swp.ihelp.app.account.response.LoginResponse;
 import com.swp.ihelp.app.account.response.ProfileResponse;
+import com.swp.ihelp.app.image.ImageService;
 import com.swp.ihelp.security.JwtTokenUtil;
 import com.swp.ihelp.security.UserDetailsServiceImpl;
 import io.jsonwebtoken.impl.DefaultClaims;
@@ -19,10 +20,13 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +47,9 @@ public class AccountRestController {
     @Autowired
     private final AccountService accountService;
 
+    @Autowired
+    private ImageService imageService;
+
     public AccountRestController(AccountService accountService) {
         this.accountService = accountService;
     }
@@ -50,20 +57,39 @@ public class AccountRestController {
     @PostMapping("/login")
     public LoginResponse login(@RequestBody LoginRequest loginRequest) throws Exception {
         authenticate(loginRequest.getEmail(), loginRequest.getPassword());
-        final UserDetails userDetails = userDetailsService.loadUserByUsername(loginRequest.getEmail());
+        String email = loginRequest.getEmail();
+        final UserDetails userDetails = userDetailsService.loadUserByUsername(email);
         final String accessToken = jwtTokenUtil.generateAccessToken(userDetails);
-        return new LoginResponse(accessToken);
+        String imageUrl = imageService.findAvatarByEmail(email);
+        String role = "";
+
+        Collection<? extends GrantedAuthority> roles = userDetails.getAuthorities();
+
+        if (roles.contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
+            role = "ADMIN";
+        }
+        if (roles.contains(new SimpleGrantedAuthority("ROLE_MANAGER"))) {
+            role = "MANAGER";
+        }
+        if (roles.contains(new SimpleGrantedAuthority("ROLE_USER"))) {
+            role = "USER";
+        }
+        return new LoginResponse(accessToken, email, imageUrl, role);
     }
 
     @ApiImplicitParam(name = "isRefreshToken", value = "Set refresh token header", required = true, dataTypeClass = String.class, paramType = "header", defaultValue = "true")
     @PostMapping("/refreshtoken")
-    public LoginResponse refreshToken(HttpServletRequest request) throws Exception {
+    public Map<String, Object> refreshToken(HttpServletRequest request) throws Exception {
         DefaultClaims claims = (DefaultClaims) request.getAttribute("claims");
 
         Map<String, Object> expectedMap = getMapFromJwtToken(claims);
         String token = jwtTokenUtil.regenerateAccessToken(expectedMap, expectedMap.get("sub").toString());
 
-        return new LoginResponse(token);
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("refreshToken", token);
+        Map<String, Object> map = jsonObject.toMap();
+
+        return map;
     }
 
     @PostMapping("/signup")
@@ -93,12 +119,12 @@ public class AccountRestController {
     }
 
     @GetMapping("/accounts/event/{eventId}")
-    public List<AccountGeneralResponse> findByEventId(@PathVariable String eventId) throws Exception {
+    public List<Map<String, Object>> findByEventId(@PathVariable String eventId) throws Exception {
         return accountService.findByEventId(eventId);
     }
 
     @GetMapping("/accounts/service/{serviceId}")
-    public List<AccountGeneralResponse> findByServiceId(@PathVariable String serviceId) throws Exception {
+    public List<Map<String, Object>> findByServiceId(@PathVariable String serviceId) throws Exception {
         return accountService.findByServiceId(serviceId);
     }
 

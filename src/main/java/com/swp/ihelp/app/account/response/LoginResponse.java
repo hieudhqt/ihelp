@@ -13,6 +13,16 @@ import java.io.Serializable;
 @Accessors(chain = true)
 public class LoginResponse implements Serializable {
 
+    public LoginResponse(String accessToken) {
+        this.accessToken = accessToken;
+    }
+
     private String accessToken;
+
+    private String email;
+
+    private String imageUrl;
+
+    private String role;
 
 }
