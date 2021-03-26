@@ -1,5 +1,6 @@
 package com.swp.ihelp.app.service.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.swp.ihelp.app.image.response.ImageResponse;
 import com.swp.ihelp.app.service.ServiceEntity;
 import com.swp.ihelp.app.servicecategory.ServiceCategoryEntity;
@@ -9,8 +10,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
-import java.sql.Timestamp;
-import java.util.List;
+import java.util.Date;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -23,14 +24,20 @@ public class ServiceDetailResponse implements Serializable {
     private int point;
     private int quota;
     private int spot;
-    private Timestamp createdDate;
-    private Timestamp startDate;
-    private Timestamp endDate;
+    @JsonFormat(shape = JsonFormat.Shape.STRING,
+            pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Ho_Chi_Minh")
+    private Date createdDate;
+    @JsonFormat(shape = JsonFormat.Shape.STRING,
+            pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Ho_Chi_Minh")
+    private Date startDate;
+    @JsonFormat(shape = JsonFormat.Shape.STRING,
+            pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Ho_Chi_Minh")
+    private Date endDate;
     private String accountEmail;
     private String fullName;
     private StatusEntity status;
-    private List<ServiceCategoryEntity> categories;
-    private List<ImageResponse> images;
+    private Set<ServiceCategoryEntity> categories;
+    private Set<ImageResponse> images;
 
     public ServiceDetailResponse(ServiceEntity service) {
         this.id = service.getId();

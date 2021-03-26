@@ -13,6 +13,7 @@ import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -22,7 +23,7 @@ public class EventResponse implements Serializable {
 
     private String title;
 
-    private int spot;
+    private Integer spot;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING,
             pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Ho_Chi_Minh")
@@ -38,15 +39,15 @@ public class EventResponse implements Serializable {
 
     private String authorEmail;
 
-//    private String authorFullName;
+    private String fullName;
 
     private StatusEntity status;
 
-    private boolean isOnsite;
+    private Boolean isOnsite;
 
-    private List<EventCategoryEntity> categories;
+    private Set<EventCategoryEntity> categories;
 
-    private List<ImageResponse> images;
+    private Set<ImageResponse> images;
 
     public EventResponse(EventEntity eventEntity) {
         this.id = eventEntity.getId();
@@ -54,11 +55,11 @@ public class EventResponse implements Serializable {
         this.startDate = eventEntity.getStartDate();
         this.endDate = eventEntity.getEndDate();
         this.authorEmail = eventEntity.getAuthorAccount().getEmail();
-//        this.authorFullName = eventEntity.getAuthorAccount().getFullName();
+        this.fullName = eventEntity.getAuthorAccount().getFullName();
         this.status = eventEntity.getStatus();
         this.categories = eventEntity.getEventCategories();
         this.images = ImageResponse.convertToResponseList(eventEntity.getImages());
-        this.isOnsite = eventEntity.isOnsite();
+        this.isOnsite = eventEntity.getIsOnsite();
         this.createdDate = eventEntity.getCreatedDate();
     }
 

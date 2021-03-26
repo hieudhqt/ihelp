@@ -45,11 +45,11 @@ public class AccountEntity {
 
     @Basic
     @Column(name = "balance_point", nullable = true)
-    private int balancePoint;
+    private Integer balancePoint;
 
     @Basic
     @Column(name = "contribution_point", nullable = true)
-    private int contributionPoint;
+    private Integer contributionPoint;
 
     @Basic
     @Column(name = "created_date", nullable = true)

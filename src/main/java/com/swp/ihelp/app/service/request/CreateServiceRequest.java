@@ -16,7 +16,7 @@ import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.Date;
-import java.util.List;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -31,6 +31,10 @@ public class CreateServiceRequest implements Serializable {
 
     @NotBlank(message = "Location is required.")
     private String location;
+
+    private String longitude;
+
+    private String latitude;
 
     @Min(0)
     private int quota;
@@ -54,9 +58,9 @@ public class CreateServiceRequest implements Serializable {
     @NotNull(message = "Status ID cannot be null.")
     private int statusId;
 
-    private List<Integer> categoryIds;
+    private Set<Integer> categoryIds;
 
-    private List<ImageRequest> images;
+    private Set<ImageRequest> images;
 
     public static ServiceEntity convertToEntity(CreateServiceRequest request) {
         AccountEntity authorAccount = new AccountEntity().setEmail(request.getAuthorEmail());
@@ -66,6 +70,8 @@ public class CreateServiceRequest implements Serializable {
                 .setTitle(request.getTitle())
                 .setDescription(request.getDescription())
                 .setLocation(request.getLocation())
+                .setLongitude(request.getLongitude())
+                .setLatitude(request.getLatitude())
                 .setQuota(request.getQuota())
                 .setPoint(request.getPoint())
                 .setCreatedDate(currentTimestamp)

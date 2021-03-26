@@ -4,8 +4,8 @@ import com.swp.ihelp.app.account.AccountEntity;
 import com.swp.ihelp.app.image.ImageEntity;
 import lombok.Data;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 public class ImageResponse {
@@ -30,8 +30,8 @@ public class ImageResponse {
                 .setType(imageResponse.getType());
     }
 
-    public static List<ImageResponse> convertToResponseList(List<ImageEntity> imageEntities) {
-        List<ImageResponse> responseList = new ArrayList<>();
+    public static Set<ImageResponse> convertToResponseList(Set<ImageEntity> imageEntities) {
+        Set<ImageResponse> responseList = new HashSet<>();
         for (ImageEntity imageEntity : imageEntities) {
             responseList.add(new ImageResponse(imageEntity));
         }

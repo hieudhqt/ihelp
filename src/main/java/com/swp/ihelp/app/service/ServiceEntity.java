@@ -17,7 +17,9 @@ import org.hibernate.annotations.Parameter;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.sql.Timestamp;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "service", schema = "ihelp")
@@ -57,6 +59,14 @@ public class ServiceEntity {
     private String location;
 
     @Basic
+    @Column(name = "lng", nullable = true, length = 30)
+    private String longitude;
+
+    @Basic
+    @Column(name = "lat", nullable = true, length = 30)
+    private String latitude;
+
+    @Basic
     @Column(name = "quota", nullable = false)
     private int quota;
 
@@ -90,14 +100,15 @@ public class ServiceEntity {
     @JoinTable(name = "service_category_has_service",
             joinColumns = @JoinColumn(name = "service_id"),
             inverseJoinColumns = @JoinColumn(name = "service_category_id"))
-    private List<ServiceCategoryEntity> categories = new ArrayList<>();
+    private Set<ServiceCategoryEntity> categories = new HashSet<>();
+
     @ManyToMany(fetch = FetchType.LAZY,
             cascade = {CascadeType.PERSIST, CascadeType.MERGE,
                     CascadeType.DETACH, CascadeType.REFRESH})
     @JoinTable(name = "service_has_image",
             joinColumns = @JoinColumn(name = "service_id"),
             inverseJoinColumns = @JoinColumn(name = "image_id"))
-    private List<ImageEntity> images = new ArrayList<>();
+    private Set<ImageEntity> images = new HashSet<>();
 
     public void addCategory(ServiceCategoryEntity category) {
         if (categories.contains(category)) {

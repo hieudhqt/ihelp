@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
-import java.util.List;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -21,9 +21,11 @@ public class EventDetailResponse implements Serializable {
     private String title;
     private String description;
     private String location;
-    private int point;
-    private int quota;
-    private int spot;
+    private String longitude;
+    private String latitude;
+    private Integer point;
+    private Integer quota;
+    private Integer spot;
     @JsonFormat(shape = JsonFormat.Shape.STRING,
             pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Ho_Chi_Minh")
     private Timestamp createdDate;
@@ -37,20 +39,22 @@ public class EventDetailResponse implements Serializable {
     private String fullName;
     private boolean isOnsite;
     private StatusEntity status;
-    private List<EventCategoryEntity> categories;
-    private List<ImageResponse> images;
+    private Set<EventCategoryEntity> categories;
+    private Set<ImageResponse> images;
 
     public EventDetailResponse(EventEntity eventEntity) {
         this.id = eventEntity.getId();
         this.title = eventEntity.getTitle();
         this.description = eventEntity.getDescription();
         this.location = eventEntity.getLocation();
+        this.longitude = eventEntity.getLongitude();
+        this.latitude = eventEntity.getLatitude();
         this.point = eventEntity.getPoint();
         this.quota = eventEntity.getQuota();
         this.createdDate = eventEntity.getCreatedDate();
         this.startDate = eventEntity.getStartDate();
         this.endDate = eventEntity.getEndDate();
-        this.isOnsite = eventEntity.isOnsite();
+        this.isOnsite = eventEntity.getIsOnsite();
         this.accountEmail = eventEntity.getAuthorAccount().getEmail();
         this.fullName = eventEntity.getAuthorAccount().getFullName();
         this.images = ImageResponse.convertToResponseList(eventEntity.getImages());

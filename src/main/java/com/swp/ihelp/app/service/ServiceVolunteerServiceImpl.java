@@ -11,6 +11,8 @@ import com.swp.ihelp.app.service.request.CreateServiceRequest;
 import com.swp.ihelp.app.service.request.UpdateServiceRequest;
 import com.swp.ihelp.app.service.response.ServiceDetailResponse;
 import com.swp.ihelp.app.service.response.ServiceResponse;
+import com.swp.ihelp.app.servicecategory.ServiceCategoryEntity;
+import com.swp.ihelp.app.servicecategory.ServiceCategoryRepository;
 import com.swp.ihelp.app.servicejointable.ServiceHasAccountEntity;
 import com.swp.ihelp.exception.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,10 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
@@ -34,6 +33,7 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
     private AccountRepository accountRepository;
     private PointRepository pointRepository;
     private ImageRepository imageRepository;
+    private ServiceCategoryRepository categoryRepository;
 
     @Value("${paging.page-size}")
     private int pageSize;
@@ -42,23 +42,12 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
     private long minStartDateFromCreate;
 
     @Autowired
-    public void setServiceRepository(ServiceRepository serviceRepository) {
+    public ServiceVolunteerServiceImpl(ServiceRepository serviceRepository, AccountRepository accountRepository, PointRepository pointRepository, ImageRepository imageRepository, ServiceCategoryRepository categoryRepository) {
         this.serviceRepository = serviceRepository;
-    }
-
-    @Autowired
-    public void setAccountRepository(AccountRepository accountRepository) {
         this.accountRepository = accountRepository;
-    }
-
-    @Autowired
-    public void setPointRepository(PointRepository pointRepository) {
         this.pointRepository = pointRepository;
-    }
-
-    @Autowired
-    public void setImageRepository(ImageRepository imageRepository) {
         this.imageRepository = imageRepository;
+        this.categoryRepository = categoryRepository;
     }
 
     @Override
@@ -141,13 +130,12 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
             throw new RuntimeException("Start date must be at least 3 days after create date.");
         }
         ServiceEntity serviceEntity = CreateServiceRequest.convertToEntity(request);
-        List<ImageRequest> imageRequests = request.getImages();
+        Set<ImageRequest> imageRequests = request.getImages();
         if (imageRequests != null) {
             for (ImageRequest imageRequest : imageRequests) {
                 ImageEntity imageEntity = ImageRequest.convertRequestToEntity(imageRequest);
                 imageEntity.setAuthorAccount(serviceEntity.getAuthorAccount());
-                ImageEntity savedImage = imageRepository.save(imageEntity);
-                serviceEntity.addImage(savedImage);
+                serviceEntity.addImage(imageEntity);
             }
         }
         ServiceEntity savedService = serviceRepository.save(serviceEntity);
@@ -169,6 +157,14 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
         serviceToUpdate.setQuota(serviceRequest.getQuota());
         serviceToUpdate.setStartDate(new Timestamp(serviceRequest.getStartDate().getTime()));
         serviceToUpdate.setEndDate(new Timestamp(serviceRequest.getEndDate().getTime()));
+
+        if (serviceRequest.getCategoryIds() != null) {
+            Set<ServiceCategoryEntity> categoriesToUpdate = new HashSet<>();
+            for (int categoryId : serviceRequest.getCategoryIds()) {
+                categoriesToUpdate.add(categoryRepository.findById(categoryId).get());
+            }
+            serviceToUpdate.setCategories(categoriesToUpdate);
+        }
 
         serviceRepository.save(serviceToUpdate);
 

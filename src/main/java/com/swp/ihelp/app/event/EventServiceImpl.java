@@ -2,11 +2,14 @@ package com.swp.ihelp.app.event;
 
 import com.swp.ihelp.app.account.AccountEntity;
 import com.swp.ihelp.app.account.AccountRepository;
+import com.swp.ihelp.app.entity.SearchCriteria;
 import com.swp.ihelp.app.event.request.CreateEventRequest;
 import com.swp.ihelp.app.event.request.EvaluationRequest;
 import com.swp.ihelp.app.event.request.UpdateEventRequest;
 import com.swp.ihelp.app.event.response.EventDetailResponse;
 import com.swp.ihelp.app.event.response.EventResponse;
+import com.swp.ihelp.app.eventcategory.EventCategoryEntity;
+import com.swp.ihelp.app.eventcategory.EventCategoryRepository;
 import com.swp.ihelp.app.eventjointable.EventHasAccountEntity;
 import com.swp.ihelp.app.eventjointable.EventHasAccountRepository;
 import com.swp.ihelp.app.image.ImageEntity;
@@ -23,13 +26,13 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @PropertySource("classpath:constant.properties")
@@ -49,50 +52,30 @@ public class EventServiceImpl implements EventService {
 
     private EventRepository eventRepository;
     private EventHasAccountRepository eventHasAccountRepository;
+    private EventCategoryRepository categoryRepository;
     private ImageRepository imageRepository;
-    private EventMessage eventMessage;
     private AccountRepository accountRepository;
     private PointRepository pointRepository;
     private StatusRepository statusRepository;
 
+    private EventMessage eventMessage;
+
     @Autowired
-    public void setEventRepository(EventRepository eventRepository) {
+    public EventServiceImpl(EventRepository eventRepository, EventHasAccountRepository eventHasAccountRepository, EventCategoryRepository categoryRepository, ImageRepository imageRepository, AccountRepository accountRepository, PointRepository pointRepository, StatusRepository statusRepository, EventMessage eventMessage) {
         this.eventRepository = eventRepository;
-    }
-
-    @Autowired
-    public void setEventHasAccountRepository(EventHasAccountRepository eventHasAccountRepository) {
         this.eventHasAccountRepository = eventHasAccountRepository;
-    }
-
-    @Autowired
-    public void setImageRepository(ImageRepository imageRepository) {
+        this.categoryRepository = categoryRepository;
         this.imageRepository = imageRepository;
-    }
-
-    @Autowired
-    public void setEventMessage(EventMessage eventMessage) {
-        this.eventMessage = eventMessage;
-    }
-
-    @Autowired
-    public void setAccountRepository(AccountRepository accountRepository) {
         this.accountRepository = accountRepository;
-    }
-
-    @Autowired
-    public void setPointRepository(PointRepository pointRepository) {
         this.pointRepository = pointRepository;
-    }
-
-    @Autowired
-    public void setStatusRepository(StatusRepository statusRepository) {
         this.statusRepository = statusRepository;
+        this.eventMessage = eventMessage;
     }
 
     @Override
     public Map<String, Object> findAll(int page) throws Exception {
-        Pageable paging = PageRequest.of(page, pageSize);
+        Pageable paging = PageRequest.of(page, pageSize,
+                Sort.by("startDate").descending().and(Sort.by("id").ascending()));
         Page<EventEntity> pageEvents = eventRepository.findAll(paging);
         if (pageEvents.isEmpty()) {
             throw new EntityNotFoundException("Event not found.");
@@ -119,7 +102,8 @@ public class EventServiceImpl implements EventService {
     @Override
     public Map<String, Object> findByTitle(String title, int page) throws Exception {
         Pageable paging = PageRequest.of(page, pageSize);
-        Page<EventEntity> pageEvents = eventRepository.findByTitle(title, paging);
+        EventSpecification spec = new EventSpecification(new SearchCriteria("title", ":", title));
+        Page<EventEntity> pageEvents = eventRepository.findAll(spec, paging);
         if (pageEvents.isEmpty()) {
             throw new EntityNotFoundException("Event with title: " + title + " not found.");
         }
@@ -174,13 +158,12 @@ public class EventServiceImpl implements EventService {
         }
 
         EventEntity eventEntity = CreateEventRequest.convertToEntity(event);
-        List<ImageRequest> imageRequests = event.getImages();
+        Set<ImageRequest> imageRequests = event.getImages();
         if (imageRequests != null) {
             for (ImageRequest imageRequest : imageRequests) {
                 ImageEntity imageEntity = ImageRequest.convertRequestToEntity(imageRequest);
                 imageEntity.setAuthorAccount(eventEntity.getAuthorAccount());
-                ImageEntity savedImage = imageRepository.save(imageEntity);
-                eventEntity.addImage(savedImage);
+                eventEntity.addImage(imageEntity);
             }
         }
         EventEntity savedEvent = eventRepository.save(eventEntity);
@@ -200,9 +183,23 @@ public class EventServiceImpl implements EventService {
         eventToUpdate.setLocation(eventRequest.getLocation());
         eventToUpdate.setPoint(eventRequest.getPoint());
         eventToUpdate.setQuota(eventRequest.getQuota());
-        eventToUpdate.setOnsite(eventRequest.isOnsite());
+        eventToUpdate.setIsOnsite(eventRequest.getOnsite());
         eventToUpdate.setStartDate(new Timestamp(eventRequest.getStartDate().getTime()));
         eventToUpdate.setEndDate(new Timestamp(eventRequest.getEndDate().getTime()));
+
+//        if (eventRequest.getImages() != null) {
+//            Set<ImageEntity> imagesToUpdate = UpdateImageRequest
+//                    .convertRequestsToEntities(eventRequest.getImages());
+//            eventToUpdate.setImages(imagesToUpdate);
+//        }
+
+        if (eventRequest.getCategoryIds() != null) {
+            Set<EventCategoryEntity> categoriesToUpdate = new HashSet<>();
+            for (int categoryId : eventRequest.getCategoryIds()) {
+                categoriesToUpdate.add(categoryRepository.findById(categoryId).get());
+            }
+            eventToUpdate.setEventCategories(categoriesToUpdate);
+        }
 
         eventRepository.save(eventToUpdate);
 
@@ -374,7 +371,7 @@ public class EventServiceImpl implements EventService {
     private String validateCreateEvent(CreateEventRequest event) {
         String errorMsg = "";
 
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+//        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 //
 //        String startDateString = dateFormat.format(event.getStartDate());
 //        String endDateString = dateFormat.format(event.getEndDate());
@@ -395,13 +392,17 @@ public class EventServiceImpl implements EventService {
 //            }
 //        }
 
-        if (event.getStartDate().getTime() - System.currentTimeMillis() < minStartDateFromCreate) {
+        long diffInMillies = Math.abs(event.getStartDate().getTime() - System.currentTimeMillis());
+        long diffInDays = TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS);
+
+        if (diffInDays < minStartDateFromCreate) {
             errorMsg += "Start date must be at least " + minStartDateFromCreate +
                     " days after creation date; ";
         }
 
         String authorEmail = event.getAuthorEmail();
-        if (accountRepository.getOne(authorEmail).getBalancePoint() < event.getPoint()) {
+        int pointNeeded = event.getPoint() * event.getQuota();
+        if (accountRepository.getOne(authorEmail).getBalancePoint() < pointNeeded) {
             errorMsg += "Account " + authorEmail + " does not have enough point; ";
         }
         if (event.getStartDate().after(event.getEndDate())) {
