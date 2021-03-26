@@ -2,7 +2,9 @@ package com.swp.ihelp.app.event;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
@@ -10,9 +12,7 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 
-public interface EventRepository extends JpaRepository<EventEntity, String> {
-    @Query("SELECT e from EventEntity e order by e.status.id")
-    Page<EventEntity> findAll(Pageable pageable);
+public interface EventRepository extends JpaRepository<EventEntity, String>, JpaSpecificationExecutor<EventEntity> {
 
     @Query("SELECT e from EventEntity e where e.title like %:title%")
     Page<EventEntity> findByTitle(String title, Pageable pageable);
@@ -24,6 +24,8 @@ public interface EventRepository extends JpaRepository<EventEntity, String> {
 
     @Query("SELECT e from EventEntity e where e.status.id = :statusId")
     Page<EventEntity> findByStatusId(int statusId, Pageable pageable);
+
+    Page<EventEntity> findAllByEventCategories(int categoryId, Specification<EventEntity> specs, Pageable pageable);
 
     @Query("SELECT e from EventEntity e where e.authorAccount.email = :email")
     Page<EventEntity> findByAuthorEmail(String email, Pageable pageable);

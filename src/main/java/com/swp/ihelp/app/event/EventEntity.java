@@ -15,7 +15,9 @@ import org.hibernate.annotations.Parameter;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "event", schema = "ihelp")
@@ -53,6 +55,14 @@ public class EventEntity {
     private String location;
 
     @Basic
+    @Column(name = "lng", nullable = true, length = 30)
+    private String longitude;
+
+    @Basic
+    @Column(name = "lat", nullable = true, length = 30)
+    private String latitude;
+
+    @Basic
     @Column(name = "quota", nullable = true)
     private Integer quota;
 
@@ -74,7 +84,7 @@ public class EventEntity {
 
     @Basic
     @Column(name = "is_onsite", nullable = false)
-    private boolean isOnsite;
+    private Boolean isOnsite;
 
     @JsonBackReference
     @ManyToOne(fetch = FetchType.LAZY)
@@ -87,7 +97,7 @@ public class EventEntity {
     @JoinTable(name = "event_category_has_event",
             joinColumns = @JoinColumn(name = "event_id"),
             inverseJoinColumns = @JoinColumn(name = "event_category_id"))
-    private List<EventCategoryEntity> eventCategories = new ArrayList<>();
+    private Set<EventCategoryEntity> eventCategories = new HashSet<>();
 
     public void addCategory(EventCategoryEntity eventCategoryEntity) {
         if (eventCategories.contains(eventCategoryEntity)) {
@@ -136,7 +146,7 @@ public class EventEntity {
     @JoinTable(name = "event_has_image",
             joinColumns = @JoinColumn(name = "event_id"),
             inverseJoinColumns = @JoinColumn(name = "image_id"))
-    private List<ImageEntity> images = new ArrayList<>();
+    private Set<ImageEntity> images = new HashSet<>();
 
     public void addImage(ImageEntity imageEntity) {
         if (images.contains(imageEntity)) {
@@ -144,5 +154,7 @@ public class EventEntity {
         }
         images.add(imageEntity);
     }
+
+
 }
 

@@ -4,7 +4,7 @@ import com.swp.ihelp.app.image.response.ImageResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api")
@@ -18,7 +18,7 @@ public class ImageController {
     }
 
     @GetMapping("/images")
-    public List<ImageResponse> findAll() throws Exception {
+    public Set<ImageResponse> findAll() throws Exception {
         return imageService.findAll();
     }
 
@@ -28,7 +28,7 @@ public class ImageController {
     }
 
     @GetMapping("/images/{email}")
-    public List<ImageResponse> findByAuthorEmail(@PathVariable String email) throws Exception {
+    public Set<ImageResponse> findByAuthorEmail(@PathVariable String email) throws Exception {
         return imageService.findByAuthorEmail(email);
     }
 

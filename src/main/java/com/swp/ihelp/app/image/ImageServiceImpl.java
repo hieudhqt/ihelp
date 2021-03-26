@@ -4,7 +4,9 @@ import com.swp.ihelp.app.image.response.ImageResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class ImageServiceImpl implements ImageService {
@@ -16,9 +18,9 @@ public class ImageServiceImpl implements ImageService {
     }
 
     @Override
-    public List<ImageResponse> findAll() throws Exception {
+    public Set<ImageResponse> findAll() throws Exception {
         List<ImageEntity> imageEntities = imageRepository.findAll();
-        return ImageResponse.convertToResponseList(imageEntities);
+        return ImageResponse.convertToResponseList(new HashSet<>(imageEntities));
     }
 
     @Override
@@ -28,8 +30,8 @@ public class ImageServiceImpl implements ImageService {
     }
 
     @Override
-    public List<ImageResponse> findByAuthorEmail(String email) throws Exception {
-        List<ImageEntity> imageEntities = imageRepository.findByAuthorEmail(email);
+    public Set<ImageResponse> findByAuthorEmail(String email) throws Exception {
+        Set<ImageEntity> imageEntities = imageRepository.findByAuthorEmail(email);
         return ImageResponse.convertToResponseList(imageEntities);
     }
 

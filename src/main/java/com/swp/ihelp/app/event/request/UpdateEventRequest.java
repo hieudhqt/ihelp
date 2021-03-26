@@ -10,6 +10,7 @@ import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.Set;
 
 @Data
 public class UpdateEventRequest implements Serializable {
@@ -23,6 +24,10 @@ public class UpdateEventRequest implements Serializable {
 
     @NotBlank(message = "Location is required.")
     private String location;
+
+    private String longitude;
+
+    private String latitude;
 
     @Min(0)
     private Integer quota;
@@ -40,19 +45,26 @@ public class UpdateEventRequest implements Serializable {
             pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Ho_Chi_Minh")
     private Date endDate;
 
-    private boolean onsite;
+    private Boolean onsite;
+
+    private Set<Integer> categoryIds;
+
+//    private Set<UpdateImageRequest> images;
 
     public static EventEntity convertToEntity(UpdateEventRequest request) {
-        return new EventEntity()
+        EventEntity eventEntity = new EventEntity()
                 .setId(request.getId())
                 .setTitle(request.getTitle())
                 .setDescription(request.getDescription())
                 .setLocation(request.getLocation())
+                .setLongitude(request.getLongitude())
+                .setLatitude(request.getLatitude())
                 .setQuota(request.getQuota())
                 .setPoint(request.getPoint())
                 .setStartDate(new Timestamp(request.getStartDate().getTime()))
                 .setEndDate(new Timestamp(request.getEndDate().getTime()))
-                .setOnsite(request.isOnsite());
+                .setIsOnsite(request.getOnsite());
+        return eventEntity;
     }
 
 }

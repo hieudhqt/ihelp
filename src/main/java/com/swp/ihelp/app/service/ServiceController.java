@@ -3,6 +3,7 @@ package com.swp.ihelp.app.service;
 import com.swp.ihelp.app.service.request.CreateServiceRequest;
 import com.swp.ihelp.app.service.request.UpdateServiceRequest;
 import com.swp.ihelp.app.service.response.ServiceDetailResponse;
+import com.swp.ihelp.message.ServiceMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,9 +18,12 @@ import java.util.Map;
 public class ServiceController {
     private ServiceVolunteerService serviceVolunteerService;
 
+    private ServiceMessage serviceMessage;
+
     @Autowired
-    public ServiceController(ServiceVolunteerService serviceVolunteerService) {
+    public ServiceController(ServiceVolunteerService serviceVolunteerService, ServiceMessage serviceMessage) {
         this.serviceVolunteerService = serviceVolunteerService;
+        this.serviceMessage = serviceMessage;
     }
 
     @GetMapping("/services")
@@ -64,7 +68,7 @@ public class ServiceController {
     @PostMapping("/services")
     public ResponseEntity<String> addService(@Valid @RequestBody CreateServiceRequest createServiceRequest) throws Exception {
         String serviceId = serviceVolunteerService.insert(createServiceRequest);
-        return ResponseEntity.ok("Service with ID: " + serviceId + " added.");
+        return ResponseEntity.ok(serviceMessage.getServiceAddedMessage(serviceId));
     }
 
     @PutMapping("/services")
@@ -77,15 +81,15 @@ public class ServiceController {
     public String deleteService(@PathVariable String serviceId) throws Exception {
         ServiceDetailResponse response = serviceVolunteerService.findById(serviceId);
         if (response == null) {
-            throw new RuntimeException("Could not find service:" + serviceId);
+            throw new RuntimeException(serviceMessage.getServiceNotFoundMessage() + serviceId);
         }
         serviceVolunteerService.deleteById(serviceId);
-        return "Service deleted." + serviceId;
+        return serviceMessage.getServiceDeletedMessage(serviceId);
     }
 
     @PostMapping("/services/{email}/{serviceId}")
     public String useService(@PathVariable String email, @PathVariable String serviceId) throws Exception {
         serviceVolunteerService.useService(email, serviceId);
-        return "Account with email:" + email + " has used service with ID:" + serviceId + ".";
+        return serviceMessage.getServiceUsedMessage(email, serviceId);
     }
 }

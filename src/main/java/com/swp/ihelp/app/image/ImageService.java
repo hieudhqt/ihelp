@@ -3,10 +3,10 @@ package com.swp.ihelp.app.image;
 
 import com.swp.ihelp.app.image.response.ImageResponse;
 
-import java.util.List;
+import java.util.Set;
 
 public interface ImageService {
-    List<ImageResponse> findAll() throws Exception;
+    Set<ImageResponse> findAll() throws Exception;
 
     ImageResponse findById(String imageId) throws Exception;
 
@@ -14,9 +14,8 @@ public interface ImageService {
 
     void deleteById(String imageId) throws Exception;
 
+    Set<ImageResponse> findByAuthorEmail(String email) throws Exception;
     String findAvatarByEmail(String email) throws Exception;
-
-    List<ImageResponse> findByAuthorEmail(String email) throws Exception;
 //    List<ImageEntity> findByEventId(String email) throws Exception;
 //    List<ImageEntity> findByServiceId(String email) throws Exception;
 }

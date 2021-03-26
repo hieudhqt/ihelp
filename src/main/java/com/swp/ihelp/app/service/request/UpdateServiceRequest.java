@@ -12,6 +12,7 @@ import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -26,6 +27,10 @@ public class UpdateServiceRequest implements Serializable {
 
     @NotBlank(message = "Location is required.")
     private String location;
+
+    private String longitude;
+
+    private String latitude;
 
     @Min(0)
     private Integer quota;
@@ -43,12 +48,16 @@ public class UpdateServiceRequest implements Serializable {
             pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Ho_Chi_Minh")
     private Date endDate;
 
+    private Set<Integer> categoryIds;
+
     public static ServiceEntity convertToEntityWithId(UpdateServiceRequest request) {
         return new ServiceEntity()
                 .setId(request.getId())
                 .setTitle(request.getTitle())
                 .setDescription(request.getDescription())
                 .setLocation(request.getLocation())
+                .setLongitude(request.getLongitude())
+                .setLatitude(request.getLatitude())
                 .setQuota(request.getQuota())
                 .setPoint(request.getPoint())
                 .setStartDate(new Timestamp(request.getStartDate().getTime()))

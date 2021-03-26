@@ -16,6 +16,7 @@ import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -27,6 +28,10 @@ public class CreateEventRequest implements Serializable {
 
     @NotBlank(message = "Location is required.")
     private String location;
+
+    private String longitude;
+
+    private String latitude;
 
     @Min(0)
     private Integer quota;
@@ -50,9 +55,11 @@ public class CreateEventRequest implements Serializable {
     @NotNull(message = "Status ID cannot be null.")
     private Integer statusId;
 
+    private Boolean onsite;
+
     private List<Integer> categoryIds;
 
-    private List<ImageRequest> images;
+    private Set<ImageRequest> images;
 
     public static EventEntity convertToEntity(CreateEventRequest request) {
         AccountEntity authorAccount = new AccountEntity().setEmail(request.getAuthorEmail());
@@ -68,6 +75,9 @@ public class CreateEventRequest implements Serializable {
                 .setStartDate(new Timestamp(request.getStartDate().getTime()))
                 .setEndDate(new Timestamp(request.getEndDate().getTime()))
                 .setAuthorAccount(authorAccount)
+                .setIsOnsite(request.getOnsite())
+                .setLongitude(request.getLongitude())
+                .setLatitude(request.getLatitude())
                 .setStatus(serviceStatus);
         for (int categoryId : request.getCategoryIds()) {
             eventEntity.addCategory(new EventCategoryEntity().setId(categoryId));

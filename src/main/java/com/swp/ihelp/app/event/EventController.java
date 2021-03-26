@@ -4,15 +4,23 @@ import com.swp.ihelp.app.event.request.CreateEventRequest;
 import com.swp.ihelp.app.event.request.EvaluationRequest;
 import com.swp.ihelp.app.event.request.UpdateEventRequest;
 import com.swp.ihelp.app.event.response.EventDetailResponse;
+import com.swp.ihelp.app.event.response.EventResponse;
 import com.swp.ihelp.message.EventMessage;
-import com.swp.ihelp.scheduler.EventScheduler;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @RestController
 @RequestMapping("/api")
@@ -24,7 +32,7 @@ public class EventController {
     private EventMessage eventMessage;
 
     @Autowired
-    private EventScheduler eventScheduler;
+    private EventRepository repository;
 
     @Autowired
     public EventController(EventService eventService) {
@@ -114,6 +122,34 @@ public class EventController {
     public ResponseEntity<String> joinEvent(@PathVariable String email, @PathVariable String eventId) throws Exception {
         eventService.joinEvent(email, eventId);
         return ResponseEntity.ok(eventMessage.getEventJoinedMessage(eventId, email));
+    }
+
+    @GetMapping("/events/test")
+    public ResponseEntity<Map<String, Object>> search(@RequestParam(value = "search", required = false) String search,
+                                                      @RequestParam(value = "page") int page) {
+        EventSpecificationBuilder builder = new EventSpecificationBuilder();
+        String dateRegex = "([12]\\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01]))";
+        String emailRegex = "(^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$)";
+        String textRegex = "([a-zA-Z0-9_ ]*$)";
+        Pattern pattern = Pattern.compile("(\\w+?)(:|<|>)(" + textRegex + "|" + dateRegex + "|" + emailRegex + "),");
+        Matcher matcher = pattern.matcher(search + ",");
+        while (matcher.find()) {
+            builder.with(matcher.group(1), matcher.group(2), matcher.group(3));
+        }
+        Pageable paging = PageRequest.of(page, 10);
+        Specification<EventEntity> spec = builder.build();
+        Page<EventEntity> pageEvent = repository.findAll(spec, paging);
+
+        List<EventEntity> eventEntityList = pageEvent.getContent();
+        List<EventResponse> eventResponses = EventResponse.convertToResponseList(eventEntityList);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("events", eventResponses);
+        response.put("currentPage", pageEvent.getNumber());
+        response.put("totalItems", pageEvent.getTotalElements());
+        response.put("totalPages", pageEvent.getTotalPages());
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
 }
