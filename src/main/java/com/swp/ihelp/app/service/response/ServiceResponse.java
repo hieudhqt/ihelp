@@ -45,7 +45,7 @@ public class ServiceResponse implements Serializable {
         this.accountEmail = service.getAuthorAccount().getEmail();
         this.fullName = service.getAuthorAccount().getFullName();
         this.status = service.getStatus();
-        this.categories = service.getCategories();
+        this.categories = service.getServiceCategories();
         this.images = ImageResponse.convertToResponseList(service.getImages());
         this.createdDate = service.getCreatedDate();
     }

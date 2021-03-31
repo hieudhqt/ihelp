@@ -37,7 +37,7 @@ public class EventDetailResponse implements Serializable {
     private Timestamp endDate;
     private String accountEmail;
     private String fullName;
-    private boolean isOnsite;
+    private Boolean isOnsite;
     private StatusEntity status;
     private Set<EventCategoryEntity> categories;
     private Set<ImageResponse> images;

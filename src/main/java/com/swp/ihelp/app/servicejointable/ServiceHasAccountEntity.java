@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
-import java.util.Date;
+import java.sql.Timestamp;
 
 @Entity
 @Table(name = "service_has_account", schema = "ihelp")
@@ -41,5 +41,7 @@ public class ServiceHasAccountEntity {
     private AccountEntity account;
 
     @Column(name = "use_date")
-    private long useDate = new Date().getTime();
+    private Timestamp useDate = new Timestamp(System.currentTimeMillis());
+
+
 }

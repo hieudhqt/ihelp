@@ -2,6 +2,7 @@ package com.swp.ihelp.exception;
 
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.swp.ihelp.response.ExceptionResponse;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -67,7 +68,7 @@ public class GlobalControllerExceptionHandler {
         }
 
         ExceptionResponse error = new ExceptionResponse();
-        error.setMessage(ex.getLocalizedMessage());
+        error.setMessage("Validation failed.");
         error.setStatus(HttpStatus.BAD_REQUEST.value());
         error.setDetails(details);
         error.setTimeStamp(timeStamp);
@@ -85,6 +86,21 @@ public class GlobalControllerExceptionHandler {
         response.setTimeStamp(timeStamp);
 
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ExceptionResponse> handleDataException(DataIntegrityViolationException ex) {
+        ExceptionResponse response = new ExceptionResponse();
+
+        response.setStatus(HttpStatus.CONFLICT.value());
+        if (ex.getMessage().contains("same identifier")) {
+            response.setMessage("Entity already existed.");
+        } else {
+            response.setMessage(ex.getMessage());
+        }
+        response.setTimeStamp(timeStamp);
+
+        return new ResponseEntity<>(response, HttpStatus.CONFLICT);
     }
 
     //Handle any exceptions.

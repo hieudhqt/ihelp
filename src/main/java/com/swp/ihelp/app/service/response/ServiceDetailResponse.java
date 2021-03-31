@@ -53,6 +53,6 @@ public class ServiceDetailResponse implements Serializable {
         this.fullName = service.getAuthorAccount().getFullName();
         this.images = ImageResponse.convertToResponseList(service.getImages());
         this.status = service.getStatus();
-        this.categories = service.getCategories();
+        this.categories = service.getServiceCategories();
     }
 }

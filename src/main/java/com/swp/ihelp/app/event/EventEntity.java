@@ -16,6 +16,7 @@ import org.hibernate.annotations.Parameter;
 import javax.persistence.*;
 import java.sql.Timestamp;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -155,6 +156,19 @@ public class EventEntity {
         images.add(imageEntity);
     }
 
+    @JsonBackReference
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "manager_email", referencedColumnName = "email", nullable = true)
+    private AccountEntity managerAccount;
 
+    @Basic
+    @Column(name = "reason", nullable = true)
+    private String reason;
+
+    public EventEntity(String id, Date startDate, Date endDate) {
+        this.id = id;
+        this.startDate = new Timestamp(startDate.getTime());
+        this.endDate = new Timestamp(endDate.getTime());
+    }
 }
 

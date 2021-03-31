@@ -1,6 +1,7 @@
 package com.swp.ihelp.app.service;
 
 import com.swp.ihelp.app.service.request.CreateServiceRequest;
+import com.swp.ihelp.app.service.request.RejectServiceRequest;
 import com.swp.ihelp.app.service.request.UpdateServiceRequest;
 import com.swp.ihelp.app.service.response.ServiceDetailResponse;
 
@@ -9,6 +10,8 @@ import java.util.Map;
 
 public interface ServiceVolunteerService {
     Map<String, Object> findAll(int page) throws Exception;
+
+    Map<String, Object> findAll(int page, String searchh) throws Exception;
 
     ServiceDetailResponse findById(String id) throws Exception;
 
@@ -27,4 +30,8 @@ public interface ServiceVolunteerService {
     Map<String, Object> findByAuthorEmail(String email, int page) throws Exception;
 
     void useService(String email, String serviceId) throws Exception;
+
+    void approve(String eventId, String managerEmail) throws Exception;
+
+    void reject(RejectServiceRequest request) throws Exception;
 }

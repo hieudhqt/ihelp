@@ -14,7 +14,7 @@ import java.sql.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @Accessors(chain = true)
-public class ProfileResponse implements Serializable  {
+public class ProfileResponse implements Serializable {
 
     private String email;
 
