@@ -26,17 +26,17 @@ public class FCMService {
         }
     }
 
-    public String sendNotificationToTopic(NotificationRequest notificationRequest) {
+    public String sendNotificationToTopic(PushNotificationRequest pushNotificationRequest) {
         Notification notification = Notification.builder()
-                .setTitle(notificationRequest.getTitle())
-                .setBody(notificationRequest.getMessage())
+                .setTitle(pushNotificationRequest.getTitle())
+                .setBody(pushNotificationRequest.getMessage())
                 .build();
 
         Message message = Message.builder()
-                .setTopic(notificationRequest.getTopic())
+                .setTopic(pushNotificationRequest.getTopic())
                 .setNotification(notification)
-                .putData("content", notificationRequest.getTitle())
-                .putData("body", notificationRequest.getMessage())
+                .putData("content", pushNotificationRequest.getTitle())
+                .putData("body", pushNotificationRequest.getMessage())
                 .build();
 
         String response = null;
@@ -50,17 +50,17 @@ public class FCMService {
         return response;
     }
 
-    public String sendNotificationToDevice(NotificationRequest notificationRequest) {
+    public String sendNotificationToDevice(PushNotificationRequest pushNotificationRequest) {
         Notification notification = Notification.builder()
-                .setTitle(notificationRequest.getTitle())
-                .setBody(notificationRequest.getMessage())
+                .setTitle(pushNotificationRequest.getTitle())
+                .setBody(pushNotificationRequest.getMessage())
                 .build();
 
         Message message = Message.builder()
-                .setToken(notificationRequest.getToken())
+                .setToken(pushNotificationRequest.getToken())
                 .setNotification(notification)
-                .putData("content", notificationRequest.getTitle())
-                .putData("body", notificationRequest.getMessage())
+                .putData("content", pushNotificationRequest.getTitle())
+                .putData("body", pushNotificationRequest.getMessage())
                 .build();
 
         String response = null;
@@ -74,17 +74,17 @@ public class FCMService {
         return response;
     }
 
-    public void sendMessageToToken(NotificationRequest request) throws ExecutionException, InterruptedException {
+    public void sendMessageToToken(PushNotificationRequest request) throws ExecutionException, InterruptedException {
         Message message = getPreconfiguredMessageToToken(request);
         String response = sendAndGetResponse(message);
     }
 
-    public void sendMessageToTopic(NotificationRequest request) throws ExecutionException, InterruptedException {
+    public void sendMessageToTopic(PushNotificationRequest request) throws ExecutionException, InterruptedException {
         Message message = getPreconfiguredMessageToTopic(request);
         String response = sendAndGetResponse(message);
     }
 
-    public void sendMessageWithData(Map<String, String> data, NotificationRequest request) throws InterruptedException, ExecutionException {
+    public void sendMessageWithData(Map<String, String> data, PushNotificationRequest request) throws InterruptedException, ExecutionException {
         Message message = getPreconfiguredMessageWithData(data, request);
         String response = sendAndGetResponse(message);
     }
@@ -93,19 +93,19 @@ public class FCMService {
         return FirebaseMessaging.getInstance().sendAsync(message).get();
     }
 
-    private Message getPreconfiguredMessageToToken(NotificationRequest request) {
+    private Message getPreconfiguredMessageToToken(PushNotificationRequest request) {
         return getPreconfiguredMessageBuilder(request).setToken(request.getToken()).build();
     }
 
-    private Message getPreconfiguredMessageToTopic(NotificationRequest request) {
+    private Message getPreconfiguredMessageToTopic(PushNotificationRequest request) {
         return getPreconfiguredMessageBuilder(request).setTopic(request.getTopic()).build();
     }
 
-    private Message getPreconfiguredMessageWithData(Map<String, String> data, NotificationRequest request) {
+    private Message getPreconfiguredMessageWithData(Map<String, String> data, PushNotificationRequest request) {
         return getPreconfiguredMessageBuilder(request).putAllData(data).setTopic(request.getTopic()).build();
     }
 
-    private Message.Builder getPreconfiguredMessageBuilder(NotificationRequest request) {
+    private Message.Builder getPreconfiguredMessageBuilder(PushNotificationRequest request) {
         AndroidConfig androidConfig = getAndroidConfig(request.getTopic());
         ApnsConfig apnsConfig = getApnsConfig(request.getTopic());
         Notification notification = Notification.builder()
@@ -122,8 +122,8 @@ public class FCMService {
                 .setTtl(Duration.ofMinutes(2).toMillis())
                 .setCollapseKey(topic)
                 .setPriority(AndroidConfig.Priority.HIGH)
-                .setNotification(AndroidNotification.builder().setSound(NotificationParameter.SOUND.getValue())
-                .setColor(NotificationParameter.COLOR.getValue()).setTag(topic).build()).build();
+                .setNotification(AndroidNotification.builder().setSound(PushNotificationParameter.SOUND.getValue())
+                .setColor(PushNotificationParameter.COLOR.getValue()).setTag(topic).build()).build();
     }
 
     private ApnsConfig getApnsConfig(String topic) {

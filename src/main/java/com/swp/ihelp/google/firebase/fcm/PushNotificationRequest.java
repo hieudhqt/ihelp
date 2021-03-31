@@ -9,7 +9,7 @@ import lombok.experimental.Accessors;
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
-public class NotificationRequest {
+public class PushNotificationRequest {
 
     private String title;
     private String message;

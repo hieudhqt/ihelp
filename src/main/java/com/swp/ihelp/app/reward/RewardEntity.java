@@ -34,10 +34,6 @@ public class RewardEntity {
     private Date createdDate;
 
     @ManyToOne
-    @JoinColumn(name = "event_id", referencedColumnName = "id", nullable = false)
-    private EventEntity eventByEventId;
-
-    @ManyToOne
     @JoinColumn(name = "account_email", referencedColumnName = "email", nullable = false)
     private AccountEntity accountByAccountEmail;
 

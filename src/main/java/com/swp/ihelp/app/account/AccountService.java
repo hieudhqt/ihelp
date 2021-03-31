@@ -31,4 +31,8 @@ public interface AccountService {
 
     void updatePassword(String email, String password) throws Exception;
 
+    void updateRole(String email, String roleId) throws Exception;
+
+    void updateDeviceToken(String email, String deviceToken) throws Exception;
+
 }
