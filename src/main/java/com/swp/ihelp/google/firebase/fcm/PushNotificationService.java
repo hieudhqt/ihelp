@@ -6,16 +6,16 @@ import org.springframework.stereotype.Service;
 import java.util.concurrent.ExecutionException;
 
 @Service
-public class NotificationService {
+public class PushNotificationService {
 
     private FCMService fcmService;
 
     @Autowired
-    public NotificationService(FCMService fcmService) {
+    public PushNotificationService(FCMService fcmService) {
         this.fcmService = fcmService;
     }
 
-    public void sendPushNotificationToTopic(NotificationRequest request) {
+    public void sendPushNotificationToTopic(PushNotificationRequest request) {
         try {
             fcmService.sendMessageToTopic(request);
         } catch (ExecutionException e) {
@@ -25,7 +25,7 @@ public class NotificationService {
         }
     }
 
-    public void sendPushNotificationToToken(NotificationRequest request) {
+    public void sendPushNotificationToToken(PushNotificationRequest request) {
         try {
             fcmService.sendMessageToToken(request);
         } catch (ExecutionException e) {

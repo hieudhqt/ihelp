@@ -24,7 +24,7 @@ public class AccountGeneralResponse implements Serializable {
 
     private String phone;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Ho-Chi-Minh")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Ho_Chi_Minh")
     private Date dateOfBirth;
 
     private String imageUrl;
@@ -35,7 +35,7 @@ public class AccountGeneralResponse implements Serializable {
 
     private Integer contributionPoint;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Ho-Chi-Minh")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Ho_Chi_ Minh")
     private Date createdDate;
 
     public AccountGeneralResponse(AccountEntity accountEntity) {

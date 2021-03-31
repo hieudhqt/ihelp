@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.*;
 
 @Service
@@ -39,11 +40,21 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public void insert(SignUpRequest signUpRequest) throws Exception {
-        if (!accountRepository.existsById(signUpRequest.getEmail())) {
+        String errorMessage = "";
+        boolean isExisted = false;
+        if (accountRepository.existsById(signUpRequest.getEmail())) {
+            errorMessage = errorMessage + "Email: " + signUpRequest.getEmail() + " is used\n";
+            isExisted = true;
+        }
+        if (accountRepository.existsByPhone(signUpRequest.getPhone())) {
+            errorMessage = errorMessage + "Phone number: " + signUpRequest.getPhone() + " is used\n";
+            isExisted = true;
+        }
+        if (!isExisted) {
             AccountEntity accountEntity = SignUpRequest.convertToEntity(signUpRequest);
             accountRepository.save(accountEntity);
         } else {
-            throw new EntityExistedException("Email " + signUpRequest.getEmail() + " is existed");
+            throw new EntityExistedException(errorMessage);
         }
     }
 
@@ -64,7 +75,7 @@ public class AccountServiceImpl implements AccountService {
             totalHostServices = serviceRepository.getTotalHostServices(email);
             imageUrl = imageRepository.findAvatarByEmail(email);
         } else {
-            throw new RuntimeException("Do not find account!");
+            throw new RuntimeException("Do not find account: " + email);
         }
         return new ProfileResponse(accountEntity)
                 .setTotalJoinedEvents(totalJoinedEvents)
@@ -149,6 +160,16 @@ public class AccountServiceImpl implements AccountService {
         accountRepository.updatePassword(email, encoder.encode(password));
     }
 
+    @Override
+    public void updateRole(String email, String roleId) throws Exception {
+        accountRepository.updateRole(email, roleId);
+    }
+
+    @Override
+    public void updateDeviceToken(String email, String deviceToken) throws Exception {
+        accountRepository.updateDeviceToken(email, deviceToken);
+    }
+
 //    private List<Map<String, Object>> convertObjectToParticipantResponse(List<Object[]> participants) {
 //        List<Map<String, Object>> result = new ArrayList<>();
 //        if (!participants.isEmpty()) {
@@ -170,12 +191,18 @@ public class AccountServiceImpl implements AccountService {
             for (ParticipantsMapping obj : participants) {
                 String email = obj.getEmail();
                 String fullname = obj.getFullname();
+                Boolean gender = obj.getGender();
                 String phone = obj.getPhone();
+                Integer balancePoint = obj.getBalancePoint();
+                Timestamp joinDate = obj.getJoinDate();
                 String imageUrl = obj.getImageUrl();
                 Map<String, Object> map = new HashMap<>();
                 map.put("email", email);
                 map.put("fullname", fullname);
+                map.put("gender", gender);
                 map.put("phone", phone);
+                map.put("balancePoint", balancePoint);
+                map.put("joinDate", joinDate);
                 map.put("imageUrl", imageUrl);
                 result.add(map);
             }

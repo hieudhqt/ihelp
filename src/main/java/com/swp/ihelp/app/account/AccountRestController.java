@@ -98,6 +98,12 @@ public class AccountRestController {
         return "Created new account";
     }
 
+    @PostMapping("/accounts/{email}/device_token")
+    public ResponseEntity<String> insertDeviceToken(@PathVariable String email, @RequestBody String deviceToken) throws Exception {
+        accountService.updateDeviceToken(email, deviceToken);
+        return ResponseEntity.ok("Added device token");
+    }
+
     @GetMapping("/accounts/{email}")
     public ResponseEntity<ProfileResponse> findById(@PathVariable String email) throws Exception {
         ProfileResponse response = accountService.findById(email);
@@ -128,14 +134,19 @@ public class AccountRestController {
         return accountService.findByServiceId(serviceId);
     }
 
-    @PutMapping("/accounts/{email}/status")
-    public void updateStatus(@PathVariable String email, @RequestBody String statusId) throws Exception {
+    @PutMapping("/accounts/{email}/status/{statusId}")
+    public void updateStatus(@PathVariable String email, @PathVariable String statusId) throws Exception {
         accountService.updateStatus(email, statusId);
     }
 
     @PutMapping("/accounts/{email}/reset_password")
     public void updatePassword(@PathVariable String email, @RequestBody String password) throws Exception {
         accountService.updatePassword(email, password);
+    }
+
+    @PutMapping("/accounts/{email}/role/{roleId}")
+    public void updateRole(@PathVariable String email, @PathVariable String roleId) throws Exception {
+        accountService.updateRole(email, roleId);
     }
 
     @PutMapping("/accounts")

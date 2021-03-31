@@ -22,7 +22,7 @@ public class ProfileResponse implements Serializable  {
 
     private String phone;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Ho-Chi-Minh")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Ho_Chi_Minh")
     private Date dateOfBirth;
 
     private String imageUrl;

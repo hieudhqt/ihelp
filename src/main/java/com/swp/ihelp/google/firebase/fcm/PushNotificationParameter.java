@@ -1,13 +1,13 @@
 package com.swp.ihelp.google.firebase.fcm;
 
-public enum NotificationParameter {
+public enum PushNotificationParameter {
 
     SOUND("default"),
     COLOR("#5EAB46");
 
     private String value;
 
-    NotificationParameter(String value) {
+    PushNotificationParameter(String value) {
         this.value = value;
     }
 
