@@ -1,14 +1,13 @@
 package com.swp.ihelp.app.service;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.swp.ihelp.app.account.AccountEntity;
 import com.swp.ihelp.app.image.ImageEntity;
 import com.swp.ihelp.app.servicecategory.ServiceCategoryEntity;
 import com.swp.ihelp.app.servicejointable.ServiceHasAccountEntity;
 import com.swp.ihelp.app.status.StatusEntity;
 import com.swp.ihelp.config.StringPrefixedSequenceIdGenerator;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.Accessors;
 import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.GenericGenerator;
@@ -32,7 +31,7 @@ public class ServiceEntity {
 
     // ID format: SV_0000x
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE,generator = "service_seq")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "service_seq")
     @GenericGenerator(
             name = "service_seq",
             strategy = "com.swp.ihelp.config.StringPrefixedSequenceIdGenerator",
@@ -100,7 +99,7 @@ public class ServiceEntity {
     @JoinTable(name = "service_category_has_service",
             joinColumns = @JoinColumn(name = "service_id"),
             inverseJoinColumns = @JoinColumn(name = "service_category_id"))
-    private Set<ServiceCategoryEntity> categories = new HashSet<>();
+    private Set<ServiceCategoryEntity> serviceCategories = new HashSet<>();
 
     @ManyToMany(fetch = FetchType.LAZY,
             cascade = {CascadeType.PERSIST, CascadeType.MERGE,
@@ -109,13 +108,14 @@ public class ServiceEntity {
             joinColumns = @JoinColumn(name = "service_id"),
             inverseJoinColumns = @JoinColumn(name = "image_id"))
     private Set<ImageEntity> images = new HashSet<>();
-
-    public void addCategory(ServiceCategoryEntity category) {
-        if (categories.contains(category)) {
-            return;
-        }
-        categories.add(category);
-    }
+    @OneToMany(
+            fetch = FetchType.LAZY,
+            mappedBy = "service",
+            cascade = {CascadeType.PERSIST, CascadeType.MERGE,
+                    CascadeType.DETACH, CascadeType.REFRESH}
+    )
+    @Getter(value = AccessLevel.NONE)
+    private Set<ServiceHasAccountEntity> serviceAccount = new HashSet<>();
 
     public void addImage(ImageEntity imageEntity) {
         if (images.contains(imageEntity)) {
@@ -124,12 +124,10 @@ public class ServiceEntity {
         images.add(imageEntity);
     }
 
-    @OneToMany(
-            mappedBy = "service",
-            cascade = {CascadeType.PERSIST, CascadeType.MERGE,
-                    CascadeType.DETACH, CascadeType.REFRESH}
-    )
-    private Set<ServiceHasAccountEntity> serviceAccount = new HashSet<>();
+    @JsonBackReference
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "manager_email", referencedColumnName = "email", nullable = true)
+    private AccountEntity managerAccount;
 
     public Set<ServiceHasAccountEntity> getServiceAccount() {
         return Collections.unmodifiableSet(serviceAccount);
@@ -151,4 +149,14 @@ public class ServiceEntity {
         serviceAccount.remove(serviceHasAccount);
     }
 
+    @Basic
+    @Column(name = "reason", nullable = true)
+    private String reason;
+
+    public void addCategory(ServiceCategoryEntity category) {
+        if (serviceCategories.contains(category)) {
+            return;
+        }
+        serviceCategories.add(category);
+    }
 }

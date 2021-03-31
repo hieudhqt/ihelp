@@ -4,14 +4,12 @@ import com.swp.ihelp.app.account.AccountEntity;
 import com.swp.ihelp.app.event.EventEntity;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
 
 @Entity
 @Table(name = "event_has_account", schema = "ihelp")
-@NoArgsConstructor
 @AllArgsConstructor
 @Getter
 public class EventHasAccountEntity {
@@ -46,16 +44,14 @@ public class EventHasAccountEntity {
     @Column(name = "join_date")
     private Timestamp joinDate = new Timestamp(System.currentTimeMillis());
 
-//    @Override
-//    public boolean equals(Object o) {
-//        if (this == o) return true;
-//        if (o == null || getClass() != o.getClass()) return false;
-//        EventHasAccountEntity that = (EventHasAccountEntity) o;
-//        return Objects.equals(event, that.event) && Objects.equals(account, that.account);
-//    }
-//
-//    @Override
-//    public int hashCode() {
-//        return Objects.hash(event, account);
-//    }
+    @Column(name = "is_evaluated", columnDefinition = "BIT(1) default b'0'")
+    private Boolean isEvaluated;
+
+    public EventHasAccountEntity() {
+        this.isEvaluated = false;
+    }
+
+    public void setEvaluated(Boolean evaluated) {
+        isEvaluated = evaluated;
+    }
 }

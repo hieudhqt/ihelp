@@ -1,4 +1,4 @@
-package com.swp.ihelp.app.event;
+package com.swp.ihelp.app.service;
 
 import com.swp.ihelp.app.account.AccountEntity;
 import com.swp.ihelp.app.entity.SearchCriteria;
@@ -12,17 +12,17 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class EventSpecification implements Specification<EventEntity> {
+public class ServiceSpecification implements Specification<ServiceEntity> {
     private SearchCriteria criteria;
 
-    public EventSpecification(SearchCriteria criteria) {
+    public ServiceSpecification(SearchCriteria criteria) {
         this.criteria = criteria;
     }
 
     @SneakyThrows
     @Override
     public Predicate toPredicate
-            (Root<EventEntity> root, CriteriaQuery<?> query, CriteriaBuilder builder) {
+            (Root<ServiceEntity> root, CriteriaQuery<?> query, CriteriaBuilder builder) {
         if (criteria.getOperation().equalsIgnoreCase(">")) {
             if (criteria.getKey().contains("Date")) {
                 SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -54,23 +54,19 @@ public class EventSpecification implements Specification<EventEntity> {
                     Timestamp timestamp = new java.sql.Timestamp(parsedDate.getTime());
                     return builder.equal(
                             root.<Timestamp>get(criteria.getKey()), timestamp);
-                } else if (criteria.getKey().equals("eventCategories")) {
-                    Join<EventEntity, EventCategoryEntity> join = root.join("eventCategories");
+                } else if (criteria.getKey().equals("serviceCategories")) {
+                    Join<ServiceEntity, EventCategoryEntity> join = root.join("serviceCategories");
                     return builder.equal(join.<Integer>get("id"), criteria.getValue());
                 } else if (criteria.getKey().equals("authorAccount")) {
-                    Join<EventEntity, AccountEntity> join = root.join("authorAccount");
+                    Join<ServiceEntity, AccountEntity> join = root.join("authorAccount");
                     return builder.equal(join.<String>get("email"), criteria.getValue());
                 } else if (criteria.getKey().equals("status")) {
-                    Join<EventEntity, StatusEntity> join = root.join("status");
+                    Join<ServiceEntity, StatusEntity> join = root.join("status");
                     return builder.equal(join.<Integer>get("id"), criteria.getValue());
-                } else if (criteria.getKey().equals("isOnsite")) {
-                    return builder.equal(root.<Boolean>get(criteria.getKey()), Boolean.parseBoolean(criteria.getValue().toString()));
                 }
                 return builder.equal(root.get(criteria.getKey()), criteria.getValue());
             }
         }
         return null;
     }
-
-
 }

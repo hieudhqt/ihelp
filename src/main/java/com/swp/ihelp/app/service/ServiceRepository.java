@@ -3,14 +3,12 @@ package com.swp.ihelp.app.service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface ServiceRepository extends JpaRepository<ServiceEntity, String> {
-    @Query("SELECT s from ServiceEntity s order by s.status.id")
-    Page<ServiceEntity> findAll(Pageable pageable);
-
+public interface ServiceRepository extends JpaRepository<ServiceEntity, String>, JpaSpecificationExecutor<ServiceEntity> {
     @Query("SELECT s from ServiceEntity s where s.title like %:title%")
     Page<ServiceEntity> findByTitle(String title, Pageable pageable);
 

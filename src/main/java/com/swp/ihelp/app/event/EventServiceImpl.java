@@ -5,18 +5,22 @@ import com.swp.ihelp.app.account.AccountRepository;
 import com.swp.ihelp.app.entity.SearchCriteria;
 import com.swp.ihelp.app.event.request.CreateEventRequest;
 import com.swp.ihelp.app.event.request.EvaluationRequest;
+import com.swp.ihelp.app.event.request.RejectEventRequest;
 import com.swp.ihelp.app.event.request.UpdateEventRequest;
 import com.swp.ihelp.app.event.response.EventDetailResponse;
 import com.swp.ihelp.app.event.response.EventResponse;
 import com.swp.ihelp.app.eventcategory.EventCategoryEntity;
 import com.swp.ihelp.app.eventcategory.EventCategoryRepository;
 import com.swp.ihelp.app.eventjointable.EventHasAccountEntity;
+import com.swp.ihelp.app.eventjointable.EventHasAccountEntityPK;
 import com.swp.ihelp.app.eventjointable.EventHasAccountRepository;
 import com.swp.ihelp.app.image.ImageEntity;
 import com.swp.ihelp.app.image.ImageRepository;
 import com.swp.ihelp.app.image.request.ImageRequest;
 import com.swp.ihelp.app.point.PointEntity;
 import com.swp.ihelp.app.point.PointRepository;
+import com.swp.ihelp.app.status.StatusEntity;
+import com.swp.ihelp.app.status.StatusEnum;
 import com.swp.ihelp.app.status.StatusRepository;
 import com.swp.ihelp.exception.EntityNotFoundException;
 import com.swp.ihelp.message.EventMessage;
@@ -27,12 +31,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 @PropertySource("classpath:constant.properties")
@@ -41,14 +48,17 @@ public class EventServiceImpl implements EventService {
     @Value("${paging.page-size}")
     private int pageSize;
 
-    @Value("${date.minStartDateFromNearestEndDate}")
-    private long minStartDateFromNearestEndDate;
+    @Value("${point.bonus-percent}")
+    private float bonusPointPercent;
 
     @Value("${date.minStartDateFromCreate}")
     private int minStartDateFromCreate;
 
     @Value("${date.startDateFromEndRegistration}")
     private int startDateFromEndRegistration;
+
+    @Value("${pattern.search-filter}")
+    private String filterPattern;
 
     private EventRepository eventRepository;
     private EventHasAccountRepository eventHasAccountRepository;
@@ -84,6 +94,29 @@ public class EventServiceImpl implements EventService {
         Map<String, Object> response = getEventResponseMap(pageEvents);
         return response;
     }
+
+    @Override
+    public Map<String, Object> findAll(int page, String search) throws Exception {
+        Pageable paging = PageRequest.of(page, pageSize,
+                Sort.by("startDate").descending().and(Sort.by("id").ascending()));
+
+        EventSpecificationBuilder builder = new EventSpecificationBuilder();
+        Pattern pattern = Pattern.compile(filterPattern);
+        Matcher matcher = pattern.matcher(search + ",");
+        while (matcher.find()) {
+            builder.with(matcher.group(1), matcher.group(2), matcher.group(3));
+        }
+        Specification<EventEntity> spec = builder.build();
+
+        Page<EventEntity> pageEvents = eventRepository.findAll(spec, paging);
+        if (pageEvents.isEmpty()) {
+            throw new EntityNotFoundException("Event not found.");
+        }
+
+        Map<String, Object> response = getEventResponseMap(pageEvents);
+        return response;
+    }
+
 
     @Override
     public EventDetailResponse findById(String id) throws Exception {
@@ -181,11 +214,14 @@ public class EventServiceImpl implements EventService {
         eventToUpdate.setTitle(eventRequest.getTitle());
         eventToUpdate.setDescription(eventRequest.getDescription());
         eventToUpdate.setLocation(eventRequest.getLocation());
+        eventToUpdate.setLatitude(eventRequest.getLatitude());
+        eventToUpdate.setLongitude(eventRequest.getLongitude());
         eventToUpdate.setPoint(eventRequest.getPoint());
         eventToUpdate.setQuota(eventRequest.getQuota());
         eventToUpdate.setIsOnsite(eventRequest.getOnsite());
         eventToUpdate.setStartDate(new Timestamp(eventRequest.getStartDate().getTime()));
         eventToUpdate.setEndDate(new Timestamp(eventRequest.getEndDate().getTime()));
+
 
 //        if (eventRequest.getImages() != null) {
 //            Set<ImageEntity> imagesToUpdate = UpdateImageRequest
@@ -223,6 +259,64 @@ public class EventServiceImpl implements EventService {
         eventRepository.updateStatus(eventId, statusId);
     }
 
+    @Override
+    public void approve(String eventId, String managerEmail) throws Exception {
+        if (!eventRepository.existsById(eventId)) {
+            throw new EntityNotFoundException("Event with ID:" + eventId + " not found.");
+        }
+        if (!accountRepository.existsById(managerEmail)) {
+            throw new EntityNotFoundException("Account " + managerEmail + " not found.");
+        }
+
+        EventEntity eventEntity = eventRepository.getOne(eventId);
+
+        if (eventEntity.getStatus().getId() != StatusEnum.PENDING.getId()) {
+            throw new RuntimeException("You can only approve or reject event if it is pending");
+        }
+        if (eventEntity.getAuthorAccount().getEmail().equals(managerEmail)) {
+            throw new RuntimeException("You cannot approve or reject your own event.");
+        }
+
+        AccountEntity hostAccount = accountRepository.getOne(eventEntity.getAuthorAccount().getEmail());
+        AccountEntity approver = accountRepository.getOne(managerEmail);
+
+        int pointNeeded = eventEntity.getPoint() * eventEntity.getQuota();
+        hostAccount.decreaseBalancePoint(pointNeeded);
+        accountRepository.save(hostAccount);
+
+        eventEntity.setManagerAccount(approver);
+        eventEntity.setStatus(new StatusEntity().setId(StatusEnum.APPROVED.getId()));
+        eventRepository.save(eventEntity);
+    }
+
+    @Override
+    public void reject(RejectEventRequest request) throws Exception {
+        String eventId = request.getEventId();
+        String managerEmail = request.getManagerEmail();
+        if (!eventRepository.existsById(eventId)) {
+            throw new EntityNotFoundException("Event with ID:" + eventId + " not found.");
+        }
+        if (!accountRepository.existsById(managerEmail)) {
+            throw new EntityNotFoundException("Account " + managerEmail + " not found.");
+        }
+
+        EventEntity eventEntity = eventRepository.getOne(eventId);
+
+        if (eventEntity.getStatus().getId() != StatusEnum.PENDING.getId()) {
+            throw new RuntimeException("You can only approve or reject event if it is pending");
+        }
+        if (eventEntity.getAuthorAccount().getEmail().equals(managerEmail)) {
+            throw new RuntimeException("You cannot approve or reject your own event.");
+        }
+
+        AccountEntity rejecter = accountRepository.getOne(managerEmail);
+
+        eventEntity.setManagerAccount(rejecter);
+        eventEntity.setStatus(new StatusEntity().setId(StatusEnum.REJECTED.getId()));
+        eventEntity.setReason(request.getReason());
+        eventRepository.save(eventEntity);
+    }
+
     //1. Save feedback
     //2. Save PointEntity for both host and member
     //3. Update balance and cumulative point for host and member.
@@ -234,49 +328,63 @@ public class EventServiceImpl implements EventService {
             throw new RuntimeException("Event is not yet completed.");
         }
         AccountEntity memberAccount = accountRepository.getOne(request.getMemberEmail());
-        boolean valid = false;
-        List<String> memberEmails = eventHasAccountRepository.findMemberEmailsByEventId(request.getEventId());
-        for (String email : memberEmails) {
-            if (email.equals(memberAccount.getEmail())) {
-                valid = true;
-                break;
-            }
-        }
 
-        if (!valid) {
-            throw new RuntimeException("Member account is invalid!");
+        EventHasAccountEntityPK eventHasAccountEntityPK = new
+                EventHasAccountEntityPK(eventEntity.getId(), memberAccount.getEmail());
+
+        if (!eventHasAccountRepository.existsById(eventHasAccountEntityPK)) {
+            throw new RuntimeException("This account has not joined this event.");
         } else {
-            AccountEntity hostAccount = eventEntity.getAuthorAccount();
-
-            int participationPoint = (int) Math.floor((request.getRating() / 5f) * eventEntity.getPoint());
-
-            Timestamp currentTimestamp = new Timestamp(System.currentTimeMillis());
-
-            PointEntity hostPointEntity = new PointEntity();
-            hostPointEntity.setIsReceived(false);
-            hostPointEntity.setDescription("Rating: " + request.getRating() + " stars\n" +
-                    "Description: " + request.getComment());
-            hostPointEntity.setCreatedDate(currentTimestamp);
-            hostPointEntity.setAccount(hostAccount);
-            hostPointEntity.setAmount(participationPoint);
-            pointRepository.save(hostPointEntity);
-
-            PointEntity memberPointEntity = new PointEntity();
-            memberPointEntity.setIsReceived(true);
-            memberPointEntity.setDescription("Rating: " + request.getRating() + " stars\n" +
-                    "Description: " + request.getComment());
-            memberPointEntity.setCreatedDate(currentTimestamp);
-            memberPointEntity.setAccount(memberAccount);
-            memberPointEntity.setAmount(participationPoint);
-            pointRepository.save(memberPointEntity);
-
-            memberAccount.addBalancePoint(participationPoint);
-            memberAccount.addContributionPoint(participationPoint);
-            hostAccount.decreaseBalancePoint(participationPoint);
-            hostAccount.addContributionPoint(participationPoint);
-            accountRepository.save(memberAccount);
-            accountRepository.save(hostAccount);
+            EventHasAccountEntity eventHasAccount = eventHasAccountRepository
+                    .getOne(eventHasAccountEntityPK);
+            eventHasAccount.setEvaluated(true);
+            eventHasAccountRepository.save(eventHasAccount);
         }
+
+        AccountEntity hostAccount = eventEntity.getAuthorAccount();
+
+        int participationPoint = 0;
+        int bonusPoint = 0;
+        switch (request.getRating()) {
+            case 1:
+                participationPoint = 0;
+                break;
+            case 2:
+                participationPoint = eventEntity.getPoint();
+                break;
+            case 3:
+                participationPoint = eventEntity.getPoint();
+                bonusPoint = Math.round(eventEntity.getPoint()
+                        + eventEntity.getPoint() * bonusPointPercent);
+                break;
+            default:
+                throw new RuntimeException("Invalid rating.");
+        }
+
+        Timestamp currentTimestamp = new Timestamp(System.currentTimeMillis());
+
+        PointEntity hostPointEntity = new PointEntity();
+        hostPointEntity.setIsReceived(false);
+        hostPointEntity.setDescription("Rating: " + request.getRating() + " stars\n" +
+                "Description: " + request.getComment());
+        hostPointEntity.setCreatedDate(currentTimestamp);
+        hostPointEntity.setAccount(hostAccount);
+        hostPointEntity.setAmount(participationPoint);
+        pointRepository.save(hostPointEntity);
+
+        PointEntity memberPointEntity = new PointEntity();
+        memberPointEntity.setIsReceived(true);
+        memberPointEntity.setDescription("Rating: " + request.getRating() + " stars\n" +
+                "Description: " + request.getComment());
+        memberPointEntity.setCreatedDate(currentTimestamp);
+        memberPointEntity.setAccount(memberAccount);
+        memberPointEntity.setAmount(participationPoint);
+        pointRepository.save(memberPointEntity);
+
+        memberAccount.addBalancePoint(participationPoint);
+        if (bonusPoint > 0)
+            memberAccount.addContributionPoint(participationPoint);
+        accountRepository.save(memberAccount);
     }
 
     @Override
@@ -330,6 +438,10 @@ public class EventServiceImpl implements EventService {
             errorMsg += "Event host cannot join his/her own event;";
         }
 
+        if (eventRepository.isAccountJoinedAnyEvent(new Date(), email) != null) {
+            errorMsg += "This email has already joined another event;";
+        }
+
         Calendar endRegistrationDate = Calendar.getInstance();
         endRegistrationDate.setTime(event.getStartDate());
         endRegistrationDate.add(Calendar.DAY_OF_MONTH, -startDateFromEndRegistration);
@@ -338,34 +450,12 @@ public class EventServiceImpl implements EventService {
         endRegistrationDate.set(Calendar.SECOND, 0);
         endRegistrationDate.set(Calendar.MILLISECOND, 0);
 
-        Calendar currentDate = Calendar.getInstance();
-        if (currentDate.compareTo(endRegistrationDate) > 0) {
+        Calendar currentCalendar = Calendar.getInstance();
+        if (currentCalendar.compareTo(endRegistrationDate) > 0) {
             errorMsg += "Registration deadline is due.";
         }
 
         return errorMsg;
-    }
-
-    private Map<String, Object> getEventResponseMap(Page<EventEntity> pageEvents) throws Exception {
-        List<EventEntity> eventEntityList = pageEvents.getContent();
-        List<EventResponse> eventResponses = convertEntitesToEventResponses(eventEntityList);
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("events", eventResponses);
-        response.put("currentPage", pageEvents.getNumber());
-        response.put("totalItems", pageEvents.getTotalElements());
-        response.put("totalPages", pageEvents.getTotalPages());
-
-        return response;
-    }
-
-    private List<EventResponse> convertEntitesToEventResponses(List<EventEntity> eventEntityList) throws Exception {
-        List<EventResponse> result = EventResponse.convertToResponseList(eventEntityList);
-        for (EventResponse response : result) {
-            int remainingSpot = eventRepository.getRemainingSpot(response.getId());
-            response.setSpot(remainingSpot);
-        }
-        return result;
     }
 
     private String validateCreateEvent(CreateEventRequest event) {
@@ -410,5 +500,27 @@ public class EventServiceImpl implements EventService {
         }
 
         return errorMsg;
+    }
+
+    private Map<String, Object> getEventResponseMap(Page<EventEntity> pageEvents) throws Exception {
+        List<EventEntity> eventEntityList = pageEvents.getContent();
+        List<EventResponse> eventResponses = convertEntitesToEventResponses(eventEntityList);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("events", eventResponses);
+        response.put("currentPage", pageEvents.getNumber());
+        response.put("totalItems", pageEvents.getTotalElements());
+        response.put("totalPages", pageEvents.getTotalPages());
+
+        return response;
+    }
+
+    private List<EventResponse> convertEntitesToEventResponses(List<EventEntity> eventEntityList) throws Exception {
+        List<EventResponse> result = EventResponse.convertToResponseList(eventEntityList);
+        for (EventResponse response : result) {
+            int remainingSpot = eventRepository.getRemainingSpot(response.getId());
+            response.setSpot(remainingSpot);
+        }
+        return result;
     }
 }

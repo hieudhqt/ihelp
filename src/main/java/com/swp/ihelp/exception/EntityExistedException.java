@@ -1,6 +1,6 @@
 package com.swp.ihelp.exception;
 
-public class EntityExistedException extends RuntimeException{
+public class EntityExistedException extends RuntimeException {
     public EntityExistedException(String message, Throwable cause) {
         super(message, cause);
     }

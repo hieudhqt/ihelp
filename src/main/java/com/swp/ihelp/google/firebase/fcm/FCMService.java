@@ -123,7 +123,7 @@ public class FCMService {
                 .setCollapseKey(topic)
                 .setPriority(AndroidConfig.Priority.HIGH)
                 .setNotification(AndroidNotification.builder().setSound(NotificationParameter.SOUND.getValue())
-                .setColor(NotificationParameter.COLOR.getValue()).setTag(topic).build()).build();
+                        .setColor(NotificationParameter.COLOR.getValue()).setTag(topic).build()).build();
     }
 
     private ApnsConfig getApnsConfig(String topic) {

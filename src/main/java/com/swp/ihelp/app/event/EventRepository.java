@@ -34,7 +34,7 @@ public interface EventRepository extends JpaRepository<EventEntity, String>, Jpa
     Page<EventEntity> findByParticipantEmail(String email, int statusId, Pageable pageable);
 
     @Query("SELECT count(e.event.authorAccount) from EventHasAccountEntity e where e.event.id = :eventId")
-    int getSpotUsed(String eventId);
+    Integer getSpotUsed(String eventId);
 
     @Query("SELECT e.startDate From EventEntity e")
     List<Timestamp> getAllStartDates();
@@ -45,29 +45,35 @@ public interface EventRepository extends JpaRepository<EventEntity, String>, Jpa
                     "            Where event_id = :eventId)) AS RemainingSpot " +
                     "FROM ihelp.event e " +
                     "Where e.id = :eventId ", nativeQuery = true)
-    int getRemainingSpot(String eventId);
+    Integer getRemainingSpot(String eventId);
 
     @Query("SELECT e.quota from EventEntity e where e.id = :eventId")
-    int getQuota(String eventId);
+    Integer getQuota(String eventId);
 
     @Modifying
     @Query(value = "UPDATE ihelp.event e Set e.status_id = :statusId Where e.id = :eventId ", nativeQuery = true)
     void updateStatus(String eventId, int statusId);
 
-    @Query(value = "SELECT e.end_date FROM ihelp.event e WHERE e.end_date <= :date " +
-            "AND e.account_email = :email " +
-            "ORDER BY e.end_date DESC Limit 1 ", nativeQuery = true)
-    Date getNearestEventEndDate(String email, String date);
+    @Query("SELECT DISTINCT 1 " +
+            "FROM EventEntity e " +
+            "INNER JOIN EventHasAccountEntity ea on e.id = ea.event.id " +
+            "WHERE e.startDate <= :date " +
+            "AND e.endDate >= :date " +
+            "AND ea.account.email = :email ")
+    Integer isAccountJoinedAnyEvent(Date date, String email);
 
-    @Query(value = "SELECT e.start_date FROM ihelp.event e WHERE e.start_date >= :date " +
-            "AND e.account_email = :email " +
+    @Query(value = "SELECT e.id, e.end_date FROM ihelp.event e WHERE e.end_date <= :date " +
+            "ORDER BY e.end_date DESC Limit 1 ", nativeQuery = true)
+    Object[] getNearestEventEndDate(String date);
+
+    @Query(value = "SELECT e.id, e.start_date FROM ihelp.event e WHERE e.start_date >= :date " +
             "ORDER BY e.start_date ASC Limit 1 ", nativeQuery = true)
-    Date getNearestEventStartDate(String email, String date);
+    Object[] getNearestEventStartDate(String date);
 
     @Query("SELECT COUNT(e.id.accountEmail) FROM EventHasAccountEntity e WHERE e.id.accountEmail=:email")
-    int getTotalJoinedEvents(String email);
+    Integer getTotalJoinedEvents(String email);
 
     @Query("SELECT COUNT(e) FROM EventEntity e WHERE e.authorAccount.email=:email")
-    int getTotalHostEvents(String email);
+    Integer getTotalHostEvents(String email);
 }
 

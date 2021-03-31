@@ -1,6 +1,7 @@
 package com.swp.ihelp.app.service;
 
 import com.swp.ihelp.app.service.request.CreateServiceRequest;
+import com.swp.ihelp.app.service.request.RejectServiceRequest;
 import com.swp.ihelp.app.service.request.UpdateServiceRequest;
 import com.swp.ihelp.app.service.response.ServiceDetailResponse;
 import com.swp.ihelp.message.ServiceMessage;
@@ -29,6 +30,15 @@ public class ServiceController {
     @GetMapping("/services")
     public ResponseEntity<Map<String, Object>> findAll(@RequestParam(value = "page") int page) throws Exception {
         Map<String, Object> response = serviceVolunteerService.findAll(page);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @GetMapping("/services/filter")
+    public ResponseEntity<Map<String, Object>> findAllWithFilter(@RequestParam(value = "search", required = false)
+                                                                         String search,
+                                                                 @RequestParam(value = "page") int page)
+            throws Exception {
+        Map<String, Object> response = serviceVolunteerService.findAll(page, search);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -77,6 +87,21 @@ public class ServiceController {
         return new ResponseEntity<>(updatedService, HttpStatus.OK);
     }
 
+    @PutMapping("/services/{email}/approve/{serviceId}")
+    public ResponseEntity<String> approve(@PathVariable String email,
+                                          @PathVariable String serviceId) throws Exception {
+        serviceVolunteerService.approve(serviceId, email);
+        return ResponseEntity.ok("Service " + serviceId + " has been approved by " + email);
+    }
+
+    @PutMapping("/services/reject")
+    public ResponseEntity<String> reject(@Valid @RequestBody RejectServiceRequest request) throws Exception {
+        serviceVolunteerService.reject(request);
+        return ResponseEntity.ok("Service " + request.getServiceId() +
+                " has been rejected by " + request.getManagerEmail() + ", reason: "
+                + request.getReason());
+    }
+
     @DeleteMapping("/services/{serviceId}")
     public String deleteService(@PathVariable String serviceId) throws Exception {
         ServiceDetailResponse response = serviceVolunteerService.findById(serviceId);
@@ -92,4 +117,5 @@ public class ServiceController {
         serviceVolunteerService.useService(email, serviceId);
         return serviceMessage.getServiceUsedMessage(email, serviceId);
     }
+
 }
