@@ -40,4 +40,6 @@ public interface EventService {
     void reject(RejectEventRequest request) throws Exception;
 
     void evaluateMember(EvaluationRequest request) throws Exception;
+
+    Map<String, Object> findNearbyEvents(int page, float radius, double lat, double lng) throws Exception;
 }

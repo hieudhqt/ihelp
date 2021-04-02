@@ -10,6 +10,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -22,8 +23,6 @@ import java.util.Set;
 @NoArgsConstructor
 @ToString
 public class CreateServiceRequest implements Serializable {
-    private String id;
-
     @NotBlank(message = "Title is required.")
     private String title;
 
@@ -37,6 +36,7 @@ public class CreateServiceRequest implements Serializable {
     private String latitude;
 
     @Min(0)
+    @Max(100)
     private Integer quota;
 
     @Min(0)

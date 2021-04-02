@@ -34,4 +34,6 @@ public interface ServiceVolunteerService {
     void approve(String eventId, String managerEmail) throws Exception;
 
     void reject(RejectServiceRequest request) throws Exception;
+
+    Map<String, Object> findNearbyServices(int page, float radius, double lat, double lng) throws Exception;
 }

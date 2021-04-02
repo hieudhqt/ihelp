@@ -1,5 +1,6 @@
 package com.swp.ihelp.scheduler;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
@@ -7,9 +8,14 @@ import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
+import javax.persistence.EntityManager;
+
 //@Configuration
 @EnableAsync
 public class ThreadConfig {
+
+    @Autowired
+    private EntityManager entityManager;
 
     @Bean(name = "eventTaskExecutor")
     public TaskExecutor threadPoolTaskExecutor() {
@@ -28,7 +34,7 @@ public class ThreadConfig {
         return new CommandLineRunner() {
             @Override
             public void run(String... args) throws Exception {
-                executor.execute(new EventTaskDispatcher());
+                executor.execute(new EventTaskDispatcher(entityManager));
             }
         };
     }

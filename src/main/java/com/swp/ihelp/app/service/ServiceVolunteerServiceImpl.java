@@ -11,6 +11,7 @@ import com.swp.ihelp.app.service.request.CreateServiceRequest;
 import com.swp.ihelp.app.service.request.RejectServiceRequest;
 import com.swp.ihelp.app.service.request.UpdateServiceRequest;
 import com.swp.ihelp.app.service.response.ServiceDetailResponse;
+import com.swp.ihelp.app.service.response.ServiceDistanceResponse;
 import com.swp.ihelp.app.service.response.ServiceResponse;
 import com.swp.ihelp.app.servicecategory.ServiceCategoryEntity;
 import com.swp.ihelp.app.servicecategory.ServiceCategoryRepository;
@@ -149,6 +150,31 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
                 .findByAuthorEmail(email, paging);
 
         Map<String, Object> response = getServiceResponseMap(pageServices);
+        return response;
+    }
+
+    @Override
+    public Map<String, Object> findNearbyServices(int page, float radius, double lat, double lng) throws Exception {
+        Pageable paging = PageRequest.of(page, pageSize);
+        Page<Object[]> pageServices = serviceRepository.getNearbyServices(radius, lat, lng, paging);
+
+        if (pageServices.isEmpty()) {
+            throw new EntityNotFoundException("Service not found.");
+        }
+        List<Object[]> listServices = pageServices.getContent();
+        List<ServiceDistanceResponse> serviceResponses = new ArrayList<>();
+        for (Object[] obj : listServices) {
+            ServiceEntity service = serviceRepository.getOne((String) obj[0]);
+            ServiceDistanceResponse serviceDistanceResponse = new ServiceDistanceResponse(service);
+            serviceDistanceResponse.setDistance((double) obj[1]);
+            serviceResponses.add(serviceDistanceResponse);
+        }
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("services", serviceResponses);
+        response.put("currentPage", pageServices.getNumber());
+        response.put("totalItems", pageServices.getTotalElements());
+        response.put("totalPages", pageServices.getTotalPages());
         return response;
     }
 

@@ -84,6 +84,15 @@ public class EventController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    @GetMapping("/events/nearby/{radius}")
+    public ResponseEntity<Map<String, Object>> findNearbyEvents(@PathVariable float radius,
+                                                                @RequestParam(value = "lat") double lat,
+                                                                @RequestParam(value = "lng") double lng,
+                                                                @RequestParam(value = "page") int page) throws Exception {
+        Map<String, Object> response = eventService.findNearbyEvents(page, radius, lat, lng);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
     @PostMapping("/events")
     public ResponseEntity<String> addEvent(@Valid @RequestBody CreateEventRequest eventRequest) throws Exception {
         String eventId = eventService.insert(eventRequest);

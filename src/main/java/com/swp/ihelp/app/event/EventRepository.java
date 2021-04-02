@@ -75,5 +75,21 @@ public interface EventRepository extends JpaRepository<EventEntity, String>, Jpa
 
     @Query("SELECT COUNT(e) FROM EventEntity e WHERE e.authorAccount.email=:email")
     Integer getTotalHostEvents(String email);
+
+    @Query(value = "SELECT e.id, " +
+            "( " +
+            "   6371 * " +
+            "   acos(cos(radians(:lat)) *  " +
+            "   cos(radians(e.lat)) *  " +
+            "   cos(radians(e.lng) -  " +
+            "   radians(:lng)) +  " +
+            "   sin(radians(:lat)) *  " +
+            "   sin(radians(e.lat ))) " +
+            ") AS distance  " +
+            "FROM ihelp.event e " +
+            "HAVING distance < :radius " +
+            "ORDER BY distance ", nativeQuery = true)
+    Page<Object[]> getNearbyEvents(float radius, double lat, double lng, Pageable pageable);
+
 }
 

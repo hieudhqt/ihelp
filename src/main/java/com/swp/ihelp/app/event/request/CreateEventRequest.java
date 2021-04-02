@@ -9,6 +9,7 @@ import com.swp.ihelp.app.status.StatusEntity;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -34,6 +35,7 @@ public class CreateEventRequest implements Serializable {
     private String latitude;
 
     @Min(0)
+    @Max(100)
     private Integer quota;
 
     @Min(0)

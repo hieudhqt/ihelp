@@ -1,5 +1,6 @@
 package com.swp.ihelp.scheduler;
 
+import com.swp.ihelp.app.event.EventEntity;
 import com.swp.ihelp.app.event.EventRepository;
 import com.swp.ihelp.app.status.StatusEnum;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,7 @@ public class EventTask implements Runnable {
     @Autowired
     private EventRepository eventRepository;
 
+
     public EventTask(CountDownLatch completion) {
         this.completion = completion;
     }
@@ -30,6 +32,7 @@ public class EventTask implements Runnable {
     @Override
     @Async("eventTaskExecutor")
     public void run() {
+        System.out.println("Updating event " + eventId + " ...");
         try {
             if (isStartDate) {
                 startEvent();
@@ -43,10 +46,17 @@ public class EventTask implements Runnable {
     }
 
     private void startEvent() throws InterruptedException {
-        eventRepository.updateStatus(eventId, StatusEnum.ONGOING.getId());
+        EventEntity eventToStart = eventRepository.getOne(eventId);
+        if (eventToStart.getStatus().getId().equals(StatusEnum.APPROVED.getId())) {
+            eventRepository.updateStatus(eventId, StatusEnum.ONGOING.getId());
+        }
+
     }
 
     private void completeEvent() throws InterruptedException {
-        eventRepository.updateStatus(eventId, StatusEnum.COMPLETED.getId());
+        EventEntity eventToStart = eventRepository.getOne(eventId);
+        if (eventToStart.getStatus().getId().equals(StatusEnum.ONGOING.getId())) {
+            eventRepository.updateStatus(eventId, StatusEnum.COMPLETED.getId());
+        }
     }
 }
