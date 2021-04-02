@@ -7,7 +7,7 @@ import java.sql.Timestamp;
 public interface ParticipantsMapping {
 
     String getEmail();
-    String getFullname();
+    String getFullName();
     Boolean getGender();
     String getPhone();
     Integer getBalancePoint();

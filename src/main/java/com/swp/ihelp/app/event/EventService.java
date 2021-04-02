@@ -6,6 +6,7 @@ import com.swp.ihelp.app.event.request.RejectEventRequest;
 import com.swp.ihelp.app.event.request.UpdateEventRequest;
 import com.swp.ihelp.app.event.response.EventDetailResponse;
 
+import java.util.List;
 import java.util.Map;
 
 public interface EventService {
@@ -40,4 +41,6 @@ public interface EventService {
     void reject(RejectEventRequest request) throws Exception;
 
     void evaluateMember(EvaluationRequest request) throws Exception;
+
+    List<String> findEvaluateRequiredByAuthorEmail(String email) throws Exception;
 }

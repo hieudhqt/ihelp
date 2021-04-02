@@ -75,5 +75,12 @@ public interface EventRepository extends JpaRepository<EventEntity, String>, Jpa
 
     @Query("SELECT COUNT(e) FROM EventEntity e WHERE e.authorAccount.email=:email")
     Integer getTotalHostEvents(String email);
+
+    @Query(value = "SELECT e.id " +
+            "FROM event e " +
+            "JOIN event_has_account ea ON e.id = ea.event_id " +
+            "WHERE e.status_id = 4 AND ea.is_evaluated <> 1 AND e.account_email=:email " +
+            "GROUP BY e.id", nativeQuery = true)
+    List<String> findEvaluateRequiredByAuthorEmail(String email);
 }
 

@@ -3,9 +3,11 @@ package com.swp.ihelp.app.account;
 import com.swp.ihelp.app.account.request.ProfileUpdateRequest;
 import com.swp.ihelp.app.account.request.SignUpRequest;
 import com.swp.ihelp.app.account.response.AccountGeneralResponse;
+import com.swp.ihelp.app.account.response.NotEvaluatedParticipantsMapping;
 import com.swp.ihelp.app.account.response.ParticipantsMapping;
 import com.swp.ihelp.app.account.response.ProfileResponse;
 import com.swp.ihelp.app.event.EventRepository;
+import com.swp.ihelp.app.image.ImageEntity;
 import com.swp.ihelp.app.image.ImageRepository;
 import com.swp.ihelp.app.service.ServiceRepository;
 import com.swp.ihelp.exception.EntityExistedException;
@@ -137,37 +139,62 @@ public class AccountServiceImpl implements AccountService {
         return isDeleted;
     }
 
+    @Transactional
     @Override
     public List<Map<String, Object>> findByEventId(String eventId) throws Exception {
-        List<ParticipantsMapping> joinedAccount = accountRepository.findByEventId(eventId);
-        return convertMappingToParticipantResponse(joinedAccount);
+        List<ParticipantsMapping> joinedAccounts = accountRepository.findByEventId(eventId);
+        return convertMappingToParticipantResponse(joinedAccounts);
     }
 
+    @Transactional
     @Override
     public List<Map<String, Object>> findByServiceId(String serviceId) throws Exception {
-        List<ParticipantsMapping> usedAccount = accountRepository.findByServiceId(serviceId);
-        return convertMappingToParticipantResponse(usedAccount);
+        List<ParticipantsMapping> usedAccounts = accountRepository.findByServiceId(serviceId);
+        return convertMappingToParticipantResponse(usedAccounts);
     }
 
+    @Transactional
+    @Override
+    public List<Map<String, Object>> findNotEvaluatedAccountsByEventId(String eventId) throws Exception {
+        List<NotEvaluatedParticipantsMapping> notEvaluatedAccounts = accountRepository.findNotEvaluatedAccountsByEventId(eventId);
+        return convertMappingToNotEvaluatedParticipantResponse(notEvaluatedAccounts);
+    }
+
+    @Transactional
     @Override
     public void updateStatus(String email, String statusId) throws Exception {
         accountRepository.updateStatus(email, statusId);
     }
 
-    @Transactional
     @Override
     public void updatePassword(String email, String password) throws Exception {
         accountRepository.updatePassword(email, encoder.encode(password));
     }
 
+    @Transactional
     @Override
     public void updateRole(String email, String roleId) throws Exception {
         accountRepository.updateRole(email, roleId);
     }
 
+    @Transactional
     @Override
     public void updateDeviceToken(String email, String deviceToken) throws Exception {
         accountRepository.updateDeviceToken(email, deviceToken);
+    }
+
+    @Override
+    public void updateAvatar(String email, String avatarUrl) throws Exception {
+        imageRepository.updateAvatar(email, avatarUrl);
+    }
+
+    @Override
+    public void insertAvatar(String email, String avatarUrl) throws Exception {
+        ImageEntity avatarEntity = new ImageEntity()
+                .setImageUrl(avatarUrl)
+                .setAuthorAccount(new AccountEntity().setEmail(email))
+                .setType("avatar");
+        imageRepository.save(avatarEntity);
     }
 
 //    private List<Map<String, Object>> convertObjectToParticipantResponse(List<Object[]> participants) {
@@ -188,21 +215,40 @@ public class AccountServiceImpl implements AccountService {
     private List<Map<String, Object>> convertMappingToParticipantResponse(List<ParticipantsMapping> participants) {
         List<Map<String, Object>> result = new ArrayList<>();
         if (!participants.isEmpty()) {
-            for (ParticipantsMapping obj : participants) {
-                String email = obj.getEmail();
-                String fullname = obj.getFullname();
-                Boolean gender = obj.getGender();
-                String phone = obj.getPhone();
-                Integer balancePoint = obj.getBalancePoint();
-                Timestamp joinDate = obj.getJoinDate();
-                String imageUrl = obj.getImageUrl();
+            for (ParticipantsMapping mapping : participants) {
+                String email = mapping.getEmail();
+                String fullName = mapping.getFullName();
+                Boolean gender = mapping.getGender();
+                String phone = mapping.getPhone();
+                Integer balancePoint = mapping.getBalancePoint();
+                Timestamp joinDate = mapping.getJoinDate();
+                String imageUrl = mapping.getImageUrl();
                 Map<String, Object> map = new HashMap<>();
                 map.put("email", email);
-                map.put("fullname", fullname);
+                map.put("fullName", fullName);
                 map.put("gender", gender);
                 map.put("phone", phone);
                 map.put("balancePoint", balancePoint);
                 map.put("joinDate", joinDate);
+                map.put("imageUrl", imageUrl);
+                result.add(map);
+            }
+        }
+        return result;
+    }
+
+    private List<Map<String, Object>> convertMappingToNotEvaluatedParticipantResponse(List<NotEvaluatedParticipantsMapping> participants) {
+        List<Map<String, Object>> result = new ArrayList<>();
+        if (!participants.isEmpty()) {
+            for (NotEvaluatedParticipantsMapping mapping : participants) {
+                String email = mapping.getEmail();
+                String fullName = mapping.getFullName();
+                String phone = mapping.getPhone();
+                String imageUrl = mapping.getImageUrl();
+                Map<String, Object> map = new HashMap<>();
+                map.put("email", email);
+                map.put("fullName", fullName);
+                map.put("phone", phone);
                 map.put("imageUrl", imageUrl);
                 result.add(map);
             }
