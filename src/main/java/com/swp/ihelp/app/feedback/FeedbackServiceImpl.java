@@ -54,4 +54,28 @@ public class FeedbackServiceImpl implements FeedbackService {
         return FeedbackResponse.convertToListResponse(feedbackEntities);
     }
 
+    @Override
+    public List<FeedbackResponse> findByEmail(String email, String eventId, String serviceId) throws Exception {
+        List<FeedbackEntity> feedbackEntities = feedbackRepository.findByEmail(email, eventId, serviceId);
+        return FeedbackResponse.convertToListResponse(feedbackEntities);
+    }
+
+    @Override
+    public List<FeedbackResponse> findByEventId(String eventId) throws Exception {
+        List<FeedbackEntity> feedbackEntities = feedbackRepository.findByEventId(eventId);
+        return FeedbackResponse.convertToListResponse(feedbackEntities);
+    }
+
+    @Override
+    public List<FeedbackResponse> findByServiceId(String serviceId) throws Exception {
+        List<FeedbackEntity> feedbackEntities = feedbackRepository.findByServiceId(serviceId);
+        return FeedbackResponse.convertToListResponse(feedbackEntities);
+    }
+
+    @Override
+    public List<FeedbackResponse> getReports() throws Exception {
+        List<FeedbackEntity> feedbackEntities = feedbackRepository.getReports();
+        return FeedbackResponse.convertToListResponse(feedbackEntities);
+    }
+
 }

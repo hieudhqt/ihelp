@@ -17,4 +17,12 @@ public interface FeedbackService {
 
     List<FeedbackResponse> findByStatus(String statusId) throws Exception;
 
+    List<FeedbackResponse> findByEmail(String email, String eventId, String serviceId) throws Exception;
+
+    List<FeedbackResponse> findByEventId(String eventId) throws Exception;
+
+    List<FeedbackResponse> findByServiceId(String serviceId) throws Exception;
+
+    List<FeedbackResponse> getReports() throws Exception;
+
 }

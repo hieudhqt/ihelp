@@ -5,6 +5,7 @@ import com.swp.ihelp.app.event.EventEntity;
 import com.swp.ihelp.app.feedback.FeedbackEntity;
 import com.swp.ihelp.app.service.ServiceEntity;
 import com.swp.ihelp.app.status.StatusEntity;
+import com.swp.ihelp.app.status.StatusEnum;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -21,9 +22,15 @@ public class FeedbackRequest implements Serializable {
 
     public static FeedbackEntity convertToEntity(FeedbackRequest request) {
         AccountEntity accountEntity = new AccountEntity().setEmail(request.getAccountEmail());
-        EventEntity eventEntity = new EventEntity().setId(request.getEventId());
-        ServiceEntity serviceEntity = new ServiceEntity().setId(request.getEventId());
-        StatusEntity statusEntity = new StatusEntity().setId(2);
+        EventEntity eventEntity = null;
+        if (!(request.getEventId() == null)) {
+            eventEntity = new EventEntity().setId(request.getEventId());
+        }
+        ServiceEntity serviceEntity = null;
+        if (!(request.getServiceId() == null)) {
+            serviceEntity = new ServiceEntity().setId(request.getEventId());
+        }
+        StatusEntity statusEntity = new StatusEntity().setId(StatusEnum.PENDING.getId());
         return new FeedbackEntity()
                 .setRating(request.getRating())
                 .setComment(request.getComment())

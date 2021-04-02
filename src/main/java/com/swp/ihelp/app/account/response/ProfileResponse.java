@@ -2,6 +2,7 @@ package com.swp.ihelp.app.account.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.swp.ihelp.app.account.AccountEntity;
+import com.swp.ihelp.app.entity.RoleEntity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -18,7 +19,7 @@ public class ProfileResponse implements Serializable {
 
     private String email;
 
-    private String fullname;
+    private String fullName;
 
     private String phone;
 
@@ -28,6 +29,8 @@ public class ProfileResponse implements Serializable {
     private String imageUrl;
 
     private Boolean gender;
+
+    private RoleEntity role;
 
     private Integer balancePoint;
 
@@ -43,10 +46,11 @@ public class ProfileResponse implements Serializable {
 
     public ProfileResponse(AccountEntity accountEntity) {
         this.email = accountEntity.getEmail();
-        this.fullname = accountEntity.getFullName();
+        this.fullName = accountEntity.getFullName();
         this.phone = accountEntity.getPhone();
         this.dateOfBirth = accountEntity.getDateOfBirth();
         this.gender = accountEntity.getGender();
+        this.role = accountEntity.getRole();
         this.balancePoint = accountEntity.getBalancePoint();
         this.contributionPoint = accountEntity.getContributionPoint();
     }

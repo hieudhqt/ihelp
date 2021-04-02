@@ -2,11 +2,14 @@ package com.swp.ihelp.app.account;
 
 import com.swp.ihelp.app.account.request.LoginRequest;
 import com.swp.ihelp.app.account.request.ProfileUpdateRequest;
+import com.swp.ihelp.app.account.request.ResetPasswordRequest;
 import com.swp.ihelp.app.account.request.SignUpRequest;
 import com.swp.ihelp.app.account.response.AccountGeneralResponse;
 import com.swp.ihelp.app.account.response.LoginResponse;
 import com.swp.ihelp.app.account.response.ProfileResponse;
+import com.swp.ihelp.app.event.EventService;
 import com.swp.ihelp.app.image.ImageService;
+import com.swp.ihelp.security.CustomUser;
 import com.swp.ihelp.security.JwtTokenUtil;
 import com.swp.ihelp.security.UserDetailsServiceImpl;
 import io.jsonwebtoken.impl.DefaultClaims;
@@ -35,32 +38,39 @@ import java.util.Map;
 @CrossOrigin
 public class AccountRestController {
 
-    @Autowired
     private AuthenticationManager authenticationManager;
 
-    @Autowired
     private JwtTokenUtil jwtTokenUtil;
 
-    @Autowired
     private UserDetailsServiceImpl userDetailsService;
 
-    @Autowired
     private final AccountService accountService;
 
-    @Autowired
     private ImageService imageService;
 
-    public AccountRestController(AccountService accountService) {
+    private EventService eventService;
+
+    @Autowired
+    public AccountRestController(AuthenticationManager authenticationManager, JwtTokenUtil jwtTokenUtil, UserDetailsServiceImpl userDetailsService, AccountService accountService, ImageService imageService, EventService eventService) {
+        this.authenticationManager = authenticationManager;
+        this.jwtTokenUtil = jwtTokenUtil;
+        this.userDetailsService = userDetailsService;
         this.accountService = accountService;
+        this.imageService = imageService;
+        this.eventService = eventService;
     }
 
     @PostMapping("/login")
     public LoginResponse login(@RequestBody LoginRequest loginRequest) throws Exception {
         authenticate(loginRequest.getEmail(), loginRequest.getPassword());
         String email = loginRequest.getEmail();
-        final UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+        final CustomUser userDetails = (CustomUser) userDetailsService.loadUserByUsername(email);
         final String accessToken = jwtTokenUtil.generateAccessToken(userDetails);
         String imageUrl = imageService.findAvatarByEmail(email);
+        String fullName = userDetails.getFullName();
+
+        List<String> evaluateRequiredEvents = eventService.findEvaluateRequiredByAuthorEmail(email);
+
         String role = "";
 
         Collection<? extends GrantedAuthority> roles = userDetails.getAuthorities();
@@ -74,7 +84,7 @@ public class AccountRestController {
         if (roles.contains(new SimpleGrantedAuthority("ROLE_USER"))) {
             role = "USER";
         }
-        return new LoginResponse(accessToken, email, imageUrl, role);
+        return new LoginResponse(accessToken, email, fullName, imageUrl, role, evaluateRequiredEvents);
     }
 
     @ApiImplicitParam(name = "isRefreshToken", value = "Set refresh token header", required = true, dataTypeClass = String.class, paramType = "header", defaultValue = "true")
@@ -99,9 +109,15 @@ public class AccountRestController {
     }
 
     @PostMapping("/accounts/{email}/device_token")
-    public ResponseEntity<String> insertDeviceToken(@PathVariable String email, @RequestBody String deviceToken) throws Exception {
+    public ResponseEntity insertDeviceToken(@PathVariable String email, @RequestBody String deviceToken) throws Exception {
         accountService.updateDeviceToken(email, deviceToken);
-        return ResponseEntity.ok("Added device token");
+        return ResponseEntity.ok("Device token added");
+    }
+
+    @PostMapping("/accounts/{email}/avatar")
+    public ResponseEntity insertAvatar(@PathVariable String email, @RequestBody String avatarUrl) throws Exception {
+        accountService.insertAvatar(email, avatarUrl);
+        return ResponseEntity.ok("Avatar added");
     }
 
     @GetMapping("/accounts/{email}")
@@ -129,6 +145,11 @@ public class AccountRestController {
         return accountService.findByEventId(eventId);
     }
 
+    @GetMapping("/accounts/event/{eventId}/evaluation")
+    public List<Map<String, Object>> findNotEvaluatedAccountsByEventId(@PathVariable String eventId) throws Exception {
+        return accountService.findNotEvaluatedAccountsByEventId(eventId);
+    }
+
     @GetMapping("/accounts/service/{serviceId}")
     public List<Map<String, Object>> findByServiceId(@PathVariable String serviceId) throws Exception {
         return accountService.findByServiceId(serviceId);
@@ -139,9 +160,10 @@ public class AccountRestController {
         accountService.updateStatus(email, statusId);
     }
 
-    @PutMapping("/accounts/{email}/reset_password")
-    public void updatePassword(@PathVariable String email, @RequestBody String password) throws Exception {
-        accountService.updatePassword(email, password);
+    @PutMapping("/accounts/reset_password")
+    public void updatePassword(@RequestBody ResetPasswordRequest request) throws Exception {
+        authenticate(request.getEmail(), request.getOldPassword());
+        accountService.updatePassword(request.getEmail(), request.getNewPassword());
     }
 
     @PutMapping("/accounts/{email}/role/{roleId}")
@@ -152,6 +174,12 @@ public class AccountRestController {
     @PutMapping("/accounts")
     public ProfileResponse update(@RequestBody ProfileUpdateRequest request) throws Exception {
         return accountService.update(request);
+    }
+
+    @PutMapping("/accounts/{email}/avatar")
+    public ResponseEntity updateAvatar(@PathVariable String email, @RequestBody String avatarUrl) throws Exception {
+        accountService.updateAvatar(email, avatarUrl);
+        return ResponseEntity.ok("Avatar updated");
     }
 
     private void authenticate(String email, String password) throws Exception {

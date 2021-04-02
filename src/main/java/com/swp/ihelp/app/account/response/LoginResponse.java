@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
 import java.io.Serializable;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -13,16 +14,16 @@ import java.io.Serializable;
 @Accessors(chain = true)
 public class LoginResponse implements Serializable {
 
-    public LoginResponse(String accessToken) {
-        this.accessToken = accessToken;
-    }
-
     private String accessToken;
 
     private String email;
 
+    private String fullName;
+
     private String imageUrl;
 
     private String role;
+
+    private List<String> evaluateRequiredEvents;
 
 }

@@ -35,4 +35,10 @@ public interface AccountService {
 
     void updateDeviceToken(String email, String deviceToken) throws Exception;
 
+    void updateAvatar(String email, String avatarUrl) throws Exception;
+
+    void insertAvatar(String email, String avatarUrl) throws Exception;
+
+    List<Map<String, Object>> findNotEvaluatedAccountsByEventId(String eventId) throws Exception;
+
 }

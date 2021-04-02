@@ -126,6 +126,7 @@ public class EventServiceImpl implements EventService {
             eventDetailResponse = new EventDetailResponse(result.get());
             int remainingSpot = eventRepository.getRemainingSpot(id);
             eventDetailResponse.setSpot(remainingSpot);
+            eventDetailResponse.setAvatarUrl(imageRepository.findAvatarByEmail(eventDetailResponse.getAccountEmail()));
         } else {
             throw new EntityNotFoundException(eventMessage.getEventNotFoundMessage() + id);
         }
@@ -242,6 +243,7 @@ public class EventServiceImpl implements EventService {
         EventDetailResponse eventDetailResponse = new EventDetailResponse(eventToUpdate);
         int remainingSpot = eventRepository.getRemainingSpot(eventDetailResponse.getId());
         eventDetailResponse.setSpot(remainingSpot);
+        eventDetailResponse.setAvatarUrl(imageRepository.findAvatarByEmail(eventDetailResponse.getAccountEmail()));
 
         return eventDetailResponse;
     }
@@ -385,6 +387,12 @@ public class EventServiceImpl implements EventService {
         if (bonusPoint > 0)
             memberAccount.addContributionPoint(participationPoint);
         accountRepository.save(memberAccount);
+    }
+
+    @Override
+    @Transactional
+    public List<String> findEvaluateRequiredByAuthorEmail(String email) throws Exception {
+        return eventRepository.findEvaluateRequiredByAuthorEmail(email);
     }
 
     @Override

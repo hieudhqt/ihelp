@@ -30,6 +30,31 @@ public class FeedbackController {
         return feedbackService.findById(feedbackId);
     }
 
+    @GetMapping("/status/{statusId}")
+    public List<FeedbackResponse> findByStatus(@PathVariable String statusId) throws Exception {
+        return feedbackService.findByStatus(statusId);
+    }
+
+    @GetMapping("/email/{email}")
+    public List<FeedbackResponse> findByEmail(@PathVariable String email, @RequestParam String event_id, @RequestParam String status_id) throws Exception {
+        return feedbackService.findByEmail(email, event_id, status_id);
+    }
+
+    @GetMapping("/event/{eventId}")
+    public List<FeedbackResponse> findByEventId(@PathVariable String eventId) throws Exception {
+        return feedbackService.findByEventId(eventId);
+    }
+
+    @GetMapping("/service/{serviceId}")
+    public List<FeedbackResponse> findByServiceId(@PathVariable String serviceId) throws Exception {
+        return feedbackService.findByServiceId(serviceId);
+    }
+
+    @GetMapping("/reports")
+    public List<FeedbackResponse> getReports() throws Exception {
+        return feedbackService.getReports();
+    }
+
     @PostMapping
     public void insert(@RequestBody FeedbackRequest request) throws Exception {
         feedbackService.insert(request);
@@ -38,11 +63,6 @@ public class FeedbackController {
     @PutMapping("/{feedbackId}/{statusId}")
     public void updateStatus(@PathVariable String feedbackId, @PathVariable String statusId) throws Exception {
         feedbackService.updateStatus(feedbackId, statusId);
-    }
-
-    @GetMapping("/{statusId}")
-    public List<FeedbackResponse> findByStatus(@PathVariable String statusId) throws Exception {
-        return feedbackService.findByStatus(statusId);
     }
 
 }
