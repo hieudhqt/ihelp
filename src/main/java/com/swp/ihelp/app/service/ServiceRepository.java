@@ -59,4 +59,19 @@ public interface ServiceRepository extends JpaRepository<ServiceEntity, String>,
 
     @Query("SELECT COUNT(s) FROM ServiceEntity s WHERE s.authorAccount.email=:email")
     int getTotalHostServices(String email);
+
+    @Query(value = "SELECT s.id, " +
+            "( " +
+            "   6371 * " +
+            "   acos(cos(radians(:lat)) *  " +
+            "   cos(radians(s.lat)) *  " +
+            "   cos(radians(s.lng) -  " +
+            "   radians(:lng)) +  " +
+            "   sin(radians(:lat)) *  " +
+            "   sin(radians(s.lat ))) " +
+            ") AS distance  " +
+            "FROM ihelp.service s " +
+            "HAVING distance < :radius " +
+            "ORDER BY distance ", nativeQuery = true)
+    Page<Object[]> getNearbyServices(float radius, double lat, double lng, Pageable pageable);
 }

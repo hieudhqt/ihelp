@@ -8,6 +8,7 @@ import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 
 import javax.persistence.*;
+import java.sql.Timestamp;
 import java.util.Objects;
 
 @Entity
@@ -40,7 +41,7 @@ public class TransactionEntity {
 
     @Basic
     @Column(name = "date", nullable = true)
-    private long date;
+    private Timestamp date;
 
     @Basic
     @Column(name = "type", nullable = true, length = 45)

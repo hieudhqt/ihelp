@@ -4,7 +4,6 @@ import com.swp.ihelp.app.event.EventEntity;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -16,8 +15,11 @@ public class EventTaskDispatcher implements Runnable {
     private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     private boolean isInterrupted = false;
 
-    @PersistenceContext
     private EntityManager entityManager;
+
+    public EventTaskDispatcher(EntityManager entityManager) {
+        this.entityManager = entityManager;
+    }
 
     @Override
     public void run() {
@@ -31,7 +33,7 @@ public class EventTaskDispatcher implements Runnable {
             String nearestEventQuery = "SELECT NEW EventEntity(e.id, e.startDate, e.endDate) FROM EventEntity e WHERE e.startDate >= ?1 " +
                     "ORDER BY e.startDate ASC";
 
-            List<EventEntity> nearestEventToStart = entityManager.createQuery(nearestEventQuery)
+            List<EventEntity> nearestEventToStart = entityManager.createQuery(nearestEventQuery).setParameter(1, now)
                     .setMaxResults(1).getResultList();
 
             String eventToStartId = (String) nearestEventToStart.get(0).getId();
@@ -43,6 +45,8 @@ public class EventTaskDispatcher implements Runnable {
 
             long delayStartDate = nearestStartDate.getTime() - now.getTime();
 //            long delayEndDate = nearestEndDate.getTime() - now.getTime();
+
+            System.out.println("delay:" + delayStartDate);
 
             CountDownLatch latch = new CountDownLatch(1);
             ScheduledFuture<?> countdownStartEvent = scheduler.schedule(

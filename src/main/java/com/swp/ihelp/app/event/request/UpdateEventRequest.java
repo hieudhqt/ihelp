@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.swp.ihelp.app.event.EventEntity;
 import lombok.Data;
 
+import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -30,6 +31,7 @@ public class UpdateEventRequest implements Serializable {
     private String latitude;
 
     @Min(0)
+    @Max(100)
     private Integer quota;
 
     @Min(0)

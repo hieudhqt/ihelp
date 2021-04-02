@@ -75,6 +75,15 @@ public class ServiceController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    @GetMapping("/services/nearby/{radius}")
+    public ResponseEntity<Map<String, Object>> findNearbyEvents(@PathVariable float radius,
+                                                                @RequestParam(value = "lat") double lat,
+                                                                @RequestParam(value = "lng") double lng,
+                                                                @RequestParam(value = "page") int page) throws Exception {
+        Map<String, Object> response = serviceVolunteerService.findNearbyServices(page, radius, lat, lng);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
     @PostMapping("/services")
     public ResponseEntity<String> addService(@Valid @RequestBody CreateServiceRequest createServiceRequest) throws Exception {
         String serviceId = serviceVolunteerService.insert(createServiceRequest);

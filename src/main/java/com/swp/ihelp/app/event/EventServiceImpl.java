@@ -8,6 +8,7 @@ import com.swp.ihelp.app.event.request.EvaluationRequest;
 import com.swp.ihelp.app.event.request.RejectEventRequest;
 import com.swp.ihelp.app.event.request.UpdateEventRequest;
 import com.swp.ihelp.app.event.response.EventDetailResponse;
+import com.swp.ihelp.app.event.response.EventDistanceResponse;
 import com.swp.ihelp.app.event.response.EventResponse;
 import com.swp.ihelp.app.eventcategory.EventCategoryEntity;
 import com.swp.ihelp.app.eventcategory.EventCategoryRepository;
@@ -182,6 +183,31 @@ public class EventServiceImpl implements EventService {
             throw new EntityNotFoundException("Account " + email + " has not joined any event.");
         }
         return getEventResponseMap(pageEvents);
+    }
+
+    @Override
+    public Map<String, Object> findNearbyEvents(int page, float radius, double lat, double lng) throws Exception {
+        Pageable paging = PageRequest.of(page, pageSize);
+        Page<Object[]> pageEvents = eventRepository.getNearbyEvents(radius, lat, lng, paging);
+
+        if (pageEvents.isEmpty()) {
+            throw new EntityNotFoundException("Event not found.");
+        }
+        List<Object[]> listEvents = pageEvents.getContent();
+        List<EventDistanceResponse> eventResponses = new ArrayList<>();
+        for (Object[] obj : listEvents) {
+            EventEntity eventEntity = eventRepository.getOne((String) obj[0]);
+            EventDistanceResponse eventDistanceResponse = new EventDistanceResponse(eventEntity);
+            eventDistanceResponse.setDistance((double) obj[1]);
+            eventResponses.add(eventDistanceResponse);
+        }
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("events", eventResponses);
+        response.put("currentPage", pageEvents.getNumber());
+        response.put("totalItems", pageEvents.getTotalElements());
+        response.put("totalPages", pageEvents.getTotalPages());
+        return response;
     }
 
     @Override
@@ -468,27 +494,6 @@ public class EventServiceImpl implements EventService {
 
     private String validateCreateEvent(CreateEventRequest event) {
         String errorMsg = "";
-
-//        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-//
-//        String startDateString = dateFormat.format(event.getStartDate());
-//        String endDateString = dateFormat.format(event.getEndDate());
-//
-//        Date nearestStartDate = eventRepository.getNearestEventStartDate(event.getAuthorEmail(),
-//                startDateString);
-//        Date nearestEndDate = eventRepository.getNearestEventEndDate(event.getAuthorEmail(),
-//                endDateString);
-//
-//        if (nearestStartDate != null) {
-//            if (nearestStartDate.before(event.getEndDate())) {
-//                errorMsg += "You have an event that starts on the same date as your end date; ";
-//            }
-//        }
-//        if (nearestEndDate != null) {
-//            if ((event.getStartDate().getTime() - nearestEndDate.getTime()) <= minStartDateFromNearestEndDate) {
-//                errorMsg += "Start date must be at least 1 day after the previous event ended; ";
-//            }
-//        }
 
         long diffInMillies = Math.abs(event.getStartDate().getTime() - System.currentTimeMillis());
         long diffInDays = TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS);
