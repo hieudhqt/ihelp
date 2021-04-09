@@ -43,6 +43,8 @@ public class EventResponse implements Serializable {
 
     private StatusEntity status;
 
+    private String location;
+
     private Boolean isOnsite;
 
     private Set<EventCategoryEntity> categories;
@@ -61,6 +63,7 @@ public class EventResponse implements Serializable {
         this.images = ImageResponse.convertToResponseList(eventEntity.getImages());
         this.isOnsite = eventEntity.getIsOnsite();
         this.createdDate = eventEntity.getCreatedDate();
+        this.location = eventEntity.getLocation();
     }
 
     public static List<EventResponse> convertToResponseList(List<EventEntity> eventEntityList) {

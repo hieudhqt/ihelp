@@ -42,6 +42,8 @@ public interface EventService {
 
     void evaluateMember(EvaluationRequest request) throws Exception;
 
+    void quitEvent(String eventId, String email) throws Exception;
+
     Map<String, Object> findNearbyEvents(int page, float radius, double lat, double lng) throws Exception;
 
     List<String> findEvaluateRequiredByAuthorEmail(String email) throws Exception;

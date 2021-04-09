@@ -8,6 +8,8 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
+
 public interface ServiceRepository extends JpaRepository<ServiceEntity, String>, JpaSpecificationExecutor<ServiceEntity> {
     @Query("SELECT s from ServiceEntity s where s.title like %:title%")
     Page<ServiceEntity> findByTitle(String title, Pageable pageable);
@@ -71,7 +73,21 @@ public interface ServiceRepository extends JpaRepository<ServiceEntity, String>,
             "   sin(radians(s.lat ))) " +
             ") AS distance  " +
             "FROM ihelp.service s " +
+            "WHERE s.status_id = :statusId " +
             "HAVING distance < :radius " +
             "ORDER BY distance ", nativeQuery = true)
-    Page<Object[]> getNearbyServices(float radius, double lat, double lng, Pageable pageable);
+    Page<Object[]> getNearbyServices(float radius, double lat, double lng, int statusId, Pageable pageable);
+
+    @Query(value = "SELECT s.id FROM ihelp.service s " +
+            "WHERE Date(s.start_date) = :date AND s.status_id = :status", nativeQuery = true)
+    List<String> getServiceIdsToStartByDate(String date, int status);
+
+    @Query(value = "SELECT s.id FROM ihelp.service s " +
+            "WHERE Date(s.end_date) = :date AND s.status_id = :status", nativeQuery = true)
+    List<String> getServiceIdsToCompleteByDate(String date, int status);
+
+    @Query(value = "SELECT s.id FROM ihelp.service s " +
+            "where datediff(:date, s.created_date) > :maxDaysToApprove and s.status_id = :status ", nativeQuery = true)
+    List<String> getExpiredServiceIds(@Param("date") String date, @Param("status") int status,
+                                      @Param("maxDaysToApprove") int maxDaysToApprove);
 }

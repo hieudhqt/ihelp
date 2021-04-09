@@ -1,11 +1,13 @@
 package com.swp.ihelp.app.reward;
 
 import com.swp.ihelp.app.account.AccountEntity;
-import com.swp.ihelp.app.event.EventEntity;
+import com.swp.ihelp.config.StringPrefixedSequenceIdGenerator;
 import lombok.Data;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 
 import javax.persistence.*;
-import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.Objects;
 
 @Entity
@@ -14,7 +16,16 @@ import java.util.Objects;
 public class RewardEntity {
 
     @Id
-    @Column(name = "id", nullable = false, length = 320)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "reward_seq")
+    @GenericGenerator(
+            name = "reward_seq",
+            strategy = "com.swp.ihelp.config.StringPrefixedSequenceIdGenerator",
+            parameters = {
+                    @Parameter(name = StringPrefixedSequenceIdGenerator.INCREMENT_PARAM, value = "50"),
+                    @Parameter(name = StringPrefixedSequenceIdGenerator.VALUE_PREFIX_PARAMETER, value = "RW_"),
+                    @Parameter(name = StringPrefixedSequenceIdGenerator.NUMBER_FORMAT_PARAMETER, value = "%05d")
+            }
+    )
     private String id;
 
     @Basic
@@ -31,7 +42,7 @@ public class RewardEntity {
 
     @Basic
     @Column(name = "created_date", nullable = true)
-    private Date createdDate;
+    private Timestamp createdDate;
 
     @ManyToOne
     @JoinColumn(name = "account_email", referencedColumnName = "email", nullable = false)

@@ -2,7 +2,6 @@ package com.swp.ihelp.app.account;
 
 import com.swp.ihelp.app.account.response.NotEvaluatedParticipantsMapping;
 import com.swp.ihelp.app.account.response.ParticipantsMapping;
-import com.swp.ihelp.app.account.response.ProfileResponse;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -52,4 +51,18 @@ public interface AccountRepository extends JpaRepository<AccountEntity, String> 
     @Query("SELECT CASE WHEN COUNT (a) > 0 THEN TRUE ELSE FALSE END FROM AccountEntity a WHERE a.phone=:phone")
     boolean existsByPhone(String phone) throws Exception;
 
+    @Modifying
+    @Query(value = "UPDATE AccountEntity a SET a.contributionPoint = a.contributionPoint + :contributionPoint WHERE a.email = :email ")
+    void updateContributionPoint(String email, int contributionPoint) throws Exception;
+
+    @Query(value = "SELECT a.* " +
+            "FROM ihelp.account a  " +
+            "INNER JOIN (SELECT r.account_email, SUM(r.point) as total " +
+            "FROM ihelp.reward r  " +
+            "WHERE DATE(r.created_date) >= :startDate AND DATE(r.created_date) <= :endDate " +
+            "GROUP BY r.account_email) e " +
+            "ON e.account_email = a.email  " +
+            "WHERE a.role_id = 'user' " +
+            "ORDER BY e.total desc", nativeQuery = true)
+    List<AccountEntity> getTop100AccountsByContributionAndDate(String startDate, String endDate) throws Exception;
 }

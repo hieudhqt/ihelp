@@ -141,8 +141,16 @@ public class EventController {
         return ResponseEntity.ok(eventMessage.getEventDeletedMessage() + eventId);
     }
 
+    @DeleteMapping("/events/{eventId}/{email}")
+    public ResponseEntity<String> quitEvent(@PathVariable String eventId,
+                                            @PathVariable String email) throws Exception {
+        eventService.quitEvent(eventId, email);
+        return ResponseEntity.ok(eventMessage.getEventQuitedMessage(email, eventId));
+    }
+
     @PostMapping("/events/{email}/{eventId}")
-    public ResponseEntity<String> joinEvent(@PathVariable String email, @PathVariable String eventId) throws Exception {
+    public ResponseEntity<String> joinEvent(@PathVariable String email,
+                                            @PathVariable String eventId) throws Exception {
         eventService.joinEvent(email, eventId);
         return ResponseEntity.ok(eventMessage.getEventJoinedMessage(eventId, email));
     }

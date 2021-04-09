@@ -170,5 +170,10 @@ public class EventEntity {
         this.startDate = new Timestamp(startDate.getTime());
         this.endDate = new Timestamp(endDate.getTime());
     }
+
+//    public EventEntity(String id, Date endDate) {
+//        this.id = id;
+//        this.endDate = new Timestamp(endDate.getTime());
+//    }
 }
 
