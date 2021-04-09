@@ -1,5 +1,6 @@
 package com.swp.ihelp.config;
 
+import com.google.common.collect.Sets;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.bind.annotation.RestController;
@@ -14,6 +15,7 @@ import springfox.documentation.spring.web.plugins.Docket;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 
 @Configuration
@@ -22,12 +24,14 @@ public class Swagger2Config {
     @Bean
     public Docket api() {
         return new Docket(DocumentationType.SWAGGER_2)
+//                .host("ihelp-capstone.online")
                 .useDefaultResponseMessages(false)
                 .select()
                 .apis(RequestHandlerSelectors.withClassAnnotation(RestController.class))
                 .paths(PathSelectors.any())
                 .build()
 //                .apiInfo(getApiInfo())
+                .protocols(Sets.newHashSet("http", "https"))
                 .securityContexts(Collections.singletonList(securityContext()))
                 .securitySchemes(Arrays.asList(apiKey()));
     }

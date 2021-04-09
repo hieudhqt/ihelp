@@ -109,7 +109,7 @@ public class AccountServiceImpl implements AccountService {
             throw new EntityNotFoundException("Account " + request.getEmail() + " does not exist");
         }
         AccountEntity accountEntity = accountRepository.getOne(request.getEmail());
-        accountEntity.setFullName(request.getFullname());
+        accountEntity.setFullName(request.getFullName());
         accountEntity.setPhone(request.getPhone());
         accountEntity.setGender(request.getGender());
         accountEntity.setDateOfBirth(new Date(request.getDateOfBirth().getTime()));
@@ -176,12 +176,12 @@ public class AccountServiceImpl implements AccountService {
     public void updateRole(String email, String roleId) throws Exception {
         accountRepository.updateRole(email, roleId);
     }
-
-    @Transactional
-    @Override
-    public void updateDeviceToken(String email, String deviceToken) throws Exception {
-        accountRepository.updateDeviceToken(email, deviceToken);
-    }
+//
+//    @Transactional
+//    @Override
+//    public void updateDeviceToken(String email, String deviceToken) throws Exception {
+//        accountRepository.updateDeviceToken(email, deviceToken);
+//    }
 
     @Override
     public void updateAvatar(String email, String avatarUrl) throws Exception {

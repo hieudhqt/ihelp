@@ -21,7 +21,7 @@ public class AccountGeneralResponse implements Serializable {
 
     private String email;
 
-    private String fullname;
+    private String fullName;
 
     private String phone;
 
@@ -43,7 +43,7 @@ public class AccountGeneralResponse implements Serializable {
 
     public AccountGeneralResponse(AccountEntity accountEntity) {
         this.email = accountEntity.getEmail();
-        this.fullname = accountEntity.getFullName();
+        this.fullName = accountEntity.getFullName();
         this.phone = accountEntity.getPhone();
         this.dateOfBirth = accountEntity.getDateOfBirth();
         this.gender = accountEntity.getGender();

@@ -9,6 +9,8 @@ import com.swp.ihelp.app.account.response.LoginResponse;
 import com.swp.ihelp.app.account.response.ProfileResponse;
 import com.swp.ihelp.app.event.EventService;
 import com.swp.ihelp.app.image.ImageService;
+import com.swp.ihelp.google.firebase.fcm.PushNotificationRequest;
+import com.swp.ihelp.google.firebase.fcm.PushNotificationService;
 import com.swp.ihelp.security.CustomUser;
 import com.swp.ihelp.security.JwtTokenUtil;
 import com.swp.ihelp.security.UserDetailsServiceImpl;
@@ -44,20 +46,33 @@ public class AccountRestController {
 
     private UserDetailsServiceImpl userDetailsService;
 
-    private final AccountService accountService;
+    private AccountService accountService;
 
     private ImageService imageService;
 
     private EventService eventService;
 
+    private PushNotificationService pushNotificationService;
+
+//    @Autowired
+//    public AccountRestController(AuthenticationManager authenticationManager, JwtTokenUtil jwtTokenUtil, UserDetailsServiceImpl userDetailsService, AccountService accountService, ImageService imageService, EventService eventService) {
+//        this.authenticationManager = authenticationManager;
+//        this.jwtTokenUtil = jwtTokenUtil;
+//        this.userDetailsService = userDetailsService;
+//        this.accountService = accountService;
+//        this.imageService = imageService;
+//        this.eventService = eventService;
+//    }
+
     @Autowired
-    public AccountRestController(AuthenticationManager authenticationManager, JwtTokenUtil jwtTokenUtil, UserDetailsServiceImpl userDetailsService, AccountService accountService, ImageService imageService, EventService eventService) {
+    public AccountRestController(AuthenticationManager authenticationManager, JwtTokenUtil jwtTokenUtil, UserDetailsServiceImpl userDetailsService, AccountService accountService, ImageService imageService, EventService eventService, PushNotificationService pushNotificationService) {
         this.authenticationManager = authenticationManager;
         this.jwtTokenUtil = jwtTokenUtil;
         this.userDetailsService = userDetailsService;
         this.accountService = accountService;
         this.imageService = imageService;
         this.eventService = eventService;
+        this.pushNotificationService = pushNotificationService;
     }
 
     @PostMapping("/login")
@@ -84,6 +99,12 @@ public class AccountRestController {
         if (roles.contains(new SimpleGrantedAuthority("ROLE_USER"))) {
             role = "USER";
         }
+//        pushNotificationService.subscribe("eBkp0QvHSymYb8RBxluv6y:APA91bEJXAcadb8pcGVHgYBI56a7esiApph6873RheqrtSbiumCyot6yYAKLNlIAkdhaJX2NJlDFj9OYSzwaHQVlSzwT8YUSfCiClQ4GE2lhLshpr6FvAHkaUApEXQZwYYdbvrtV0rWe", "EV_00001");
+//        pushNotificationService.subscribe("dUjYtuPRk9vPKyThCy8n31:APA91bF6t4n0RKZpQ7iPyecXlEanBO4wdC4B5sXlr40ih9Y2sBES_OE-_x-h9u5-4vtICU5xgkNEuLxxmfMP6n-MIdlnJm1TGmJPp6mIJ304ZkEim2jovlqsAZPhsNc1yA1jRCW5IpkH", "EV_00001");
+//        pushNotificationService.sendPushNotificationToToken(new PushNotificationRequest()
+//        .setTitle("Test topic")
+//        .setMessage("Test noti topic")
+//                .setToken("dQ3dZpPsZ3XyQBTfkcLV-O:APA91bEQWwdXYnOWLGPd_Iu2N4f8LooeYXShtau8WHjZ5UcGMJIRSOYLORtXodLm0BTpIELSC5wQ78alTfEkhaOvu7BeHyg048VVmPcBc4KKghmKka_n1QZzFsTvD7p9mk640gE2XhUG"));
         return new LoginResponse(accessToken, email, fullName, imageUrl, role, evaluateRequiredEvents);
     }
 
@@ -108,11 +129,11 @@ public class AccountRestController {
         return "Created new account";
     }
 
-    @PostMapping("/accounts/{email}/device_token")
-    public ResponseEntity insertDeviceToken(@PathVariable String email, @RequestBody String deviceToken) throws Exception {
-        accountService.updateDeviceToken(email, deviceToken);
-        return ResponseEntity.ok("Device token added");
-    }
+//    @PostMapping("/accounts/{email}/device_token")
+//    public ResponseEntity insertDeviceToken(@PathVariable String email, @RequestBody String deviceToken) throws Exception {
+//        accountService.updateDeviceToken(email, deviceToken);
+//        return ResponseEntity.ok("Device token added");
+//    }
 
     @PostMapping("/accounts/{email}/avatar")
     public ResponseEntity insertAvatar(@PathVariable String email, @RequestBody String avatarUrl) throws Exception {

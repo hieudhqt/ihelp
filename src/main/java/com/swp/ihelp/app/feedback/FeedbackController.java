@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Controller
 @RequestMapping("/api/feedbacks")
 @RestController
 public class FeedbackController {

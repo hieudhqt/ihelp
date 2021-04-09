@@ -36,8 +36,14 @@ public class FeedbackResponse implements Serializable {
         this.comment = feedbackEntity.getComment();
         this.createdDate = feedbackEntity.getCreatedDate();
         this.email = feedbackEntity.getAccount().getEmail();
-        this.eventId = feedbackEntity.getEvent().getId();
-        this.serviceId = feedbackEntity.getService().getId();
+        if (feedbackEntity.getEvent() != null) {
+            this.eventId = feedbackEntity.getEvent().getId();
+        } else {
+            this.eventId = null;
+        }
+        if (feedbackEntity.getService() != null) {
+            this.serviceId = feedbackEntity.getService().getId();
+        }
         this.status = feedbackEntity.getStatus();
     }
 
