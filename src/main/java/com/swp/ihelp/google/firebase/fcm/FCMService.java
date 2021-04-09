@@ -42,7 +42,7 @@ public class FCMService {
         String response = null;
 
         try {
-            FirebaseMessaging.getInstance().send(message);
+            response = FirebaseMessaging.getInstance().send(message);
         } catch (FirebaseMessagingException e) {
             e.printStackTrace();
         }
@@ -66,7 +66,7 @@ public class FCMService {
         String response = null;
 
         try {
-            FirebaseMessaging.getInstance().send(message);
+            response = FirebaseMessaging.getInstance().send(message);
         } catch (FirebaseMessagingException e) {
             e.printStackTrace();
         }

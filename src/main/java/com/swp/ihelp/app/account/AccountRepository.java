@@ -44,9 +44,9 @@ public interface AccountRepository extends JpaRepository<AccountEntity, String> 
     @Query(value = "UPDATE account a SET a.role_id=:roleId WHERE a.email=:email", nativeQuery = true)
     void updateRole(String email, String roleId) throws Exception;
 
-    @Modifying
-    @Query("UPDATE AccountEntity a SET a.deviceToken=:deviceToken WHERE a.email=:email")
-    void updateDeviceToken(String email, String deviceToken) throws Exception;
+//    @Modifying
+//    @Query("UPDATE AccountEntity a SET a.notificationKey=:notificationKey WHERE a.email=:email")
+//    void updateDeviceToken(String email, String notificationKey) throws Exception;
 
     @Query("SELECT CASE WHEN COUNT (a) > 0 THEN TRUE ELSE FALSE END FROM AccountEntity a WHERE a.phone=:phone")
     boolean existsByPhone(String phone) throws Exception;

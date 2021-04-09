@@ -24,7 +24,7 @@ public class SignUpRequest implements Serializable {
 
     private String password;
 
-    private String fullname;
+    private String fullName;
 
     private String phone;
 
@@ -40,7 +40,7 @@ public class SignUpRequest implements Serializable {
         return new AccountEntity()
                 .setEmail(request.getEmail())
                 .setPassword(encoder.encode(request.getPassword()))
-                .setFullName(request.getFullname())
+                .setFullName(request.getFullName())
                 .setPhone(request.getPhone())
                 .setDateOfBirth(request.getDateOfBirth())
                 .setGender(request.isGender())

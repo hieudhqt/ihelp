@@ -72,14 +72,26 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                         "/accounts/event/**", "/accounts/service/**").permitAll()
                 .antMatchers(HttpMethod.DELETE, "/accounts/**").hasRole("ADMIN")
                 .anyRequest().authenticated().and()
-                .requiresChannel()
-                .anyRequest()
-                .requiresSecure()
-                .and()
+//                .requiresChannel()
+//                .anyRequest()
+//                .requiresSecure()
+//                .and()
                 .exceptionHandling().authenticationEntryPoint(restAuthenticationEntryPoint)
                 .and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
         http.addFilterBefore(requestFilter, UsernamePasswordAuthenticationFilter.class);
     }
+
+//    @Bean
+//    CorsConfigurationSource corsConfigurationSource()
+//    {
+//        CorsConfiguration configuration = new CorsConfiguration();
+//        configuration.setAllowedOrigins(Arrays.asList("https://example.com"));
+//        configuration.setAllowedMethods(Arrays.asList("GET","POST"));
+//        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+//        source.registerCorsConfiguration("/**", configuration);
+//        return source;
+//    }
+
 }

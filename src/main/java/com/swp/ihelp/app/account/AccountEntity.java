@@ -55,10 +55,6 @@ public class AccountEntity {
     @Column(name = "created_date", nullable = true)
     private Date createdDate;
 
-    @Basic
-    @Column(name = "device_token", nullable = true)
-    private String deviceToken;
-
     @ManyToOne
     @JoinColumn(name = "role_id", referencedColumnName = "id", nullable = false)
     private RoleEntity role;
