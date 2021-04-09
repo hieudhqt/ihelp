@@ -20,6 +20,9 @@ public class EventMessage {
     @Value("${message.event.event-join}")
     private String eventJoinedMessage;
 
+    @Value("${message.event.event-quited}")
+    private String eventQuitedMessage;
+
     @Value("${message.event.event-unavailable}")
     private String eventUnavailableMessage;
 
@@ -36,6 +39,12 @@ public class EventMessage {
 
     public String getEventAddedMessage(String eventId) {
         String result = this.eventAddedMessage.replaceFirst("#", eventId);
+        return result;
+    }
+
+    public String getEventQuitedMessage(String email, String eventId) {
+        String result = this.eventQuitedMessage.replaceFirst("#", email);
+        result = result.replaceFirst("#", eventId);
         return result;
     }
 }

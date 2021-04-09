@@ -42,6 +42,8 @@ public class ServiceDistanceResponse implements Serializable {
 
     private StatusEntity status;
 
+    private String location;
+
     private Double distance;
 
     private Set<ServiceCategoryEntity> categories;
@@ -59,5 +61,6 @@ public class ServiceDistanceResponse implements Serializable {
         this.categories = service.getServiceCategories();
         this.images = ImageResponse.convertToResponseList(service.getImages());
         this.createdDate = service.getCreatedDate();
+        this.location = service.getLocation();
     }
 }

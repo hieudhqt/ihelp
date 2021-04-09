@@ -31,6 +31,7 @@ public class ServiceResponse implements Serializable {
     @JsonFormat(shape = JsonFormat.Shape.STRING,
             pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Ho_Chi_Minh")
     private Date createdDate;
+    private String location;
     private String accountEmail;
     private String fullName;
     private StatusEntity status;
@@ -48,6 +49,7 @@ public class ServiceResponse implements Serializable {
         this.categories = service.getServiceCategories();
         this.images = ImageResponse.convertToResponseList(service.getImages());
         this.createdDate = service.getCreatedDate();
+        this.location = service.getLocation();
     }
 
     public static List<ServiceResponse> convertToResponseList(List<ServiceEntity> serviceEntityList) {

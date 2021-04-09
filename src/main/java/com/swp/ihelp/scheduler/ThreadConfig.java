@@ -1,41 +1,19 @@
 package com.swp.ihelp.scheduler;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
-import org.springframework.core.task.TaskExecutor;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
-import javax.persistence.EntityManager;
-
-//@Configuration
+@Configuration
 @EnableAsync
+@EnableScheduling
 public class ThreadConfig {
-
-    @Autowired
-    private EntityManager entityManager;
-
-    @Bean(name = "eventTaskExecutor")
-    public TaskExecutor threadPoolTaskExecutor() {
-
-        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(5);
-        executor.setMaxPoolSize(5);
-        executor.setThreadNamePrefix("default_task_executor_thread");
-        executor.initialize();
-
-        return executor;
-    }
-
     @Bean
-    public CommandLineRunner schedulingRunner(@Qualifier("eventTaskExecutor") TaskExecutor executor) {
-        return new CommandLineRunner() {
-            @Override
-            public void run(String... args) throws Exception {
-                executor.execute(new EventTaskDispatcher(entityManager));
-            }
-        };
+    public ThreadPoolTaskScheduler threadPoolTaskScheduler() {
+        ThreadPoolTaskScheduler threadPoolTaskScheduler = new ThreadPoolTaskScheduler();
+        threadPoolTaskScheduler.setPoolSize(4);
+        return threadPoolTaskScheduler;
     }
 }

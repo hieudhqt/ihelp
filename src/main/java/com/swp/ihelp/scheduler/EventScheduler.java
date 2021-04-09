@@ -1,80 +1,118 @@
 package com.swp.ihelp.scheduler;
 
+import com.swp.ihelp.app.account.AccountRepository;
 import com.swp.ihelp.app.event.EventEntity;
 import com.swp.ihelp.app.event.EventRepository;
+import com.swp.ihelp.app.reward.RewardEntity;
+import com.swp.ihelp.app.reward.RewardRepository;
+import com.swp.ihelp.app.status.StatusEntity;
 import com.swp.ihelp.app.status.StatusEnum;
-import org.hibernate.Session;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityManager;
-import java.util.Calendar;
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 @Component
 public class EventScheduler {
+    static Logger logger = LoggerFactory.getLogger(EventScheduler.class);
+
     private EventRepository eventRepository;
+    private RewardRepository rewardRepository;
+    private AccountRepository accountRepository;
 
-    private EntityManager entityManager;
+    @Value("${point.event.host-event-bonus}")
+    private float hostBonusPointPercent;
+
+    @Value("${date.max-days-to-approve}")
+    private int maxDaysToApprove;
 
     @Autowired
-    public void setEntityManager(EntityManager entityManager) {
-        this.entityManager = entityManager;
-    }
-
-    @Autowired
-    public void setEventRepository(EventRepository eventRepository) {
+    public EventScheduler(EventRepository eventRepository, RewardRepository rewardRepository, AccountRepository accountRepository) {
         this.eventRepository = eventRepository;
+        this.rewardRepository = rewardRepository;
+        this.accountRepository = accountRepository;
     }
 
-    //    @Scheduled(cron = "0 0 0 * * *")
+    @Scheduled(cron = "0 0 0 * * *")
     @Transactional
-    public void autoStartCompleteEvent() {
-        Session currentSession = entityManager.unwrap(Session.class);
+    public void autoStartEvent() {
+        try {
+            logger.info("Auto start event");
 
-        String query = "Select NEW EventEntity(e.id, e.startDate, e.endDate) " +
-                "From EventEntity e";
-//        Map<String, Timestamp> results = new HashMap<>();
-        List<EventEntity> resultList = currentSession.createQuery(query, EventEntity.class).getResultList();
-//        for (Object[] event : resultList) {
-//            results.put((String) event[0], (Timestamp) event[1]);
-//        }
+            DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+            String currentDate = dateFormat.format(new Date());
 
-        Calendar currentDate = Calendar.getInstance();
-        currentDate.set(Calendar.HOUR_OF_DAY, 0);
-        currentDate.set(Calendar.MINUTE, 0);
-        currentDate.set(Calendar.SECOND, 0);
-        currentDate.set(Calendar.MILLISECOND, 0);
-
-        for (EventEntity event : resultList) {
-            Calendar startDateCalendar = Calendar.getInstance();
-            startDateCalendar.setTimeInMillis(event.getStartDate().getTime());
-            startDateCalendar.set(Calendar.HOUR_OF_DAY, 0);
-            startDateCalendar.set(Calendar.MINUTE, 0);
-            startDateCalendar.set(Calendar.SECOND, 0);
-            startDateCalendar.set(Calendar.MILLISECOND, 0);
-
-            if (startDateCalendar.compareTo(currentDate) == 0) {
-                EventEntity eventEntity = eventRepository.getOne(event.getId());
-                if (eventEntity.getStatus().getName().trim().equals("Approved")) {
-                    eventRepository.updateStatus(eventEntity.getId(), StatusEnum.ONGOING.getId());
-                }
+            List<String> eventIds
+                    = eventRepository.getEventIdsToStartByDate(currentDate, StatusEnum.APPROVED.getId());
+            for (String eventId : eventIds) {
+                eventRepository.updateStatus(eventId, StatusEnum.ONGOING.getId());
             }
+        } catch (Exception e) {
+            logger.error("Error when auto starting events: " + e.getMessage());
+        }
+    }
 
-            Calendar endDateCalendar = Calendar.getInstance();
-            endDateCalendar.setTimeInMillis(event.getEndDate().getTime());
-            endDateCalendar.set(Calendar.HOUR_OF_DAY, 0);
-            endDateCalendar.set(Calendar.MINUTE, 0);
-            endDateCalendar.set(Calendar.SECOND, 0);
-            endDateCalendar.set(Calendar.MILLISECOND, 0);
+    @Scheduled(cron = "0 0 0 * * *")
+    @Transactional
+    public void autoCompleteEvent() {
+        try {
+            logger.info("Auto complete event");
 
-            if (endDateCalendar.compareTo(currentDate) == 0) {
-                EventEntity eventEntity = eventRepository.getOne(event.getId());
-                if (eventEntity.getStatus().getName().trim().equals("Ongoing")) {
-                    eventRepository.updateStatus(eventEntity.getId(), StatusEnum.COMPLETED.getId());
-                }
+            DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+            String currentDate = dateFormat.format(new Date());
+
+            List<String> eventIds
+                    = eventRepository.getEventIdsToCompleteByDate(currentDate, StatusEnum.ONGOING.getId());
+            for (String eventId : eventIds) {
+                eventRepository.updateStatus(eventId, StatusEnum.COMPLETED.getId());
+                EventEntity eventEntity = eventRepository.getOne(eventId);
+
+                int contributionPoint = Math.round(eventEntity.getPoint() + eventEntity.getPoint() * hostBonusPointPercent);
+
+                RewardEntity reward = new RewardEntity();
+                reward.setTitle("Reward for hosting event: " + eventEntity.getTitle());
+                reward.setDescription("");
+                reward.setPoint(contributionPoint);
+                reward.setCreatedDate(new Timestamp(System.currentTimeMillis()));
+                reward.setAccountByAccountEmail(eventEntity.getAuthorAccount());
+                rewardRepository.save(reward);
+
+                accountRepository.updateContributionPoint(eventEntity.getAuthorAccount().getEmail(),
+                        contributionPoint);
             }
+        } catch (Exception e) {
+            logger.error("Error when auto completing events: " + e.getMessage());
+        }
+    }
+
+    @Scheduled(cron = "1 0 0 * * *")
+    @Transactional
+    public void autoRejectEvent() {
+        try {
+            logger.info("Auto reject event");
+
+            DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+            String currentDate = dateFormat.format(new Date());
+
+            List<String> eventIds
+                    = eventRepository.getExpiredEventIds(currentDate, StatusEnum.PENDING.getId(), maxDaysToApprove);
+            for (String eventId : eventIds) {
+                EventEntity eventToReject = eventRepository.getOne(eventId);
+                eventToReject.setReason("This event has passed approval due date.");
+                eventToReject.setStatus(new StatusEntity().setId(StatusEnum.REJECTED.getId()));
+                eventRepository.save(eventToReject);
+            }
+        } catch (Exception e) {
+            logger.error("Error when auto rejecting events: " + e.getMessage());
         }
     }
 }

@@ -1,6 +1,13 @@
 package com.swp.ihelp.app.reward;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 public interface RewardRepository extends JpaRepository<RewardEntity, String> {
+    @Query(value = "SELECT SUM(r.point) " +
+            "FROM ihelp.reward r " +
+            "WHERE r.account_email = :email " +
+            "AND DATE(r.created_date) >= :startDate " +
+            "AND DATE(r.created_date) <= :endDate ", nativeQuery = true)
+    Integer getTotalPointByDate(String email, String startDate, String endDate) throws Exception;
 }

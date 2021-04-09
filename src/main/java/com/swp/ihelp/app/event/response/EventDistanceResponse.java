@@ -45,6 +45,8 @@ public class EventDistanceResponse implements Serializable {
 
     private Boolean isOnsite;
 
+    private String location;
+
     private Double distance;
 
     private Set<EventCategoryEntity> categories;
@@ -63,6 +65,7 @@ public class EventDistanceResponse implements Serializable {
         this.images = ImageResponse.convertToResponseList(eventEntity.getImages());
         this.isOnsite = eventEntity.getIsOnsite();
         this.createdDate = eventEntity.getCreatedDate();
+        this.location = eventEntity.getLocation();
     }
 
 

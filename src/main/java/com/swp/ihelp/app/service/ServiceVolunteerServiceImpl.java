@@ -7,6 +7,7 @@ import com.swp.ihelp.app.image.ImageRepository;
 import com.swp.ihelp.app.image.request.ImageRequest;
 import com.swp.ihelp.app.point.PointEntity;
 import com.swp.ihelp.app.point.PointRepository;
+import com.swp.ihelp.app.reward.RewardRepository;
 import com.swp.ihelp.app.service.request.CreateServiceRequest;
 import com.swp.ihelp.app.service.request.RejectServiceRequest;
 import com.swp.ihelp.app.service.request.UpdateServiceRequest;
@@ -42,23 +43,25 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
     private PointRepository pointRepository;
     private ImageRepository imageRepository;
     private ServiceCategoryRepository categoryRepository;
+    private RewardRepository rewardRepository;
 
     @Value("${paging.page-size}")
     private int pageSize;
 
-    @Value("${date.minStartDateFromCreate}")
+    @Value("${date.service.minStartDateFromCreate}")
     private long minStartDateFromCreate;
 
     @Value("${pattern.search-filter}")
     private String filterPattern;
 
     @Autowired
-    public ServiceVolunteerServiceImpl(ServiceRepository serviceRepository, AccountRepository accountRepository, PointRepository pointRepository, ImageRepository imageRepository, ServiceCategoryRepository categoryRepository) {
+    public ServiceVolunteerServiceImpl(ServiceRepository serviceRepository, AccountRepository accountRepository, PointRepository pointRepository, ImageRepository imageRepository, ServiceCategoryRepository categoryRepository, RewardRepository rewardRepository) {
         this.serviceRepository = serviceRepository;
         this.accountRepository = accountRepository;
         this.pointRepository = pointRepository;
         this.imageRepository = imageRepository;
         this.categoryRepository = categoryRepository;
+        this.rewardRepository = rewardRepository;
     }
 
     @Override
@@ -156,7 +159,8 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
     @Override
     public Map<String, Object> findNearbyServices(int page, float radius, double lat, double lng) throws Exception {
         Pageable paging = PageRequest.of(page, pageSize);
-        Page<Object[]> pageServices = serviceRepository.getNearbyServices(radius, lat, lng, paging);
+        Page<Object[]> pageServices
+                = serviceRepository.getNearbyServices(radius, lat, lng, StatusEnum.APPROVED.getId(), paging);
 
         if (pageServices.isEmpty()) {
             throw new EntityNotFoundException("Service not found.");
@@ -167,6 +171,8 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
             ServiceEntity service = serviceRepository.getOne((String) obj[0]);
             ServiceDistanceResponse serviceDistanceResponse = new ServiceDistanceResponse(service);
             serviceDistanceResponse.setDistance((double) obj[1]);
+            int spot = serviceRepository.getRemainingSpot(service.getId());
+            serviceDistanceResponse.setSpot(spot);
             serviceResponses.add(serviceDistanceResponse);
         }
 

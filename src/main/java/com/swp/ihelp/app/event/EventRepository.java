@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.sql.Timestamp;
 import java.util.Date;
@@ -62,13 +63,13 @@ public interface EventRepository extends JpaRepository<EventEntity, String>, Jpa
             "AND ea.account.email = :email ")
     Integer isAccountJoinedAnyEvent(Date date, String email);
 
-    @Query(value = "SELECT e.id, e.end_date FROM ihelp.event e WHERE e.end_date <= :date " +
-            "ORDER BY e.end_date DESC Limit 1 ", nativeQuery = true)
-    Object[] getNearestEventEndDate(String date);
-
-    @Query(value = "SELECT e.id, e.start_date FROM ihelp.event e WHERE e.start_date >= :date " +
-            "ORDER BY e.start_date ASC Limit 1 ", nativeQuery = true)
-    Object[] getNearestEventStartDate(String date);
+//    @Query(value = "SELECT e.id, e.end_date FROM ihelp.event e WHERE e.end_date <= :date " +
+//            "ORDER BY e.end_date DESC Limit 1 ", nativeQuery = true)
+//    Object[] getNearestEventEndDate(String date);
+//
+//    @Query(value = "SELECT e.id, e.start_date FROM ihelp.event e WHERE e.start_date >= :date " +
+//            "ORDER BY e.start_date ASC Limit 1 ", nativeQuery = true)
+//    Object[] getNearestEventStartDate(String date);
 
     @Query("SELECT COUNT(e.id.accountEmail) FROM EventHasAccountEntity e WHERE e.id.accountEmail=:email")
     Integer getTotalJoinedEvents(String email);
@@ -87,9 +88,10 @@ public interface EventRepository extends JpaRepository<EventEntity, String>, Jpa
             "   sin(radians(e.lat ))) " +
             ") AS distance  " +
             "FROM ihelp.event e " +
+            "WHERE e.status_id = :statusId " +
             "HAVING distance < :radius " +
             "ORDER BY distance ", nativeQuery = true)
-    Page<Object[]> getNearbyEvents(float radius, double lat, double lng, Pageable pageable);
+    Page<Object[]> getNearbyEvents(float radius, double lat, double lng, int statusId, Pageable pageable);
 
     @Query(value = "SELECT e.id " +
             "FROM event e " +
@@ -97,5 +99,18 @@ public interface EventRepository extends JpaRepository<EventEntity, String>, Jpa
             "WHERE e.status_id = 4 AND ea.is_evaluated <> 1 AND e.account_email=:email " +
             "GROUP BY e.id", nativeQuery = true)
     List<String> findEvaluateRequiredByAuthorEmail(String email);
+
+    @Query(value = "SELECT e.id FROM ihelp.event e " +
+            "WHERE Date(e.start_date) = :date AND e.status_id = :status", nativeQuery = true)
+    List<String> getEventIdsToStartByDate(String date, int status);
+
+    @Query(value = "SELECT e.id FROM ihelp.event e " +
+            "WHERE Date(e.end_date) = :date AND e.status_id = :status", nativeQuery = true)
+    List<String> getEventIdsToCompleteByDate(String date, int status);
+
+    @Query(value = "SELECT e.id FROM ihelp.event e " +
+            "where datediff(:date, e.created_date) > :maxDaysToApprove and e.status_id = :status ", nativeQuery = true)
+    List<String> getExpiredEventIds(@Param("date") String date, @Param("status") int status,
+                                    @Param("maxDaysToApprove") int maxDaysToApprove);
 }
 
