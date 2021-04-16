@@ -19,6 +19,7 @@ import com.swp.ihelp.app.servicecategory.ServiceCategoryRepository;
 import com.swp.ihelp.app.servicejointable.ServiceHasAccountEntity;
 import com.swp.ihelp.app.status.StatusEntity;
 import com.swp.ihelp.app.status.StatusEnum;
+import com.swp.ihelp.app.status.StatusRepository;
 import com.swp.ihelp.exception.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -44,6 +45,7 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
     private ImageRepository imageRepository;
     private ServiceCategoryRepository categoryRepository;
     private RewardRepository rewardRepository;
+    private StatusRepository statusRepository;
 
     @Value("${paging.page-size}")
     private int pageSize;
@@ -55,13 +57,14 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
     private String filterPattern;
 
     @Autowired
-    public ServiceVolunteerServiceImpl(ServiceRepository serviceRepository, AccountRepository accountRepository, PointRepository pointRepository, ImageRepository imageRepository, ServiceCategoryRepository categoryRepository, RewardRepository rewardRepository) {
+    public ServiceVolunteerServiceImpl(ServiceRepository serviceRepository, AccountRepository accountRepository, PointRepository pointRepository, ImageRepository imageRepository, ServiceCategoryRepository categoryRepository, RewardRepository rewardRepository, StatusRepository statusRepository) {
         this.serviceRepository = serviceRepository;
         this.accountRepository = accountRepository;
         this.pointRepository = pointRepository;
         this.imageRepository = imageRepository;
         this.categoryRepository = categoryRepository;
         this.rewardRepository = rewardRepository;
+        this.statusRepository = statusRepository;
     }
 
     @Override
@@ -240,6 +243,19 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
         serviceResponse.setSpot(remainingSpot);
 
         return serviceResponse;
+    }
+
+    @Override
+    @Transactional
+    public void updateStatus(String serviceId, int statusId) throws Exception {
+        if (!serviceRepository.existsById(serviceId)) {
+            throw new EntityNotFoundException("Service with ID:" + serviceId + " not found.");
+        }
+        if (!statusRepository.existsById(statusId)) {
+            throw new EntityNotFoundException("Status with ID:" + statusId + " not found.");
+        }
+
+        serviceRepository.updateStatus(serviceId, statusId);
     }
 
     @Override

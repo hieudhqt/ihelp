@@ -47,11 +47,18 @@ public class EventHasAccountEntity {
     @Column(name = "is_evaluated", columnDefinition = "BIT(1) default b'0'")
     private Boolean isEvaluated;
 
+    @Column(name = "rating")
+    private Short rating;
+
     public EventHasAccountEntity() {
         this.isEvaluated = false;
     }
 
     public void setEvaluated(Boolean evaluated) {
         isEvaluated = evaluated;
+    }
+
+    public void setRating(Short rating) {
+        this.rating = rating;
     }
 }

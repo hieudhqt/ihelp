@@ -11,7 +11,7 @@ import java.sql.Timestamp;
 import java.util.Objects;
 
 @Entity
-@Table(name = "notification", schema = "ihelp", catalog = "")
+@Table(name = "notification", schema = "ihelp")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -20,7 +20,7 @@ public class NotificationEntity {
 
     @Id
     @Column(name = "id")
-    private int id;
+    private Integer id;
 
     @Basic
     @Column(name = "title")
@@ -43,7 +43,7 @@ public class NotificationEntity {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         NotificationEntity that = (NotificationEntity) o;
-        return id == that.id && Objects.equals(title, that.title) && Objects.equals(message, that.message) && Objects.equals(date, that.date);
+        return Objects.equals(id, that.id) && Objects.equals(title, that.title) && Objects.equals(message, that.message) && Objects.equals(date, that.date);
     }
 
     @Override

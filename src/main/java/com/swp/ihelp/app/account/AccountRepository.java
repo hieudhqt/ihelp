@@ -55,6 +55,10 @@ public interface AccountRepository extends JpaRepository<AccountEntity, String> 
     @Query(value = "UPDATE AccountEntity a SET a.contributionPoint = a.contributionPoint + :contributionPoint WHERE a.email = :email ")
     void updateContributionPoint(String email, int contributionPoint) throws Exception;
 
+    @Modifying
+    @Query(value = "UPDATE AccountEntity a SET a.balancePoint = a.balancePoint + :point WHERE a.email = :email ")
+    void updateBalancePoint(String email, int point) throws Exception;
+
     @Query(value = "SELECT a.* " +
             "FROM ihelp.account a  " +
             "INNER JOIN (SELECT r.account_email, SUM(r.point) as total " +
@@ -63,6 +67,10 @@ public interface AccountRepository extends JpaRepository<AccountEntity, String> 
             "GROUP BY r.account_email) e " +
             "ON e.account_email = a.email  " +
             "WHERE a.role_id = 'user' " +
-            "ORDER BY e.total desc", nativeQuery = true)
+            "ORDER BY e.total desc " +
+            "LIMIT 0, 100 ", nativeQuery = true)
     List<AccountEntity> getTop100AccountsByContributionAndDate(String startDate, String endDate) throws Exception;
+
+    @Query(value = "SELECT a FROM AccountEntity a WHERE a.role.name = :roleName")
+    List<AccountEntity> findByRoleName(String roleName) throws Exception;
 }

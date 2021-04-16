@@ -141,6 +141,12 @@ public class EventController {
         return ResponseEntity.ok(eventMessage.getEventDeletedMessage() + eventId);
     }
 
+    @DeleteMapping("/events/disable/{eventId}")
+    public ResponseEntity<String> disableEvent(@PathVariable String eventId) throws Exception {
+        eventService.disableEvent(eventId);
+        return ResponseEntity.ok("Event " + eventId + " disabled.");
+    }
+
     @DeleteMapping("/events/{eventId}/{email}")
     public ResponseEntity<String> quitEvent(@PathVariable String eventId,
                                             @PathVariable String email) throws Exception {

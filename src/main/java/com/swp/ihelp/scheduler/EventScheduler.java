@@ -83,7 +83,7 @@ public class EventScheduler {
                 reward.setDescription("");
                 reward.setPoint(contributionPoint);
                 reward.setCreatedDate(new Timestamp(System.currentTimeMillis()));
-                reward.setAccountByAccountEmail(eventEntity.getAuthorAccount());
+                reward.setAccount(eventEntity.getAuthorAccount());
                 rewardRepository.save(reward);
 
                 accountRepository.updateContributionPoint(eventEntity.getAuthorAccount().getEmail(),

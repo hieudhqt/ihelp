@@ -38,7 +38,7 @@ public class RewardEntity {
 
     @Basic
     @Column(name = "point", nullable = true)
-    private int point;
+    private Integer point;
 
     @Basic
     @Column(name = "created_date", nullable = true)
@@ -46,7 +46,7 @@ public class RewardEntity {
 
     @ManyToOne
     @JoinColumn(name = "account_email", referencedColumnName = "email", nullable = false)
-    private AccountEntity accountByAccountEmail;
+    private AccountEntity account;
 
     @Override
     public boolean equals(Object o) {

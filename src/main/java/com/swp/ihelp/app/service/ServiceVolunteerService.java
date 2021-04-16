@@ -21,6 +21,8 @@ public interface ServiceVolunteerService {
 
     ServiceDetailResponse update(@Valid UpdateServiceRequest request) throws Exception;
 
+    void updateStatus(String serviceId, int statusId) throws Exception;
+
     void deleteById(String id) throws Exception;
 
     Map<String, Object> findByCategoryId(int id, int page) throws Exception;
