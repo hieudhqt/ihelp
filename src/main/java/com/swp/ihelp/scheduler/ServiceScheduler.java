@@ -82,7 +82,7 @@ public class ServiceScheduler {
                 reward.setDescription("");
                 reward.setPoint(serviceContributionPoint);
                 reward.setCreatedDate(new Timestamp(System.currentTimeMillis()));
-                reward.setAccountByAccountEmail(serviceEntity.getAuthorAccount());
+                reward.setAccount(serviceEntity.getAuthorAccount());
                 rewardRepository.save(reward);
 
                 accountRepository.updateContributionPoint

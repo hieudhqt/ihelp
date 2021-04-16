@@ -406,16 +406,16 @@ public class EventServiceImpl implements EventService {
 
         if (!eventHasAccountRepository.existsById(eventHasAccountEntityPK)) {
             throw new RuntimeException("This account has not joined this event.");
-        } else {
-            EventHasAccountEntity eventHasAccount = eventHasAccountRepository
-                    .getOne(eventHasAccountEntityPK);
-            eventHasAccount.setEvaluated(true);
-            eventHasAccountRepository.save(eventHasAccount);
         }
         if (eventHasAccountRepository.isMemberEvaluated(request.getEventId(),
                 request.getMemberEmail())) {
             throw new RuntimeException("This account is already evaluated.");
         }
+        EventHasAccountEntity eventHasAccount = eventHasAccountRepository
+                .getOne(eventHasAccountEntityPK);
+        eventHasAccount.setEvaluated(true);
+        eventHasAccount.setRating(request.getRating().shortValue());
+        eventHasAccountRepository.save(eventHasAccount);
 
         AccountEntity hostAccount = eventEntity.getAuthorAccount();
 
@@ -458,7 +458,7 @@ public class EventServiceImpl implements EventService {
             reward.setDescription("");
             reward.setPoint(bonusPoint);
             reward.setCreatedDate(new Timestamp(System.currentTimeMillis()));
-            reward.setAccountByAccountEmail(memberAccount);
+            reward.setAccount(memberAccount);
             rewardRepository.save(reward);
         }
 
@@ -482,6 +482,32 @@ public class EventServiceImpl implements EventService {
             throw new RuntimeException("Event can only be deleted if it is in pending state.");
         }
         eventRepository.deleteById(id);
+    }
+
+    @Override
+    public void disableEvent(String eventId) throws Exception {
+        EventEntity eventEntity = eventRepository.getOne(eventId);
+        int spotUsed = eventRepository.getSpotUsed(eventId);
+        if (spotUsed > 0) {
+            throw new RuntimeException("You can only disable an event when it has no participants");
+        }
+        if (eventEntity.getStatus().getId() != StatusEnum.APPROVED.getId()) {
+            throw new RuntimeException("Event can only be disabled when it's status is \"Approved\".");
+        }
+        eventRepository.updateStatus(eventId, StatusEnum.DISABLED.getId());
+        int pointUsed = eventEntity.getPoint() * eventEntity.getQuota();
+        if (pointUsed > 0) {
+            accountRepository.updateBalancePoint(eventEntity.getAuthorAccount().getEmail(),
+                    pointUsed);
+
+            PointEntity hostPointEntity = new PointEntity();
+            hostPointEntity.setIsReceived(false);
+            hostPointEntity.setDescription("Point refunded to " + pointUsed + " for disabling event: " + eventId);
+            hostPointEntity.setCreatedDate(new Timestamp(System.currentTimeMillis()));
+            hostPointEntity.setAccount(eventEntity.getAuthorAccount());
+            hostPointEntity.setAmount(pointUsed);
+            pointRepository.save(hostPointEntity);
+        }
     }
 
     //1. Get EventEntity from eventId
