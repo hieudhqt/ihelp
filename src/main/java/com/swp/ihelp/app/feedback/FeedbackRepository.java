@@ -13,16 +13,16 @@ public interface FeedbackRepository extends JpaRepository<FeedbackEntity, String
     @Query("SELECT f FROM FeedbackEntity f WHERE f.status.id=:statusId")
     List<FeedbackEntity> findByStatus(String statusId);
 
-    @Query("SELECT f FROM FeedbackEntity f WHERE f.event.id=:eventId")
-    List<FeedbackEntity> findByEventId(String eventId);
+    @Query("SELECT f FROM FeedbackEntity f WHERE f.event.id=:eventId AND f.status.id=:statusId")
+    List<FeedbackEntity> findByEventId(String eventId, String statusId);
 
-    @Query("SELECT f FROM FeedbackEntity f WHERE f.service.id=:serviceId")
-    List<FeedbackEntity> findByServiceId(String serviceId);
+    @Query("SELECT f FROM FeedbackEntity f WHERE f.service.id=:serviceId AND f.status.id=:statusId")
+    List<FeedbackEntity> findByServiceId(String serviceId, String statusId);
 
     @Query("SELECT f FROM FeedbackEntity f WHERE f.event IS NULL AND f.service IS NULL")
     List<FeedbackEntity> getReports();
 
-    @Query("SELECT f FROM FeedbackEntity f WHERE f.account.email=:email AND f.event.id=:eventId AND f.service.id=:serviceId")
-    List<FeedbackEntity> findByEmail(String email, String eventId, String serviceId) throws Exception;
+    @Query("SELECT f FROM FeedbackEntity f WHERE f.account.email=:email AND f.event.id IS NOT NULL AND f.service.id IS NOT NULL")
+    List<FeedbackEntity> findByEmail(String email) throws Exception;
 
 }

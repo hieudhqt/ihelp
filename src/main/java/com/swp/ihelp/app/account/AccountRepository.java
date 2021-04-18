@@ -29,7 +29,7 @@ public interface AccountRepository extends JpaRepository<AccountEntity, String> 
             "FROM account a " +
             "INNER JOIN event_has_account ea ON ea.account_email = a.email AND ea.event_id=:eventId " +
             "LEFT JOIN image i ON i.account_email = a.email AND i.type = 'avatar' " +
-            "WHERE ea.is_evaluated <> 1", nativeQuery = true)
+            "WHERE ea.is_evaluated <> 1 OR ea.is_evaluated IS NULL", nativeQuery = true)
     List<NotEvaluatedParticipantsMapping> findNotEvaluatedAccountsByEventId(String eventId);
 
     @Modifying
@@ -43,10 +43,6 @@ public interface AccountRepository extends JpaRepository<AccountEntity, String> 
     @Modifying
     @Query(value = "UPDATE account a SET a.role_id=:roleId WHERE a.email=:email", nativeQuery = true)
     void updateRole(String email, String roleId) throws Exception;
-
-//    @Modifying
-//    @Query("UPDATE AccountEntity a SET a.notificationKey=:notificationKey WHERE a.email=:email")
-//    void updateDeviceToken(String email, String notificationKey) throws Exception;
 
     @Query("SELECT CASE WHEN COUNT (a) > 0 THEN TRUE ELSE FALSE END FROM AccountEntity a WHERE a.phone=:phone")
     boolean existsByPhone(String phone) throws Exception;

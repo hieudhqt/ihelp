@@ -298,7 +298,7 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public void approve(String eventId, String managerEmail) throws Exception {
+    public EventEntity approve(String eventId, String managerEmail) throws Exception {
         if (!eventRepository.existsById(eventId)) {
             throw new EntityNotFoundException("Event with ID:" + eventId + " not found.");
         }
@@ -327,7 +327,7 @@ public class EventServiceImpl implements EventService {
 
         eventEntity.setManagerAccount(approver);
         eventEntity.setStatus(new StatusEntity().setId(StatusEnum.APPROVED.getId()));
-        eventRepository.save(eventEntity);
+        EventEntity updatedEvent = eventRepository.save(eventEntity);
 
         hostAccount.decreaseBalancePoint(pointNeeded);
         accountRepository.save(hostAccount);
@@ -339,10 +339,12 @@ public class EventServiceImpl implements EventService {
         hostPointEntity.setAccount(hostAccount);
         hostPointEntity.setAmount(pointNeeded);
         pointRepository.save(hostPointEntity);
+
+        return updatedEvent;
     }
 
     @Override
-    public void reject(RejectEventRequest request) throws Exception {
+    public EventEntity reject(RejectEventRequest request) throws Exception {
         String eventId = request.getEventId();
         String managerEmail = request.getManagerEmail();
         if (!eventRepository.existsById(eventId)) {
@@ -366,7 +368,8 @@ public class EventServiceImpl implements EventService {
         eventEntity.setManagerAccount(rejecter);
         eventEntity.setStatus(new StatusEntity().setId(StatusEnum.REJECTED.getId()));
         eventEntity.setReason(request.getReason());
-        eventRepository.save(eventEntity);
+        EventEntity updatedEvent = eventRepository.save(eventEntity);
+        return updatedEvent;
     }
 
     @Override
@@ -406,16 +409,16 @@ public class EventServiceImpl implements EventService {
 
         if (!eventHasAccountRepository.existsById(eventHasAccountEntityPK)) {
             throw new RuntimeException("This account has not joined this event.");
-        } else {
-            EventHasAccountEntity eventHasAccount = eventHasAccountRepository
-                    .getOne(eventHasAccountEntityPK);
-            eventHasAccount.setEvaluated(true);
-            eventHasAccountRepository.save(eventHasAccount);
         }
         if (eventHasAccountRepository.isMemberEvaluated(request.getEventId(),
                 request.getMemberEmail())) {
             throw new RuntimeException("This account is already evaluated.");
         }
+
+        EventHasAccountEntity eventHasAccount = eventHasAccountRepository
+                .getOne(eventHasAccountEntityPK);
+        eventHasAccount.setEvaluated(true);
+        eventHasAccountRepository.save(eventHasAccount);
 
         AccountEntity hostAccount = eventEntity.getAuthorAccount();
 

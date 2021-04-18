@@ -1,10 +1,16 @@
 package com.swp.ihelp.app.event;
 
+import com.swp.ihelp.app.account.AccountEntity;
 import com.swp.ihelp.app.event.request.CreateEventRequest;
 import com.swp.ihelp.app.event.request.EvaluationRequest;
 import com.swp.ihelp.app.event.request.RejectEventRequest;
 import com.swp.ihelp.app.event.request.UpdateEventRequest;
 import com.swp.ihelp.app.event.response.EventDetailResponse;
+import com.swp.ihelp.app.notification.NotificationEntity;
+import com.swp.ihelp.app.notification.NotificationService;
+import com.swp.ihelp.exception.EntityNotFoundException;
+import com.swp.ihelp.google.firebase.fcm.PushNotificationRequest;
+import com.swp.ihelp.google.firebase.fcm.PushNotificationService;
 import com.swp.ihelp.message.EventMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -12,20 +18,30 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.sql.Timestamp;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
 @CrossOrigin
 public class EventController {
+
     private EventService eventService;
+
+    private NotificationService notificationService;
+
+    private PushNotificationService pushNotificationService;
 
     @Autowired
     private EventMessage eventMessage;
 
     @Autowired
-    public EventController(EventService eventService) {
+    public EventController(EventService eventService, NotificationService notificationService, PushNotificationService pushNotificationService) {
         this.eventService = eventService;
+        this.notificationService = notificationService;
+        this.pushNotificationService = pushNotificationService;
     }
 
     @GetMapping("/events")
@@ -103,7 +119,20 @@ public class EventController {
     public ResponseEntity<String> evaluateMember(@Valid @RequestBody EvaluationRequest request)
             throws Exception {
         eventService.evaluateMember(request);
-        return ResponseEntity.ok("Evaluation completed.");
+
+        //Push notification to evaluated member
+        List<String> deviceTokens = notificationService.findDeviceTokensByEmail(request.getMemberEmail());
+        if (deviceTokens != null || !deviceTokens.isEmpty()) {
+            PushNotificationRequest pushNotificationRequest = new PushNotificationRequest()
+                    .setTitle("You have been evaluated from event \"" + " " + "\" host")
+                    .setMessage("You now can give feedback about event \"" + " " + "\"")
+                    .setRegistrationTokens(deviceTokens);
+            pushNotificationService.sendPushNotificationToMultiDevices(pushNotificationRequest);
+        } else {
+//            throw new EntityNotFoundException("Account: " + email + " has no device token.");
+        }
+
+        return ResponseEntity.ok("Evaluation of account " + request.getMemberEmail() + " completed.");
     }
 
     @PutMapping("/events")
@@ -122,13 +151,56 @@ public class EventController {
     @PutMapping("/events/{email}/approve/{eventId}")
     public ResponseEntity<String> approve(@PathVariable String email,
                                           @PathVariable String eventId) throws Exception {
-        eventService.approve(eventId, email);
+        EventEntity approvedEvent = eventService.approve(eventId, email);
+
+        //Push notification to event's host
+        List<String> deviceTokens = notificationService.findDeviceTokensByEmail(approvedEvent.getAuthorAccount().getEmail());
+        if (deviceTokens != null || !deviceTokens.isEmpty()) {
+
+            Map<String, String> notificationData = new HashMap<>();
+            notificationData.put("evaluateRequiredEvents", eventId);
+            notificationData.put("managerEmail", email);
+
+            PushNotificationRequest pushNotificationRequest = new PushNotificationRequest()
+                    .setTitle("Your event: \"" + approvedEvent.getTitle() + "\" has been approved")
+                    .setMessage("Event \"" + approvedEvent.getTitle() + "\" is now able to accept registration")
+                    .setData(notificationData)
+                    .setRegistrationTokens(deviceTokens);
+            pushNotificationService.sendPushNotificationToMultiDevices(pushNotificationRequest);
+
+            notificationService.insert(new NotificationEntity()
+                    .setTitle("Your event: \"" + approvedEvent.getTitle() + "\" has been approved")
+                    .setMessage("Event \"" + approvedEvent.getTitle() + " is now able to accept registration")
+                    .setDate(new Timestamp(System.currentTimeMillis()))
+                    .setAccountEntity(new AccountEntity().setEmail(approvedEvent.getAuthorAccount().getEmail())));
+        } else {
+//            throw new EntityNotFoundException("Account: " + email + " has no device token.");
+        }
+
         return ResponseEntity.ok("Event " + eventId + " has been approved by " + email);
     }
 
     @PutMapping("/events/reject")
     public ResponseEntity<String> reject(@Valid @RequestBody RejectEventRequest request) throws Exception {
-        eventService.reject(request);
+        EventEntity rejectedEvent = eventService.reject(request);
+
+        List<String> deviceTokens = notificationService.findDeviceTokensByEmail(rejectedEvent.getAuthorAccount().getEmail());
+        if (deviceTokens != null || !deviceTokens.isEmpty()) {
+            PushNotificationRequest pushNotificationRequest = new PushNotificationRequest()
+                    .setTitle("Your event: \"" + rejectedEvent.getTitle() + "\" has been rejected")
+                    .setMessage("Event \"" + rejectedEvent.getTitle() + " has been rejected with following reason: " + request.getReason())
+                    .setRegistrationTokens(deviceTokens);
+            pushNotificationService.sendPushNotificationToMultiDevices(pushNotificationRequest);
+
+            notificationService.insert(new NotificationEntity()
+                    .setTitle("Your event: \"" + rejectedEvent.getTitle() + "\" has been rejected")
+                    .setMessage("Event \"" + rejectedEvent.getTitle() + " has been rejected with following reason: " + request.getReason())
+                    .setDate(new Timestamp(System.currentTimeMillis()))
+                    .setAccountEntity(new AccountEntity().setEmail(rejectedEvent.getAuthorAccount().getEmail())));
+        } else {
+//            throw new EntityNotFoundException("Account: " + email + " has no device token.");
+        }
+
         return ResponseEntity.ok("Event " + request.getEventId() +
                 " has been rejected by " + request.getManagerEmail() + ", reason: "
                 + request.getReason());
@@ -152,6 +224,14 @@ public class EventController {
     public ResponseEntity<String> joinEvent(@PathVariable String email,
                                             @PathVariable String eventId) throws Exception {
         eventService.joinEvent(email, eventId);
+
+        //Subscribe user to topic with eventId in argument
+        List<String> deviceTokens = notificationService.findDeviceTokensByEmail(email);
+        if (deviceTokens != null || !deviceTokens.isEmpty()) {
+            pushNotificationService.subscribeToTopic(deviceTokens, eventId);
+        } else {
+//            throw new EntityNotFoundException("Account: " + email + " has no device token.");
+        }
         return ResponseEntity.ok(eventMessage.getEventJoinedMessage(eventId, email));
     }
 }

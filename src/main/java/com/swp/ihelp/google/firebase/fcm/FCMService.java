@@ -84,9 +84,9 @@ public class FCMService {
         String response = sendAndGetResponse(message);
     }
 
-    public void sendMessageWithData(Map<String, String> data, PushNotificationRequest request) throws InterruptedException, ExecutionException {
-        Message message = getPreconfiguredMessageWithData(data, request);
-        String response = sendAndGetResponse(message);
+    public void sendMessagesToMultiDevices(PushNotificationRequest request) throws ExecutionException, InterruptedException {
+        MulticastMessage multicastMessage = getMulticastMessageToTokens(request);
+        FirebaseMessaging.getInstance().sendMulticastAsync(multicastMessage).get();
     }
 
     private String sendAndGetResponse(Message message) throws InterruptedException, ExecutionException {
@@ -94,25 +94,46 @@ public class FCMService {
     }
 
     private Message getPreconfiguredMessageToToken(PushNotificationRequest request) {
-        return getPreconfiguredMessageBuilder(request).setToken(request.getToken()).build();
+        Map<String, String> data = request.getData();
+        if (data == null || data.isEmpty()) {
+            return getPreconfiguredMessageBuilder(request).setToken(request.getToken()).build();
+        } else {
+            return getPreconfiguredMessageBuilder(request).putAllData(request.getData()).setToken(request.getToken()).build();
+        }
     }
 
     private Message getPreconfiguredMessageToTopic(PushNotificationRequest request) {
-        return getPreconfiguredMessageBuilder(request).setTopic(request.getTopic()).build();
+        Map<String, String> data = request.getData();
+        if (data == null || data.isEmpty()) {
+            return getPreconfiguredMessageBuilder(request).setTopic(request.getTopic()).build();
+        } else {
+            return getPreconfiguredMessageBuilder(request).putAllData(request.getData()).setTopic(request.getTopic()).build();
+        }
     }
 
-    private Message getPreconfiguredMessageWithData(Map<String, String> data, PushNotificationRequest request) {
-        return getPreconfiguredMessageBuilder(request).putAllData(data).setTopic(request.getTopic()).build();
+    private MulticastMessage getMulticastMessageToTokens(PushNotificationRequest request) {
+        Map<String, String> data = request.getData();
+        if (data == null || data.isEmpty()) {
+            return getPreconfiguredMulticastMessageBuilder(request).addAllTokens(request.getRegistrationTokens()).build();
+        } else {
+            return getPreconfiguredMulticastMessageBuilder(request).putAllData(request.getData()).addAllTokens(request.getRegistrationTokens()).build();
+        }
     }
 
     private Message.Builder getPreconfiguredMessageBuilder(PushNotificationRequest request) {
         AndroidConfig androidConfig = getAndroidConfig(request.getTopic());
         ApnsConfig apnsConfig = getApnsConfig(request.getTopic());
-        Notification notification = Notification.builder()
-                .setTitle(request.getTitle())
-                .setBody(request.getMessage())
-                .build();
+        Notification notification = getNotificationConfig(request.getTitle(), request.getMessage());
         return Message.builder()
+                .setApnsConfig(apnsConfig).setAndroidConfig(androidConfig)
+                .setNotification(notification);
+    }
+
+    private MulticastMessage.Builder getPreconfiguredMulticastMessageBuilder(PushNotificationRequest request) {
+        AndroidConfig androidConfig = getAndroidConfig(request.getTopic());
+        ApnsConfig apnsConfig = getApnsConfig(request.getTopic());
+        Notification notification = getNotificationConfig(request.getTitle(), request.getMessage());
+        return MulticastMessage.builder()
                 .setApnsConfig(apnsConfig).setAndroidConfig(androidConfig)
                 .setNotification(notification);
     }
@@ -129,6 +150,13 @@ public class FCMService {
     private ApnsConfig getApnsConfig(String topic) {
         return ApnsConfig.builder()
                 .setAps(Aps.builder().setCategory(topic).setThreadId(topic).build()).build();
+    }
+
+    private Notification getNotificationConfig(String title, String message) {
+        return Notification.builder()
+                .setTitle(title)
+                .setBody(message)
+                .build();
     }
 
 }

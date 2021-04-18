@@ -25,12 +25,11 @@ import java.util.*;
 @Service
 public class AccountServiceImpl implements AccountService {
 
-    private AccountRepository accountRepository;
-    private ServiceRepository serviceRepository;
-    private EventRepository eventRepository;
-    private ImageRepository imageRepository;
-
     private static final PasswordEncoder encoder = new BCryptPasswordEncoder();
+    private final AccountRepository accountRepository;
+    private final ServiceRepository serviceRepository;
+    private final EventRepository eventRepository;
+    private final ImageRepository imageRepository;
 
     @Autowired
     public AccountServiceImpl(AccountRepository accountRepository, ServiceRepository serviceRepository, EventRepository eventRepository, ImageRepository imageRepository) {
@@ -160,31 +159,40 @@ public class AccountServiceImpl implements AccountService {
         return convertMappingToNotEvaluatedParticipantResponse(notEvaluatedAccounts);
     }
 
+    @Override
+    public Map<String, Object> existsByEmailAndPhone(String email, String phone) throws Exception {
+        boolean existsByEmail = accountRepository.existsById(email);
+        boolean existsByPhone = accountRepository.existsByPhone(phone);
+        Map<String, Object> map = new HashMap<>();
+        map.put("existsByEmail", existsByEmail);
+        map.put("existsByPhone", existsByPhone);
+        return map;
+    }
+
     @Transactional
     @Override
     public void updateStatus(String email, String statusId) throws Exception {
+        existsByEmail(email);
         accountRepository.updateStatus(email, statusId);
     }
 
+    @Transactional
     @Override
     public void updatePassword(String email, String password) throws Exception {
+        existsByEmail(email);
         accountRepository.updatePassword(email, encoder.encode(password));
     }
 
     @Transactional
     @Override
     public void updateRole(String email, String roleId) throws Exception {
+        existsByEmail(email);
         accountRepository.updateRole(email, roleId);
     }
-//
-//    @Transactional
-//    @Override
-//    public void updateDeviceToken(String email, String deviceToken) throws Exception {
-//        accountRepository.updateDeviceToken(email, deviceToken);
-//    }
 
     @Override
     public void updateAvatar(String email, String avatarUrl) throws Exception {
+        existsByEmail(email);
         imageRepository.updateAvatar(email, avatarUrl);
     }
 
@@ -254,6 +262,12 @@ public class AccountServiceImpl implements AccountService {
             }
         }
         return result;
+    }
+
+    private void existsByEmail(String email) {
+        if (!accountRepository.existsById(email)) {
+            throw new RuntimeException("Account: " + email + " not found.");
+        }
     }
 
 }

@@ -1,9 +1,14 @@
 package com.swp.ihelp.app.service;
 
+import com.swp.ihelp.app.account.AccountEntity;
+import com.swp.ihelp.app.notification.NotificationEntity;
+import com.swp.ihelp.app.notification.NotificationService;
 import com.swp.ihelp.app.service.request.CreateServiceRequest;
 import com.swp.ihelp.app.service.request.RejectServiceRequest;
 import com.swp.ihelp.app.service.request.UpdateServiceRequest;
 import com.swp.ihelp.app.service.response.ServiceDetailResponse;
+import com.swp.ihelp.google.firebase.fcm.PushNotificationRequest;
+import com.swp.ihelp.google.firebase.fcm.PushNotificationService;
 import com.swp.ihelp.message.ServiceMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -11,20 +16,29 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.sql.Timestamp;
+import java.util.List;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
 @CrossOrigin
 public class ServiceController {
+
     private ServiceVolunteerService serviceVolunteerService;
 
     private ServiceMessage serviceMessage;
 
+    private NotificationService notificationService;
+
+    private PushNotificationService pushNotificationService;
+
     @Autowired
-    public ServiceController(ServiceVolunteerService serviceVolunteerService, ServiceMessage serviceMessage) {
+    public ServiceController(ServiceVolunteerService serviceVolunteerService, ServiceMessage serviceMessage, NotificationService notificationService, PushNotificationService pushNotificationService) {
         this.serviceVolunteerService = serviceVolunteerService;
         this.serviceMessage = serviceMessage;
+        this.notificationService = notificationService;
+        this.pushNotificationService = pushNotificationService;
     }
 
     @GetMapping("/services")
@@ -99,13 +113,49 @@ public class ServiceController {
     @PutMapping("/services/{email}/approve/{serviceId}")
     public ResponseEntity<String> approve(@PathVariable String email,
                                           @PathVariable String serviceId) throws Exception {
-        serviceVolunteerService.approve(serviceId, email);
+        ServiceEntity approvedService = serviceVolunteerService.approve(serviceId, email);
+
+        List<String> deviceTokens = notificationService.findDeviceTokensByEmail(approvedService.getAuthorAccount().getEmail());
+        if (deviceTokens != null || !deviceTokens.isEmpty()) {
+            PushNotificationRequest pushNotificationRequest = new PushNotificationRequest()
+                    .setTitle("Your service: \"" + approvedService.getTitle() + "\" has been approved")
+                    .setMessage("Service \"" + approvedService.getTitle() + " is now able to be used")
+                    .setRegistrationTokens(deviceTokens);
+            pushNotificationService.sendPushNotificationToMultiDevices(pushNotificationRequest);
+
+            notificationService.insert(new NotificationEntity()
+                    .setTitle("Your service: \"" + approvedService.getTitle() + "\" has been approved")
+                    .setMessage("Service \"" + approvedService.getTitle() + " is now able to be used")
+                    .setDate(new Timestamp(System.currentTimeMillis()))
+                    .setAccountEntity(new AccountEntity().setEmail(approvedService.getAuthorAccount().getEmail())));
+        } else {
+//            throw new EntityNotFoundException("Account: " + email + " has no device token.");
+        }
+
         return ResponseEntity.ok("Service " + serviceId + " has been approved by " + email);
     }
 
     @PutMapping("/services/reject")
     public ResponseEntity<String> reject(@Valid @RequestBody RejectServiceRequest request) throws Exception {
-        serviceVolunteerService.reject(request);
+        ServiceEntity rejectedService = serviceVolunteerService.reject(request);
+
+        List<String> deviceTokens = notificationService.findDeviceTokensByEmail(rejectedService.getAuthorAccount().getEmail());
+        if (deviceTokens != null || !deviceTokens.isEmpty()) {
+            PushNotificationRequest pushNotificationRequest = new PushNotificationRequest()
+                    .setTitle("Your service: \"" + rejectedService.getTitle() + "\" has been rejected")
+                    .setMessage("Service \"" + rejectedService.getTitle() + " has been rejected with following reason: " + request.getReason())
+                    .setRegistrationTokens(deviceTokens);
+            pushNotificationService.sendPushNotificationToMultiDevices(pushNotificationRequest);
+
+            notificationService.insert(new NotificationEntity()
+                    .setTitle("Your service: \"" + rejectedService.getTitle() + "\" has been rejected")
+                    .setMessage("Service \"" + rejectedService.getTitle() + " has been rejected with following reason: " + request.getReason())
+                    .setDate(new Timestamp(System.currentTimeMillis()))
+                    .setAccountEntity(new AccountEntity().setEmail(rejectedService.getAuthorAccount().getEmail())));
+        } else {
+//            throw new EntityNotFoundException("Account: " + email + " has no device token.");
+        }
+
         return ResponseEntity.ok("Service " + request.getServiceId() +
                 " has been rejected by " + request.getManagerEmail() + ", reason: "
                 + request.getReason());
@@ -123,7 +173,25 @@ public class ServiceController {
 
     @PostMapping("/services/{email}/{serviceId}")
     public String useService(@PathVariable String email, @PathVariable String serviceId) throws Exception {
-        serviceVolunteerService.useService(email, serviceId);
+        ServiceEntity usedService = serviceVolunteerService.useService(email, serviceId);
+
+        List<String> deviceTokens = notificationService.findDeviceTokensByEmail(usedService.getAuthorAccount().getEmail());
+        if (deviceTokens != null || !deviceTokens.isEmpty()) {
+            PushNotificationRequest pushNotificationRequest = new PushNotificationRequest()
+                    .setTitle(email + " use event \"" + usedService.getTitle())
+                    .setMessage("Service \"" + usedService.getTitle() + " has been used by: " + email)
+                    .setRegistrationTokens(deviceTokens);
+            pushNotificationService.sendPushNotificationToMultiDevices(pushNotificationRequest);
+
+            notificationService.insert(new NotificationEntity()
+                    .setTitle(email + " use event \"" + usedService.getTitle())
+                    .setMessage("Service \"" + usedService.getTitle() + " has been used by: " + email)
+                    .setDate(new Timestamp(System.currentTimeMillis()))
+                    .setAccountEntity(new AccountEntity().setEmail(usedService.getAuthorAccount().getEmail())));
+        } else {
+//            throw new EntityNotFoundException("Account: " + email + " has no device token.");
+        }
+
         return serviceMessage.getServiceUsedMessage(email, serviceId);
     }
 

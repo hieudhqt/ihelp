@@ -4,7 +4,6 @@ import com.swp.ihelp.app.account.request.ProfileUpdateRequest;
 import com.swp.ihelp.app.account.request.SignUpRequest;
 import com.swp.ihelp.app.account.response.AccountGeneralResponse;
 import com.swp.ihelp.app.account.response.ProfileResponse;
-import com.swp.ihelp.app.entity.AccountStatusEntity;
 
 import java.util.List;
 import java.util.Map;
@@ -33,12 +32,12 @@ public interface AccountService {
 
     void updateRole(String email, String roleId) throws Exception;
 
-//    void updateDeviceToken(String email, String deviceToken) throws Exception;
-
     void updateAvatar(String email, String avatarUrl) throws Exception;
 
     void insertAvatar(String email, String avatarUrl) throws Exception;
 
     List<Map<String, Object>> findNotEvaluatedAccountsByEventId(String eventId) throws Exception;
+
+    Map<String, Object> existsByEmailAndPhone(String email, String phone) throws Exception;
 
 }

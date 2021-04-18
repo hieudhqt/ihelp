@@ -69,7 +69,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                         "/v2/api-docs**", "/webjars/**").permitAll()
                 .antMatchers("/login", "/signup").permitAll()
                 .antMatchers(HttpMethod.GET, "/api/events/**", "/api/services/**", "/api/event-categories/**", "/api/service-categories/**",
-                        "/accounts/event/**", "/accounts/service/**").permitAll()
+                        "/accounts/event/**", "/accounts/service/**", "/accounts/exist").permitAll()
                 .antMatchers(HttpMethod.DELETE, "/accounts/**").hasRole("ADMIN")
                 .anyRequest().authenticated().and()
 //                .requiresChannel()

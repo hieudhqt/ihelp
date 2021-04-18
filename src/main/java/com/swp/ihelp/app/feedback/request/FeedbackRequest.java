@@ -28,7 +28,7 @@ public class FeedbackRequest implements Serializable {
         }
         ServiceEntity serviceEntity = null;
         if (!(request.getServiceId() == null)) {
-            serviceEntity = new ServiceEntity().setId(request.getEventId());
+            serviceEntity = new ServiceEntity().setId(request.getServiceId());
         }
         StatusEntity statusEntity = new StatusEntity().setId(StatusEnum.PENDING.getId());
         return new FeedbackEntity()

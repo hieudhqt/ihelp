@@ -36,9 +36,9 @@ public interface EventService {
 
     void updateStatus(String eventId, int statusId) throws Exception;
 
-    void approve(String eventId, String managerEmail) throws Exception;
+    EventEntity approve(String eventId, String managerEmail) throws Exception;
 
-    void reject(RejectEventRequest request) throws Exception;
+    EventEntity reject(RejectEventRequest request) throws Exception;
 
     void evaluateMember(EvaluationRequest request) throws Exception;
 

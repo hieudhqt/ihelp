@@ -1,12 +1,18 @@
 package com.swp.ihelp.scheduler;
 
+import com.swp.ihelp.app.account.AccountEntity;
 import com.swp.ihelp.app.account.AccountRepository;
 import com.swp.ihelp.app.event.EventEntity;
 import com.swp.ihelp.app.event.EventRepository;
+import com.swp.ihelp.app.notification.DeviceRepository;
+import com.swp.ihelp.app.notification.NotificationEntity;
+import com.swp.ihelp.app.notification.NotificationRepository;
 import com.swp.ihelp.app.reward.RewardEntity;
 import com.swp.ihelp.app.reward.RewardRepository;
 import com.swp.ihelp.app.status.StatusEntity;
 import com.swp.ihelp.app.status.StatusEnum;
+import com.swp.ihelp.google.firebase.fcm.PushNotificationRequest;
+import com.swp.ihelp.google.firebase.fcm.PushNotificationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,15 +25,24 @@ import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class EventScheduler {
     static Logger logger = LoggerFactory.getLogger(EventScheduler.class);
 
-    private EventRepository eventRepository;
-    private RewardRepository rewardRepository;
-    private AccountRepository accountRepository;
+    private final EventRepository eventRepository;
+    private final RewardRepository rewardRepository;
+    private final AccountRepository accountRepository;
+
+    //Use notification repository due to not using @Repository and @Service in the same class
+    private final DeviceRepository deviceRepository;
+    private final NotificationRepository notificationRepository;
+
+    //This service is only related to Firebase Cloud Messaging. It does not integrate with DAO layer or vice versa
+    private final PushNotificationService pushNotificationService;
 
     @Value("${point.event.host-event-bonus}")
     private float hostBonusPointPercent;
@@ -36,10 +51,13 @@ public class EventScheduler {
     private int maxDaysToApprove;
 
     @Autowired
-    public EventScheduler(EventRepository eventRepository, RewardRepository rewardRepository, AccountRepository accountRepository) {
+    public EventScheduler(EventRepository eventRepository, RewardRepository rewardRepository, AccountRepository accountRepository, DeviceRepository deviceRepository, NotificationRepository notificationRepository, PushNotificationService pushNotificationService) {
         this.eventRepository = eventRepository;
         this.rewardRepository = rewardRepository;
         this.accountRepository = accountRepository;
+        this.deviceRepository = deviceRepository;
+        this.notificationRepository = notificationRepository;
+        this.pushNotificationService = pushNotificationService;
     }
 
     @Scheduled(cron = "0 0 0 * * *")
@@ -88,6 +106,34 @@ public class EventScheduler {
 
                 accountRepository.updateContributionPoint(eventEntity.getAuthorAccount().getEmail(),
                         contributionPoint);
+
+                //Push notification to event's participant
+                PushNotificationRequest participantsNotificationRequest = new PushNotificationRequest()
+                        .setTitle("Event \"" + eventEntity.getTitle() + "\" is completed")
+                        .setMessage("Event \"" + eventEntity.getTitle() + "\" is now being under host's evaluation")
+                        .setTopic(eventId);
+
+                pushNotificationService.sendPushNotificationToTopic(participantsNotificationRequest);
+
+                //Push notification to event's host
+                List<String> hostDeviceTokens = deviceRepository.findByEmail(eventEntity.getAuthorAccount().getEmail());
+
+                Map<String, String> notificationData = new HashMap<>();
+                notificationData.put("evaluateRequiredEvents", eventId);
+
+                PushNotificationRequest hostNotificationRequest = new PushNotificationRequest()
+                        .setTitle("Your event: \"" + eventEntity.getTitle() + "\" is completed")
+                        .setMessage("Event \"" + eventEntity.getTitle() + "\" has participants in need of evaluating")
+                        .setData(notificationData)
+                        .setRegistrationTokens(hostDeviceTokens);
+
+                pushNotificationService.sendPushNotificationToMultiDevices(hostNotificationRequest);
+                notificationRepository.save(new NotificationEntity()
+                        .setTitle("Your event: \"" + eventEntity.getTitle() + "\" is completed")
+                        .setMessage("Event \"" + eventEntity.getTitle() + "\" has participants in need of evaluating")
+                        .setDate(new Timestamp(System.currentTimeMillis()))
+                        .setAccountEntity(new AccountEntity().setEmail(eventEntity.getAuthorAccount().getEmail())));
+
             }
         } catch (Exception e) {
             logger.error("Error when auto completing events: " + e.getMessage());
@@ -110,6 +156,22 @@ public class EventScheduler {
                 eventToReject.setReason("This event has passed approval due date.");
                 eventToReject.setStatus(new StatusEntity().setId(StatusEnum.REJECTED.getId()));
                 eventRepository.save(eventToReject);
+
+                //Push notification to event's host
+                List<String> hostDeviceTokens = deviceRepository.findByEmail(eventToReject.getAuthorAccount().getEmail());
+
+                PushNotificationRequest hostNotificationRequest = new PushNotificationRequest()
+                        .setTitle("Your event: \"" + eventToReject.getTitle() + "\" has been rejected because approval deadline was exceeded")
+                        .setMessage("Event \"" + eventToReject.getTitle() + "\" has been rejected, please contact admin or manager for more information")
+                        .setRegistrationTokens(hostDeviceTokens);
+
+                pushNotificationService.sendPushNotificationToMultiDevices(hostNotificationRequest);
+                notificationRepository.save(new NotificationEntity()
+                        .setTitle("Your event: \"" + eventToReject.getTitle() + "\" has been rejected because approval deadline was exceeded")
+                        .setMessage("Event \"" + eventToReject.getTitle() + "\" has been rejected, please contact admin or manager for more information")
+                        .setDate(new Timestamp(System.currentTimeMillis()))
+                        .setAccountEntity(new AccountEntity().setEmail(eventToReject.getAuthorAccount().getEmail())));
+
             }
         } catch (Exception e) {
             logger.error("Error when auto rejecting events: " + e.getMessage());
