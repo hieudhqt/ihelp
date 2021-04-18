@@ -420,11 +420,6 @@ public class EventServiceImpl implements EventService {
         eventHasAccount.setRating(request.getRating().shortValue());
         eventHasAccountRepository.save(eventHasAccount);
 
-        EventHasAccountEntity eventHasAccount = eventHasAccountRepository
-                .getOne(eventHasAccountEntityPK);
-        eventHasAccount.setEvaluated(true);
-        eventHasAccountRepository.save(eventHasAccount);
-
         AccountEntity hostAccount = eventEntity.getAuthorAccount();
 
         int participationPoint = 0;
