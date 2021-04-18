@@ -21,6 +21,8 @@ public class ServiceDetailResponse implements Serializable {
     private String title;
     private String description;
     private String location;
+    private String longitude;
+    private String latitude;
     private int point;
     private int quota;
     private int spot;
@@ -54,5 +56,7 @@ public class ServiceDetailResponse implements Serializable {
         this.images = ImageResponse.convertToResponseList(service.getImages());
         this.status = service.getStatus();
         this.categories = service.getServiceCategories();
+        this.longitude = service.getLongitude();
+        this.latitude = service.getLatitude();
     }
 }

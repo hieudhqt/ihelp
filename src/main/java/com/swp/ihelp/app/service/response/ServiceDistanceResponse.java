@@ -44,6 +44,10 @@ public class ServiceDistanceResponse implements Serializable {
 
     private String location;
 
+    private String longitude;
+
+    private String latitude;
+
     private Double distance;
 
     private Set<ServiceCategoryEntity> categories;
@@ -62,5 +66,7 @@ public class ServiceDistanceResponse implements Serializable {
         this.images = ImageResponse.convertToResponseList(service.getImages());
         this.createdDate = service.getCreatedDate();
         this.location = service.getLocation();
+        this.longitude = service.getLongitude();
+        this.latitude = service.getLatitude();
     }
 }
