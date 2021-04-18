@@ -32,6 +32,9 @@ public class ServiceResponse implements Serializable {
             pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Ho_Chi_Minh")
     private Date createdDate;
     private String location;
+    private String longitude;
+    private String latitude;
+    private Double distance;
     private String accountEmail;
     private String fullName;
     private StatusEntity status;
@@ -50,6 +53,8 @@ public class ServiceResponse implements Serializable {
         this.images = ImageResponse.convertToResponseList(service.getImages());
         this.createdDate = service.getCreatedDate();
         this.location = service.getLocation();
+        this.longitude = service.getLongitude();
+        this.latitude = service.getLatitude();
     }
 
     public static List<ServiceResponse> convertToResponseList(List<ServiceEntity> serviceEntityList) {
