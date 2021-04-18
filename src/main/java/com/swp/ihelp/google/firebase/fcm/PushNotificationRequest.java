@@ -5,6 +5,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
+import java.util.List;
+import java.util.Map;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -15,5 +18,7 @@ public class PushNotificationRequest {
     private String message;
     private String topic;
     private String token;
+    private List<String> registrationTokens;
+    private Map<String, String> data;
 
 }

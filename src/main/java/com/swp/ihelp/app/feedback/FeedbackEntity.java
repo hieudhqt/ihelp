@@ -47,6 +47,10 @@ public class FeedbackEntity {
     @Column(name = "created_date", nullable = true)
     private Timestamp createdDate;
 
+    @Basic
+    @Column(name = "reason", nullable = true)
+    private String reason;
+
     @ManyToOne
     @JoinColumn(name = "account_email", referencedColumnName = "email", nullable = false)
     private AccountEntity account;
@@ -62,6 +66,10 @@ public class FeedbackEntity {
     @ManyToOne
     @JoinColumn(name = "status_id", referencedColumnName = "id", nullable = false)
     private StatusEntity status;
+
+    @ManyToOne
+    @JoinColumn(name = "manager_email", referencedColumnName = "email", nullable = true)
+    private AccountEntity managerAccount;
 
     @Override
     public boolean equals(Object o) {

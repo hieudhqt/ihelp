@@ -1,13 +1,19 @@
 package com.swp.ihelp.app.feedback;
 
 import com.swp.ihelp.app.feedback.request.FeedbackRequest;
+import com.swp.ihelp.app.feedback.request.RejectFeedbackRequest;
 import com.swp.ihelp.app.feedback.response.FeedbackResponse;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+//@Api(tags = "Feedback Controller")
 @RequestMapping("/api/feedbacks")
 @RestController
 public class FeedbackController {
@@ -35,18 +41,18 @@ public class FeedbackController {
     }
 
     @GetMapping("/email/{email}")
-    public List<FeedbackResponse> findByEmail(@PathVariable String email, @RequestParam String event_id, @RequestParam String status_id) throws Exception {
-        return feedbackService.findByEmail(email, event_id, status_id);
+    public List<FeedbackResponse> findByEmail(@PathVariable String email) throws Exception {
+        return feedbackService.findByEmail(email);
     }
 
-    @GetMapping("/event/{eventId}")
-    public List<FeedbackResponse> findByEventId(@PathVariable String eventId) throws Exception {
-        return feedbackService.findByEventId(eventId);
+    @GetMapping("/event/{eventId}/status/{statusId}")
+    public List<FeedbackResponse> findByEventId(@PathVariable String eventId, @PathVariable String statusId) throws Exception {
+        return feedbackService.findByEventId(eventId, statusId);
     }
 
-    @GetMapping("/service/{serviceId}")
-    public List<FeedbackResponse> findByServiceId(@PathVariable String serviceId) throws Exception {
-        return feedbackService.findByServiceId(serviceId);
+    @GetMapping("/service/{serviceId}/status/{statusId}")
+    public List<FeedbackResponse> findByServiceId(@PathVariable String serviceId, @PathVariable String statusId) throws Exception {
+        return feedbackService.findByServiceId(serviceId, statusId);
     }
 
     @GetMapping("/reports")
@@ -62,6 +68,20 @@ public class FeedbackController {
     @PutMapping("/{feedbackId}/{statusId}")
     public void updateStatus(@PathVariable String feedbackId, @PathVariable String statusId) throws Exception {
         feedbackService.updateStatus(feedbackId, statusId);
+    }
+
+    @PutMapping("/{email}/approve/{feedbackId}")
+    public ResponseEntity<String> approve(@PathVariable String email, @PathVariable String feedbackId) throws Exception {
+        feedbackService.approve(feedbackId, email);
+        return ResponseEntity.ok("Feedback " + feedbackId + " has been approved by " + email);
+    }
+
+    @PutMapping("/reject")
+    public ResponseEntity<String> reject(@RequestBody RejectFeedbackRequest request) throws Exception {
+        feedbackService.reject(request);
+        return ResponseEntity.ok("Feedback " + request.getFeedbackId() +
+                " has been rejected by " + request.getManagerEmail() + ", reason: "
+                + request.getReason());
     }
 
 }

@@ -1,22 +1,18 @@
 package com.swp.ihelp.app.account;
 
-import com.swp.ihelp.app.account.request.LoginRequest;
-import com.swp.ihelp.app.account.request.ProfileUpdateRequest;
-import com.swp.ihelp.app.account.request.ResetPasswordRequest;
-import com.swp.ihelp.app.account.request.SignUpRequest;
+import com.swp.ihelp.app.account.request.*;
 import com.swp.ihelp.app.account.response.AccountGeneralResponse;
 import com.swp.ihelp.app.account.response.LoginResponse;
 import com.swp.ihelp.app.account.response.ProfileResponse;
 import com.swp.ihelp.app.event.EventService;
 import com.swp.ihelp.app.image.ImageService;
-import com.swp.ihelp.google.firebase.fcm.PushNotificationRequest;
+import com.swp.ihelp.app.notification.NotificationService;
 import com.swp.ihelp.google.firebase.fcm.PushNotificationService;
 import com.swp.ihelp.security.CustomUser;
 import com.swp.ihelp.security.JwtTokenUtil;
 import com.swp.ihelp.security.UserDetailsServiceImpl;
 import io.jsonwebtoken.impl.DefaultClaims;
 import io.swagger.annotations.ApiImplicitParam;
-import org.apache.tomcat.util.json.JSONParser;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -27,7 +23,6 @@ import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -54,18 +49,10 @@ public class AccountRestController {
 
     private PushNotificationService pushNotificationService;
 
-//    @Autowired
-//    public AccountRestController(AuthenticationManager authenticationManager, JwtTokenUtil jwtTokenUtil, UserDetailsServiceImpl userDetailsService, AccountService accountService, ImageService imageService, EventService eventService) {
-//        this.authenticationManager = authenticationManager;
-//        this.jwtTokenUtil = jwtTokenUtil;
-//        this.userDetailsService = userDetailsService;
-//        this.accountService = accountService;
-//        this.imageService = imageService;
-//        this.eventService = eventService;
-//    }
+    private NotificationService notificationService;
 
     @Autowired
-    public AccountRestController(AuthenticationManager authenticationManager, JwtTokenUtil jwtTokenUtil, UserDetailsServiceImpl userDetailsService, AccountService accountService, ImageService imageService, EventService eventService, PushNotificationService pushNotificationService) {
+    public AccountRestController(AuthenticationManager authenticationManager, JwtTokenUtil jwtTokenUtil, UserDetailsServiceImpl userDetailsService, AccountService accountService, ImageService imageService, EventService eventService, PushNotificationService pushNotificationService, NotificationService notificationService) {
         this.authenticationManager = authenticationManager;
         this.jwtTokenUtil = jwtTokenUtil;
         this.userDetailsService = userDetailsService;
@@ -73,6 +60,7 @@ public class AccountRestController {
         this.imageService = imageService;
         this.eventService = eventService;
         this.pushNotificationService = pushNotificationService;
+        this.notificationService = notificationService;
     }
 
     @PostMapping("/login")
@@ -129,16 +117,16 @@ public class AccountRestController {
         return "Created new account";
     }
 
-//    @PostMapping("/accounts/{email}/device_token")
-//    public ResponseEntity insertDeviceToken(@PathVariable String email, @RequestBody String deviceToken) throws Exception {
-//        accountService.updateDeviceToken(email, deviceToken);
-//        return ResponseEntity.ok("Device token added");
-//    }
-
     @PostMapping("/accounts/{email}/avatar")
     public ResponseEntity insertAvatar(@PathVariable String email, @RequestBody String avatarUrl) throws Exception {
         accountService.insertAvatar(email, avatarUrl);
         return ResponseEntity.ok("Avatar added");
+    }
+
+    @PostMapping("/accounts/device_token")
+    public ResponseEntity insertDeviceToken(@RequestBody DeviceTokenRequest request) throws Exception {
+        notificationService.insertDeviceToken(request.getEmail(), request.getDeviceToken());
+        return ResponseEntity.ok("Device token added");
     }
 
     @GetMapping("/accounts/{email}")
@@ -176,6 +164,17 @@ public class AccountRestController {
         return accountService.findByServiceId(serviceId);
     }
 
+    @GetMapping("/accounts/exist")
+    public Map<String, Object> existsByEmailAndPhone(@RequestParam String email, @RequestParam String phone) throws Exception {
+        if (email == null || email.isEmpty()) {
+            throw new RuntimeException("Email is required for verifying");
+        }
+        if (phone == null || phone.isEmpty()) {
+            throw new RuntimeException("Phone is required for verifying");
+        }
+        return accountService.existsByEmailAndPhone(email, phone);
+    }
+
     @PutMapping("/accounts/{email}/status/{statusId}")
     public void updateStatus(@PathVariable String email, @PathVariable String statusId) throws Exception {
         accountService.updateStatus(email, statusId);
@@ -201,6 +200,12 @@ public class AccountRestController {
     public ResponseEntity updateAvatar(@PathVariable String email, @RequestBody String avatarUrl) throws Exception {
         accountService.updateAvatar(email, avatarUrl);
         return ResponseEntity.ok("Avatar updated");
+    }
+
+    @DeleteMapping("/signout")
+    public ResponseEntity logout(@RequestBody DeviceTokenRequest request) throws Exception {
+        notificationService.deleteDeviceToken(request.getEmail(), request.getDeviceToken());
+        return ResponseEntity.ok("Device token is deleted");
     }
 
     private void authenticate(String email, String password) throws Exception {

@@ -31,11 +31,11 @@ public interface ServiceVolunteerService {
 
     Map<String, Object> findByAuthorEmail(String email, int page) throws Exception;
 
-    void useService(String email, String serviceId) throws Exception;
+    ServiceEntity useService(String email, String serviceId) throws Exception;
 
-    void approve(String eventId, String managerEmail) throws Exception;
+    ServiceEntity approve(String eventId, String managerEmail) throws Exception;
 
-    void reject(RejectServiceRequest request) throws Exception;
+    ServiceEntity reject(RejectServiceRequest request) throws Exception;
 
     Map<String, Object> findNearbyServices(int page, float radius, double lat, double lng) throws Exception;
 }

@@ -38,9 +38,26 @@ public class PushNotificationService {
         }
     }
 
-    public void subscribe(String token, String topic) {
+    public void sendPushNotificationToMultiDevices(PushNotificationRequest request) {
+        try {
+            fcmService.sendMessagesToMultiDevices(request);
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void subscribeToTopic(List<String> tokens, String topic) {
         fcmService.subscribeToTopic(new SubscriptionRequest()
-        .setTokens(Arrays.asList(token))
+        .setTokens(tokens)
         .setTopicName(topic));
+    }
+
+    public void unsubscribeToTopic(List<String> tokens, String topic) {
+        fcmService.unsubscribeFromTopic(new SubscriptionRequest()
+        .setTokens(tokens)
+        .setTopicName(topic));
+
     }
 }

@@ -1,10 +1,13 @@
 package com.swp.ihelp.app.notification;
 
 import com.swp.ihelp.app.account.AccountEntity;
+import com.swp.ihelp.config.StringPrefixedSequenceIdGenerator;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
@@ -18,9 +21,20 @@ import java.util.Objects;
 @Accessors(chain = true)
 public class NotificationEntity {
 
+    // ID format: NT_0000x
     @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "notification_seq")
+    @GenericGenerator(
+            name = "notification_seq",
+            strategy = "com.swp.ihelp.config.StringPrefixedSequenceIdGenerator",
+            parameters = {
+                    @Parameter(name = StringPrefixedSequenceIdGenerator.INCREMENT_PARAM, value = "50"),
+                    @Parameter(name = StringPrefixedSequenceIdGenerator.VALUE_PREFIX_PARAMETER, value = "NT_"),
+                    @Parameter(name = StringPrefixedSequenceIdGenerator.NUMBER_FORMAT_PARAMETER, value = "%05d")
+            }
+    )
     @Column(name = "id")
-    private Integer id;
+    private String id;
 
     @Basic
     @Column(name = "title")

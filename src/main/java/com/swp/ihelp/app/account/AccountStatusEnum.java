@@ -2,17 +2,18 @@ package com.swp.ihelp.app.account;
 
 public enum AccountStatusEnum {
 
-    ACTIVE("user", "ROLE_USER"),
-    DISABLED("manager", "ROLE_MANAGER");
+    ACTIVE(1, "active"),
+    SUSPENDED(2, "suspended");
 
-    private String id, name;
+    private int id;
+    private String name;
 
-    AccountStatusEnum(String id, String name) {
+    AccountStatusEnum(int id, String name) {
         this.id = id;
         this.name = name;
     }
 
-    public String getId() {
+    public int getId() {
         return id;
     }
 

@@ -259,7 +259,7 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
     }
 
     @Override
-    public void approve(String serviceId, String managerEmail) throws Exception {
+    public ServiceEntity approve(String serviceId, String managerEmail) throws Exception {
         if (!serviceRepository.existsById(serviceId)) {
             throw new EntityNotFoundException("Service with ID:" + serviceId + " not found.");
         }
@@ -280,11 +280,12 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
 
         serviceEntity.setManagerAccount(approver);
         serviceEntity.setStatus(new StatusEntity().setId(StatusEnum.APPROVED.getId()));
-        serviceRepository.save(serviceEntity);
+        ServiceEntity updatedService = serviceRepository.save(serviceEntity);
+        return updatedService;
     }
 
     @Override
-    public void reject(RejectServiceRequest request) throws Exception {
+    public ServiceEntity reject(RejectServiceRequest request) throws Exception {
         String serviceId = request.getServiceId();
         String managerEmail = request.getManagerEmail();
 
@@ -309,7 +310,8 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
         serviceEntity.setManagerAccount(rejecter);
         serviceEntity.setStatus(new StatusEntity().setId(StatusEnum.REJECTED.getId()));
         serviceEntity.setReason(request.getReason());
-        serviceRepository.save(serviceEntity);
+        ServiceEntity updatedService = serviceRepository.save(serviceEntity);
+        return updatedService;
     }
 
     @Override
@@ -322,7 +324,7 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
     //3. Add the point to author's point balance
     //4. Record the transaction in table "point"
     @Override
-    public void useService(String email, String serviceId) throws Exception {
+    public ServiceEntity useService(String email, String serviceId) throws Exception {
 
         Optional<ServiceEntity> serviceOptional = serviceRepository.findById(serviceId);
         ServiceEntity service = serviceOptional.get();
@@ -355,7 +357,7 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
 
         service.addServiceAccount(serviceAccount);
 
-        serviceRepository.save(service);
+        ServiceEntity updatedService = serviceRepository.save(service);
 
         if (service.getPoint() != null) {
             int servicePoint = service.getPoint();
@@ -369,6 +371,8 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
                 savePoint(servicePoint, authorAccount, userAccount, service);
             }
         }
+
+        return updatedService;
 
     }
 
@@ -417,7 +421,7 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
         pointRepository.save(receiverPoint);
     }
 
-    private List<ServiceResponse> convertEntitesToResponses(List<ServiceEntity> serviceEntityList)
+    private List<ServiceResponse> convertEntitiesToResponses(List<ServiceEntity> serviceEntityList)
             throws Exception {
         List<ServiceResponse> result = ServiceResponse.convertToResponseList(serviceEntityList);
         for (ServiceResponse response : result) {
@@ -429,7 +433,7 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
 
     private Map<String, Object> getServiceResponseMap(Page<ServiceEntity> pageServices) throws Exception {
         List<ServiceEntity> serviceEntityList = pageServices.getContent();
-        List<ServiceResponse> serviceResponses = convertEntitesToResponses(serviceEntityList);
+        List<ServiceResponse> serviceResponses = convertEntitiesToResponses(serviceEntityList);
 
         Map<String, Object> response = new HashMap<>();
         response.put("services", serviceResponses);

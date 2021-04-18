@@ -4,6 +4,7 @@ import com.swp.ihelp.app.account.AccountEntity;
 import com.swp.ihelp.app.event.EventEntity;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
@@ -44,7 +45,9 @@ public class EventHasAccountEntity {
     @Column(name = "join_date")
     private Timestamp joinDate = new Timestamp(System.currentTimeMillis());
 
-    @Column(name = "is_evaluated", columnDefinition = "BIT(1) default b'0'")
+    @Basic
+    @Column(name = "is_evaluated")
+//    @Type(type = "org.hibernate.type.NumericBooleanType")
     private Boolean isEvaluated;
 
     @Column(name = "rating")
