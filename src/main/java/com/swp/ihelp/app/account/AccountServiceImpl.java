@@ -152,21 +152,18 @@ public class AccountServiceImpl implements AccountService {
         return isDeleted;
     }
 
-    @Transactional
     @Override
     public List<Map<String, Object>> findByEventId(String eventId) throws Exception {
         List<ParticipantsMapping> joinedAccounts = accountRepository.findByEventId(eventId);
         return convertMappingToParticipantResponse(joinedAccounts);
     }
 
-    @Transactional
     @Override
     public List<Map<String, Object>> findByServiceId(String serviceId) throws Exception {
         List<ParticipantsMapping> usedAccounts = accountRepository.findByServiceId(serviceId);
         return convertMappingToParticipantResponse(usedAccounts);
     }
 
-    @Transactional
     @Override
     public List<Map<String, Object>> findNotEvaluatedAccountsByEventId(String eventId) throws Exception {
         List<NotEvaluatedParticipantsMapping> notEvaluatedAccounts = accountRepository.findNotEvaluatedAccountsByEventId(eventId);
@@ -204,6 +201,7 @@ public class AccountServiceImpl implements AccountService {
         accountRepository.updateRole(email, roleId);
     }
 
+    @Transactional
     @Override
     public void updateAvatar(String email, String avatarUrl) throws Exception {
         existsByEmail(email);
