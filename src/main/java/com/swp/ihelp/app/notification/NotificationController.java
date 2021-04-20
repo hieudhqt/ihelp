@@ -1,12 +1,13 @@
 package com.swp.ihelp.app.notification;
 
 import com.swp.ihelp.app.account.AccountEntity;
-import com.swp.ihelp.app.notification.response.NotificationResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.sql.Timestamp;
-import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/notifications")
@@ -20,8 +21,9 @@ public class NotificationController {
     }
 
     @GetMapping("/{email}")
-    public List<NotificationResponse> findByEmail(@PathVariable String email) throws Exception {
-        return notificationService.findByEmail(email);
+    public ResponseEntity<Map<String, Object>> findByEmail(@PathVariable String email,
+                                                           @RequestParam(value = "page") int page) throws Exception {
+        return new ResponseEntity<>(notificationService.findByEmail(email, page), HttpStatus.OK);
     }
 
     @PostMapping("/insert")

@@ -13,6 +13,11 @@ import com.swp.ihelp.app.service.ServiceRepository;
 import com.swp.ihelp.exception.EntityExistedException;
 import com.swp.ihelp.exception.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -30,6 +35,9 @@ public class AccountServiceImpl implements AccountService {
     private final ServiceRepository serviceRepository;
     private final EventRepository eventRepository;
     private final ImageRepository imageRepository;
+
+    @Value("${paging.page-size}")
+    private int pageSize;
 
     @Autowired
     public AccountServiceImpl(AccountRepository accountRepository, ServiceRepository serviceRepository, EventRepository eventRepository, ImageRepository imageRepository) {
@@ -87,9 +95,15 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public List<AccountGeneralResponse> findAll() throws Exception {
-        List<AccountEntity> result = accountRepository.findAll();
-        return AccountGeneralResponse.convertToListResponse(result);
+    public Map<String, Object> findAll(int page) throws Exception {
+        Pageable paging = PageRequest.of(page, pageSize,
+                Sort.by("email").ascending());
+        Page<AccountEntity> pageAccounts = accountRepository.findAll(paging);
+        if (pageAccounts.isEmpty()) {
+            throw new EntityNotFoundException("Account not found.");
+        }
+
+        return getAccountResponseMap(pageAccounts);
     }
 
     @Override
@@ -270,4 +284,16 @@ public class AccountServiceImpl implements AccountService {
         }
     }
 
+    private Map<String, Object> getAccountResponseMap(Page<AccountEntity> pageAccounts) throws Exception {
+        List<AccountEntity> accountEntities = pageAccounts.getContent();
+        List<AccountGeneralResponse> accountResponses = AccountGeneralResponse.convertToListResponse(accountEntities);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("accounts", accountResponses);
+        response.put("currentPage", pageAccounts.getNumber());
+        response.put("totalItems", pageAccounts.getTotalElements());
+        response.put("totalPages", pageAccounts.getTotalPages());
+
+        return response;
+    }
 }

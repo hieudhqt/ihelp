@@ -3,15 +3,12 @@ package com.swp.ihelp.app.feedback;
 import com.swp.ihelp.app.feedback.request.FeedbackRequest;
 import com.swp.ihelp.app.feedback.request.RejectFeedbackRequest;
 import com.swp.ihelp.app.feedback.response.FeedbackResponse;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.Map;
 
 //@Api(tags = "Feedback Controller")
 @RequestMapping("/api/feedbacks")
@@ -26,8 +23,8 @@ public class FeedbackController {
     }
 
     @GetMapping
-    public List<FeedbackResponse> findAll() throws Exception {
-        return feedbackService.findAll();
+    public ResponseEntity<Map<String, Object>> findAll(@RequestParam(value = "page") int page) throws Exception {
+        return new ResponseEntity<>(feedbackService.findAll(page), HttpStatus.OK);
     }
 
     @GetMapping("/{feedbackId}")
@@ -36,28 +33,38 @@ public class FeedbackController {
     }
 
     @GetMapping("/status/{statusId}")
-    public List<FeedbackResponse> findByStatus(@PathVariable String statusId) throws Exception {
-        return feedbackService.findByStatus(statusId);
+    public ResponseEntity<Map<String, Object>> findByStatus(@PathVariable Integer statusId,
+                                                            @RequestParam(value = "page") int page) throws Exception {
+        return new ResponseEntity<>(feedbackService.findByStatus(statusId, page), HttpStatus.OK);
     }
 
     @GetMapping("/email/{email}")
-    public List<FeedbackResponse> findByEmail(@PathVariable String email) throws Exception {
-        return feedbackService.findByEmail(email);
+    public ResponseEntity<Map<String, Object>> findByEmail(@PathVariable String email,
+                                                           @RequestParam(value = "page") int page) throws Exception {
+        return new ResponseEntity<>(feedbackService.findByEmail(email, page), HttpStatus.OK);
     }
 
-    @GetMapping("/event/{eventId}/status/{statusId}")
-    public List<FeedbackResponse> findByEventId(@PathVariable String eventId, @PathVariable String statusId) throws Exception {
-        return feedbackService.findByEventId(eventId, statusId);
+    //    @ApiImplicitParams(value = {
+//            @ApiImplicitParam(name = "eventId", value = "Event ID",dataTypeClass = String.class, paramType = "path"),
+//            @ApiImplicitParam(name = "statusId", dataTypeClass = Integer.class, paramType = "path", required = false)
+//    })
+    @GetMapping("/event/{eventId}")
+    public ResponseEntity<Map<String, Object>> findByEventId(@PathVariable String eventId,
+                                                             @RequestParam(required = false) Integer statusId,
+                                                             @RequestParam(value = "page") int page) throws Exception {
+        return new ResponseEntity<>(feedbackService.findByEventId(eventId, statusId, page), HttpStatus.OK);
     }
 
-    @GetMapping("/service/{serviceId}/status/{statusId}")
-    public List<FeedbackResponse> findByServiceId(@PathVariable String serviceId, @PathVariable String statusId) throws Exception {
-        return feedbackService.findByServiceId(serviceId, statusId);
+    @GetMapping("/service/{serviceId}")
+    public ResponseEntity<Map<String, Object>> findByServiceId(@PathVariable String serviceId,
+                                                               @RequestParam(required = false) Integer statusId,
+                                                               @RequestParam(value = "page") int page) throws Exception {
+        return new ResponseEntity<>(feedbackService.findByServiceId(serviceId, statusId, page), HttpStatus.OK);
     }
 
     @GetMapping("/reports")
-    public List<FeedbackResponse> getReports() throws Exception {
-        return feedbackService.getReports();
+    public ResponseEntity<Map<String, Object>> getReports(@RequestParam(value = "page") int page) throws Exception {
+        return new ResponseEntity<>(feedbackService.getReports(page), HttpStatus.OK);
     }
 
     @PostMapping

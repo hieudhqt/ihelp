@@ -2,7 +2,6 @@ package com.swp.ihelp.app.account;
 
 import com.swp.ihelp.app.account.request.ProfileUpdateRequest;
 import com.swp.ihelp.app.account.request.SignUpRequest;
-import com.swp.ihelp.app.account.response.AccountGeneralResponse;
 import com.swp.ihelp.app.account.response.ProfileResponse;
 
 import java.util.List;
@@ -14,7 +13,7 @@ public interface AccountService {
 
     ProfileResponse findById(String email) throws Exception;
 
-    List<AccountGeneralResponse> findAll() throws Exception;
+    Map<String, Object> findAll(int page) throws Exception;
 
     String findRoleById(String email) throws Exception;
 

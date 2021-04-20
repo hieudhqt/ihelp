@@ -1,7 +1,6 @@
 package com.swp.ihelp.app.account;
 
 import com.swp.ihelp.app.account.request.*;
-import com.swp.ihelp.app.account.response.AccountGeneralResponse;
 import com.swp.ihelp.app.account.response.LoginResponse;
 import com.swp.ihelp.app.account.response.ProfileResponse;
 import com.swp.ihelp.app.event.EventService;
@@ -136,8 +135,8 @@ public class AccountRestController {
     }
 
     @GetMapping("/accounts")
-    public ResponseEntity<List<AccountGeneralResponse>> findAll() throws Exception {
-        return new ResponseEntity<>(accountService.findAll(), HttpStatus.OK);
+    public ResponseEntity<Map<String, Object>> findAll(@RequestParam(value = "page") int page) throws Exception {
+        return new ResponseEntity<>(accountService.findAll(page), HttpStatus.OK);
     }
 
     @GetMapping("/accounts/{email}/role")

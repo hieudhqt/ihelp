@@ -24,6 +24,8 @@ public class FeedbackResponse implements Serializable {
 
     private String email;
 
+    private String avatarUrl;
+
     private String eventId;
 
     private String serviceId;

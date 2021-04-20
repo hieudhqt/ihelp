@@ -1,12 +1,11 @@
 package com.swp.ihelp.app.notification;
 
-import com.swp.ihelp.app.notification.response.NotificationResponse;
-
 import java.util.List;
+import java.util.Map;
 
 public interface NotificationService {
 
-    List<NotificationResponse> findByEmail(String email) throws Exception;
+    Map<String, Object> findByEmail(String email, int page) throws Exception;
 
     String insert(NotificationEntity notificationEntity) throws Exception;
 
