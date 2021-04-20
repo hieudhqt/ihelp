@@ -381,8 +381,8 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
     // 3. Check if the service still has room to use.
     private String validateUseService(ServiceEntity service, AccountEntity userAccount, long currentDateInMillis) throws Exception {
         String errorMsg = "";
-        if (!service.getStatus().getName().equals("Approved")) {
-            errorMsg += "This service is not yet approved;";
+        if (!service.getStatus().getName().equals("Ongoing")) {
+            errorMsg += "This service has not started yet;";
         }
         if (service.getStartDate().getTime() > currentDateInMillis
                 || service.getEndDate().getTime() < currentDateInMillis) {

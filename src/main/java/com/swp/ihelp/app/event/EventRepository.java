@@ -112,5 +112,10 @@ public interface EventRepository extends JpaRepository<EventEntity, String>, Jpa
             "where datediff(:date, e.created_date) > :maxDaysToApprove and e.status_id = :status ", nativeQuery = true)
     List<String> getExpiredEventIds(@Param("date") String date, @Param("status") int status,
                                     @Param("maxDaysToApprove") int maxDaysToApprove);
+
+    @Query(value = "SELECT e.id FROM ihelp.event e " +
+            "WHERE date(e.start_date) = :date " +
+            "AND e.id NOT IN (SELECT event_id FROM ihelp.event_has_account) ", nativeQuery = true)
+    List<String> getEmptyEventIds(@Param("date") String date);
 }
 
