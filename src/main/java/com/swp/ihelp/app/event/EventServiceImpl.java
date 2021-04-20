@@ -447,7 +447,7 @@ public class EventServiceImpl implements EventService {
         PointEntity memberPointEntity = new PointEntity();
         memberPointEntity.setIsReceived(true);
         memberPointEntity.setDescription("Rating: " + request.getRating() + " \n" +
-                "Description: " + request.getComment());
+                "Description: " + request.getComment() + " \nEventID: " + request.getEventId());
         memberPointEntity.setCreatedDate(currentTimestamp);
         memberPointEntity.setAccount(memberAccount);
         memberPointEntity.setAmount(participationPoint);
@@ -457,7 +457,7 @@ public class EventServiceImpl implements EventService {
         if (bonusPoint > 0) {
             memberAccount.addContributionPoint(participationPoint);
             RewardEntity reward = new RewardEntity();
-            reward.setTitle("Reward for highly active in event: " + eventEntity.getTitle());
+            reward.setTitle("Reward for highly active in event: " + eventEntity.getId());
             reward.setDescription("");
             reward.setPoint(bonusPoint);
             reward.setCreatedDate(new Timestamp(System.currentTimeMillis()));

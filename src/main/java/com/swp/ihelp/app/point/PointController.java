@@ -23,4 +23,17 @@ public class PointController {
         Map<String, Object> response = pointService.findByEmail(email, page);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
+    @GetMapping("/points/event/{eventId}")
+    public ResponseEntity<Map<String, Object>> findByEventId(@PathVariable String eventId,
+                                                             @RequestParam(value = "page") int page) throws Exception {
+        Map<String, Object> response = pointService.getHistoryByEventId(eventId, page);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @GetMapping("/points/service/total/{serviceId}")
+    public ResponseEntity<Integer> getTotalEarnedByServiceId(@PathVariable String serviceId) throws Exception {
+        Integer total = pointService.getTotalEarnedByServiceId(serviceId);
+        return new ResponseEntity<>(total, HttpStatus.OK);
+    }
 }

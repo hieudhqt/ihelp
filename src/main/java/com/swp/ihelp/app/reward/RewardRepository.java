@@ -10,4 +10,8 @@ public interface RewardRepository extends JpaRepository<RewardEntity, String> {
             "AND DATE(r.created_date) >= :startDate " +
             "AND DATE(r.created_date) <= :endDate ", nativeQuery = true)
     Integer getTotalPointByDate(String email, String startDate, String endDate) throws Exception;
+
+    @Query("SELECT r from RewardEntity r " +
+            "WHERE r.title LIKE %:eventId% AND r.account.email = :email")
+    RewardEntity findRewardByEventIdAndEmail(String eventId, String email);
 }

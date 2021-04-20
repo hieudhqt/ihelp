@@ -94,7 +94,7 @@ public class ServiceScheduler {
                 ServiceEntity serviceEntity = serviceRepository.getOne(serviceId);
 
                 RewardEntity reward = new RewardEntity();
-                reward.setTitle("Reward for providing service " + serviceEntity.getTitle());
+                reward.setTitle("Reward for providing service " + serviceEntity.getId());
                 reward.setDescription("");
                 reward.setPoint(serviceContributionPoint);
                 reward.setCreatedDate(new Timestamp(System.currentTimeMillis()));
