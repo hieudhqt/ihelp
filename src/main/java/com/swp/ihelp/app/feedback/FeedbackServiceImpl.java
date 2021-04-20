@@ -6,14 +6,22 @@ import com.swp.ihelp.app.event.EventRepository;
 import com.swp.ihelp.app.feedback.request.FeedbackRequest;
 import com.swp.ihelp.app.feedback.request.RejectFeedbackRequest;
 import com.swp.ihelp.app.feedback.response.FeedbackResponse;
+import com.swp.ihelp.app.image.ImageRepository;
 import com.swp.ihelp.app.service.ServiceRepository;
 import com.swp.ihelp.app.status.StatusEntity;
 import com.swp.ihelp.app.status.StatusEnum;
 import com.swp.ihelp.exception.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -27,12 +35,19 @@ public class FeedbackServiceImpl implements FeedbackService {
 
     private ServiceRepository serviceRepository;
 
+    private ImageRepository imageRepository;
+
+    @Value("${paging.page-size}")
+    private int pageSize;
+
+
     @Autowired
-    public FeedbackServiceImpl(FeedbackRepository feedbackRepository, AccountRepository accountRepository, EventRepository eventRepository, ServiceRepository serviceRepository) {
+    public FeedbackServiceImpl(FeedbackRepository feedbackRepository, AccountRepository accountRepository, EventRepository eventRepository, ServiceRepository serviceRepository, ImageRepository imageRepository) {
         this.feedbackRepository = feedbackRepository;
         this.accountRepository = accountRepository;
         this.eventRepository = eventRepository;
         this.serviceRepository = serviceRepository;
+        this.imageRepository = imageRepository;
     }
 
     @Override
@@ -42,9 +57,15 @@ public class FeedbackServiceImpl implements FeedbackService {
     }
 
     @Override
-    public List<FeedbackResponse> findAll() throws Exception {
-        List<FeedbackEntity> feedbackEntities = feedbackRepository.findAll();
-        return FeedbackResponse.convertToListResponse(feedbackEntities);
+    public Map<String, Object> findAll(int page) throws Exception {
+        Pageable paging = PageRequest.of(page, pageSize,
+                Sort.by("createdDate").descending());
+        Page<FeedbackEntity> pageFeedbacks = feedbackRepository.findAll(paging);
+        if (pageFeedbacks.isEmpty()) {
+            throw new EntityNotFoundException("Feedback not found.");
+        }
+
+        return getFeedbackResponseMap(pageFeedbacks);
     }
 
     @Override
@@ -65,33 +86,73 @@ public class FeedbackServiceImpl implements FeedbackService {
     }
 
     @Override
-    public List<FeedbackResponse> findByStatus(String statusId) throws Exception {
-        List<FeedbackEntity> feedbackEntities = feedbackRepository.findByStatus(statusId);
-        return FeedbackResponse.convertToListResponse(feedbackEntities);
+    public Map<String, Object> findByStatus(Integer statusId, int page) throws Exception {
+        Pageable paging = PageRequest.of(page, pageSize,
+                Sort.by("createdDate").descending());
+        Page<FeedbackEntity> pageFeedbacks = feedbackRepository.findByStatus(statusId, paging);
+        if (pageFeedbacks.isEmpty()) {
+            throw new EntityNotFoundException("Feedback not found.");
+        }
+
+        return getFeedbackResponseMap(pageFeedbacks);
     }
 
     @Override
-    public List<FeedbackResponse> findByEmail(String email) throws Exception {
-        List<FeedbackEntity> feedbackEntities = feedbackRepository.findByEmail(email);
-        return FeedbackResponse.convertToListResponse(feedbackEntities);
+    public Map<String, Object> findByEmail(String email, int page) throws Exception {
+        Pageable paging = PageRequest.of(page, pageSize,
+                Sort.by("createdDate").descending());
+        Page<FeedbackEntity> pageFeedbacks = feedbackRepository.findByEmail(email, paging);
+        if (pageFeedbacks.isEmpty()) {
+            throw new EntityNotFoundException("Feedback not found.");
+        }
+
+        return getFeedbackResponseMapWithAvatar(pageFeedbacks);
     }
 
     @Override
-    public List<FeedbackResponse> findByEventId(String eventId, String statusId) throws Exception {
-        List<FeedbackEntity> feedbackEntities = feedbackRepository.findByEventId(eventId, statusId);
-        return FeedbackResponse.convertToListResponse(feedbackEntities);
+    public Map<String, Object> findByEventId(String eventId, Integer statusId, int page) throws Exception {
+        Pageable paging = PageRequest.of(page, pageSize,
+                Sort.by("createdDate").descending());
+        Page<FeedbackEntity> pageFeedbacks;
+        if (statusId != null) {
+            pageFeedbacks = feedbackRepository.findByEventIdWithStatusId(eventId, statusId, paging);
+        } else {
+            pageFeedbacks = feedbackRepository.findByEventId(eventId, paging);
+        }
+        if (pageFeedbacks.isEmpty()) {
+            throw new EntityNotFoundException("Feedback not found.");
+        }
+
+        return getFeedbackResponseMapWithAvatar(pageFeedbacks);
     }
 
     @Override
-    public List<FeedbackResponse> findByServiceId(String serviceId, String statusId) throws Exception {
-        List<FeedbackEntity> feedbackEntities = feedbackRepository.findByServiceId(serviceId, statusId);
-        return FeedbackResponse.convertToListResponse(feedbackEntities);
+    public Map<String, Object> findByServiceId(String serviceId, Integer statusId, int page) throws Exception {
+        Pageable paging = PageRequest.of(page, pageSize,
+                Sort.by("createdDate").descending());
+        Page<FeedbackEntity> pageFeedbacks;
+        if (statusId != null) {
+            pageFeedbacks = feedbackRepository.findByServiceIdWithStatusId(serviceId, statusId, paging);
+        } else {
+            pageFeedbacks = feedbackRepository.findByServiceId(serviceId, paging);
+        }
+        if (pageFeedbacks.isEmpty()) {
+            throw new EntityNotFoundException("Feedback not found.");
+        }
+
+        return getFeedbackResponseMapWithAvatar(pageFeedbacks);
     }
 
     @Override
-    public List<FeedbackResponse> getReports() throws Exception {
-        List<FeedbackEntity> feedbackEntities = feedbackRepository.getReports();
-        return FeedbackResponse.convertToListResponse(feedbackEntities);
+    public Map<String, Object> getReports(int page) throws Exception {
+        Pageable paging = PageRequest.of(page, pageSize,
+                Sort.by("createdDate").descending());
+        Page<FeedbackEntity> pageFeedbacks = feedbackRepository.getReports(paging);
+        if (pageFeedbacks.isEmpty()) {
+            throw new EntityNotFoundException("Feedback not found.");
+        }
+
+        return getFeedbackResponseMap(pageFeedbacks);
     }
 
     @Override
@@ -107,7 +168,7 @@ public class FeedbackServiceImpl implements FeedbackService {
         }
         AccountEntity approver = accountRepository.getOne(managerEmail);
         feedbackEntity.setManagerAccount(approver);
-        feedbackEntity.setStatus(new StatusEntity().setId(StatusEnum.PENDING.getId()));
+        feedbackEntity.setStatus(new StatusEntity().setId(StatusEnum.APPROVED.getId()));
         feedbackRepository.save(feedbackEntity);
     }
 
@@ -156,4 +217,33 @@ public class FeedbackServiceImpl implements FeedbackService {
         }
     }
 
+    private Map<String, Object> getFeedbackResponseMap(Page<FeedbackEntity> pageFeedbacks) throws Exception {
+        List<FeedbackEntity> feedbackEntities = pageFeedbacks.getContent();
+        List<FeedbackResponse> feedbackResponses = FeedbackResponse.convertToListResponse(feedbackEntities);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("feedbacks", feedbackResponses);
+        response.put("currentPage", pageFeedbacks.getNumber());
+        response.put("totalItems", pageFeedbacks.getTotalElements());
+        response.put("totalPages", pageFeedbacks.getTotalPages());
+
+        return response;
+    }
+
+    private Map<String, Object> getFeedbackResponseMapWithAvatar(Page<FeedbackEntity> pageFeedbacks) throws Exception {
+        List<FeedbackEntity> feedbackEntities = pageFeedbacks.getContent();
+        List<FeedbackResponse> feedbackResponses = FeedbackResponse.convertToListResponse(feedbackEntities);
+
+        for (FeedbackResponse response : feedbackResponses) {
+            response.setAvatarUrl(imageRepository.findAvatarByEmail(response.getEmail()));
+        }
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("feedbacks", feedbackResponses);
+        response.put("currentPage", pageFeedbacks.getNumber());
+        response.put("totalItems", pageFeedbacks.getTotalElements());
+        response.put("totalPages", pageFeedbacks.getTotalPages());
+
+        return response;
+    }
 }

@@ -4,27 +4,27 @@ import com.swp.ihelp.app.feedback.request.FeedbackRequest;
 import com.swp.ihelp.app.feedback.request.RejectFeedbackRequest;
 import com.swp.ihelp.app.feedback.response.FeedbackResponse;
 
-import java.util.List;
+import java.util.Map;
 
 public interface FeedbackService {
 
     FeedbackEntity insert(FeedbackRequest request) throws Exception;
 
-    List<FeedbackResponse> findAll() throws Exception;
+    Map<String, Object> findAll(int page) throws Exception;
 
     FeedbackResponse findById(String id) throws Exception;
 
     void updateStatus(String feedbackId, String statusId) throws Exception;
 
-    List<FeedbackResponse> findByStatus(String statusId) throws Exception;
+    Map<String, Object> findByStatus(Integer statusId, int page) throws Exception;
 
-    List<FeedbackResponse> findByEmail(String email) throws Exception;
+    Map<String, Object> findByEmail(String email, int page) throws Exception;
 
-    List<FeedbackResponse> findByEventId(String eventId, String statusId) throws Exception;
+    Map<String, Object> findByEventId(String eventId, Integer statusId, int page) throws Exception;
 
-    List<FeedbackResponse> findByServiceId(String serviceId, String statusId) throws Exception;
+    Map<String, Object> findByServiceId(String serviceId, Integer statusId, int page) throws Exception;
 
-    List<FeedbackResponse> getReports() throws Exception;
+    Map<String, Object> getReports(int page) throws Exception;
 
     void approve(String feedbackId, String managerEmail) throws Exception;
 
