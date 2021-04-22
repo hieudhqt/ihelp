@@ -98,6 +98,11 @@ public class ServiceController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    @GetMapping("/services/statistic/{year}")
+    public ResponseEntity<Map<Integer, Integer>> getMonthlyHostedServiceNumber(@PathVariable int year) throws Exception {
+        return new ResponseEntity<>(serviceVolunteerService.getMonthlyHostedServiceNumber(year), HttpStatus.OK);
+    }
+
     @PostMapping("/services")
     public ResponseEntity<String> addService(@Valid @RequestBody CreateServiceRequest createServiceRequest) throws Exception {
         String serviceId = serviceVolunteerService.insert(createServiceRequest);

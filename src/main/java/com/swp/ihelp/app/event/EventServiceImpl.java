@@ -9,6 +9,7 @@ import com.swp.ihelp.app.event.request.RejectEventRequest;
 import com.swp.ihelp.app.event.request.UpdateEventRequest;
 import com.swp.ihelp.app.event.response.EventDetailResponse;
 import com.swp.ihelp.app.event.response.EventDistanceResponse;
+import com.swp.ihelp.app.event.response.EventHostedReport;
 import com.swp.ihelp.app.event.response.EventResponse;
 import com.swp.ihelp.app.eventcategory.EventCategoryEntity;
 import com.swp.ihelp.app.eventcategory.EventCategoryRepository;
@@ -219,6 +220,27 @@ public class EventServiceImpl implements EventService {
         response.put("totalItems", pageEvents.getTotalElements());
         response.put("totalPages", pageEvents.getTotalPages());
         return response;
+    }
+
+    @Override
+    public Map<Integer, Integer> getMonthlyHostedEventNumber(int year) throws Exception {
+        List<EventHostedReport> monthlyReport = eventRepository.getMonthlyHostedEventNumber(year);
+        if (monthlyReport == null) {
+            throw new EntityNotFoundException("No record found.");
+        }
+        Map<Integer, Integer> recordMap = new HashMap<>(12);
+        for (EventHostedReport eventHostedReport : monthlyReport) {
+            recordMap.put(eventHostedReport.getMonth(), eventHostedReport.getCount());
+        }
+
+        Map<Integer, Integer> result = new HashMap<>(12);
+        for (int i = 1; i <= 12; i++) {
+            result.put(i, 0);
+            if (recordMap.get(i) != null) {
+                result.put(i, recordMap.get(i));
+            }
+        }
+        return result;
     }
 
     @Override

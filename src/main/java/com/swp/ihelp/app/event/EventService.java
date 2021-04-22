@@ -49,4 +49,6 @@ public interface EventService {
     Map<String, Object> findNearbyEvents(int page, float radius, double lat, double lng) throws Exception;
 
     List<String> findEvaluateRequiredByAuthorEmail(String email) throws Exception;
+
+    Map<Integer, Integer> getMonthlyHostedEventNumber(int year) throws Exception;
 }
