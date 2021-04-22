@@ -8,7 +8,6 @@ import com.swp.ihelp.app.event.request.UpdateEventRequest;
 import com.swp.ihelp.app.event.response.EventDetailResponse;
 import com.swp.ihelp.app.notification.NotificationEntity;
 import com.swp.ihelp.app.notification.NotificationService;
-import com.swp.ihelp.exception.EntityNotFoundException;
 import com.swp.ihelp.google.firebase.fcm.PushNotificationRequest;
 import com.swp.ihelp.google.firebase.fcm.PushNotificationService;
 import com.swp.ihelp.message.EventMessage;
@@ -107,6 +106,11 @@ public class EventController {
                                                                 @RequestParam(value = "page") int page) throws Exception {
         Map<String, Object> response = eventService.findNearbyEvents(page, radius, lat, lng);
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @GetMapping("/events/statistic/{year}")
+    public ResponseEntity<Map<Integer, Integer>> getMonthlyHostedEventNumber(@PathVariable int year) throws Exception {
+        return new ResponseEntity<>(eventService.getMonthlyHostedEventNumber(year), HttpStatus.OK);
     }
 
     @PostMapping("/events")

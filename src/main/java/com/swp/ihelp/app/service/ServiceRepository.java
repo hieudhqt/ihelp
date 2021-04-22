@@ -1,5 +1,6 @@
 package com.swp.ihelp.app.service;
 
+import com.swp.ihelp.app.service.response.ServiceHostedReport;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -90,4 +91,11 @@ public interface ServiceRepository extends JpaRepository<ServiceEntity, String>,
             "where datediff(:date, s.created_date) > :maxDaysToApprove and s.status_id = :status ", nativeQuery = true)
     List<String> getExpiredServiceIds(@Param("date") String date, @Param("status") int status,
                                       @Param("maxDaysToApprove") int maxDaysToApprove);
+
+    @Query(value = "SELECT Month(s.start_date) as month, Count(s.id) as count " +
+            "FROM ihelp.service s  " +
+            "WHERE Year(s.start_date) = :year " +
+            "GROUP BY month " +
+            "ORDER BY month ", nativeQuery = true)
+    List<ServiceHostedReport> getMonthlyHostedServiceNumber(int year);
 }

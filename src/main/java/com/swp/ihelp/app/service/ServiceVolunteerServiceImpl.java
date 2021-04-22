@@ -13,6 +13,7 @@ import com.swp.ihelp.app.service.request.RejectServiceRequest;
 import com.swp.ihelp.app.service.request.UpdateServiceRequest;
 import com.swp.ihelp.app.service.response.ServiceDetailResponse;
 import com.swp.ihelp.app.service.response.ServiceDistanceResponse;
+import com.swp.ihelp.app.service.response.ServiceHostedReport;
 import com.swp.ihelp.app.service.response.ServiceResponse;
 import com.swp.ihelp.app.servicecategory.ServiceCategoryEntity;
 import com.swp.ihelp.app.servicecategory.ServiceCategoryRepository;
@@ -185,6 +186,27 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
         response.put("totalItems", pageServices.getTotalElements());
         response.put("totalPages", pageServices.getTotalPages());
         return response;
+    }
+
+    @Override
+    public Map<Integer, Integer> getMonthlyHostedServiceNumber(int year) throws Exception {
+        List<ServiceHostedReport> monthlyReport = serviceRepository.getMonthlyHostedServiceNumber(year);
+        if (monthlyReport == null) {
+            throw new EntityNotFoundException("No record found.");
+        }
+        Map<Integer, Integer> recordMap = new HashMap<>(12);
+        for (ServiceHostedReport serviceHostedReport : monthlyReport) {
+            recordMap.put(serviceHostedReport.getMonth(), serviceHostedReport.getCount());
+        }
+
+        Map<Integer, Integer> result = new HashMap<>(12);
+        for (int i = 1; i <= 12; i++) {
+            result.put(i, 0);
+            if (recordMap.get(i) != null) {
+                result.put(i, recordMap.get(i));
+            }
+        }
+        return result;
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.swp.ihelp.app.event;
 
+import com.swp.ihelp.app.event.response.EventHostedReport;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -117,5 +118,12 @@ public interface EventRepository extends JpaRepository<EventEntity, String>, Jpa
             "WHERE date(e.start_date) = :date " +
             "AND e.id NOT IN (SELECT event_id FROM ihelp.event_has_account) ", nativeQuery = true)
     List<String> getEmptyEventIds(@Param("date") String date);
+
+    @Query(value = "SELECT Month(e.start_date) as month, Count(e.id) as count " +
+            "FROM ihelp.event e  " +
+            "WHERE Year(e.start_date) = :year " +
+            "GROUP BY month " +
+            "ORDER BY month ", nativeQuery = true)
+    List<EventHostedReport> getMonthlyHostedEventNumber(int year);
 }
 
