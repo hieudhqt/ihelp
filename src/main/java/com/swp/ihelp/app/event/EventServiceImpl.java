@@ -142,7 +142,8 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public Map<String, Object> findByTitle(String title, int page) throws Exception {
-        Pageable paging = PageRequest.of(page, pageSize);
+        Pageable paging = PageRequest.of(page, pageSize,
+                Sort.by("startDate").descending().and(Sort.by("title").ascending()));
         EventSpecification spec = new EventSpecification(new SearchCriteria("title", ":", title));
         Page<EventEntity> pageEvents = eventRepository.findAll(spec, paging);
         if (pageEvents.isEmpty()) {
@@ -173,7 +174,8 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public Map<String, Object> findByAuthorEmail(String email, int page) throws Exception {
-        Pageable paging = PageRequest.of(page, pageSize);
+        Pageable paging = PageRequest.of(page, pageSize,
+                Sort.by("startDate").descending().and(Sort.by("title").ascending()));
         Page<EventEntity> pageEvents = eventRepository.findByAuthorEmail(email, paging);
         if (pageEvents.isEmpty()) {
             throw new EntityNotFoundException("Event with author email: " + email + " not found.");
@@ -183,7 +185,7 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public Map<String, Object> findByParticipantEmail(String email, int statusId, int page) throws Exception {
-        Pageable paging = PageRequest.of(page, pageSize);
+        Pageable paging = PageRequest.of(page, pageSize, Sort.by("startDate").descending().and(Sort.by("title").ascending()));
         Page<EventEntity> pageEvents = eventRepository.findByParticipantEmail(email, statusId, paging);
         if (pageEvents.isEmpty()) {
             throw new EntityNotFoundException("Account " + email + " has not joined any event.");
