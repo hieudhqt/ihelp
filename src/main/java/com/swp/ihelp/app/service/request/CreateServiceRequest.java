@@ -58,6 +58,7 @@ public class CreateServiceRequest implements Serializable {
     @NotNull(message = "Status ID cannot be null.")
     private Integer statusId;
 
+    @NotNull
     private Set<Integer> categoryIds;
 
     private Set<ImageRequest> images;

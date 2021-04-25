@@ -59,6 +59,7 @@ public class CreateEventRequest implements Serializable {
 
     private Boolean onsite;
 
+    @NotNull
     private List<Integer> categoryIds;
 
     private Set<ImageRequest> images;

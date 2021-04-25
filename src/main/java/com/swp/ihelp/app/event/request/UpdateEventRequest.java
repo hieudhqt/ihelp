@@ -49,6 +49,7 @@ public class UpdateEventRequest implements Serializable {
 
     private Boolean onsite;
 
+    @NotNull
     private Set<Integer> categoryIds;
 
 //    private Set<UpdateImageRequest> images;

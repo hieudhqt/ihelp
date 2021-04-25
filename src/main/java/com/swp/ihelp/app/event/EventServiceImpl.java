@@ -459,8 +459,7 @@ public class EventServiceImpl implements EventService {
                 break;
             case 3:
                 participationPoint = eventEntity.getPoint();
-                bonusPoint = Math.round(eventEntity.getPoint()
-                        + eventEntity.getPoint() * bonusPointPercent);
+                bonusPoint = Math.round(eventEntity.getPoint() * bonusPointPercent);
                 break;
             default:
                 throw new RuntimeException("Invalid rating.");
@@ -479,7 +478,7 @@ public class EventServiceImpl implements EventService {
 
         memberAccount.addBalancePoint(participationPoint);
         if (bonusPoint > 0) {
-            memberAccount.addContributionPoint(participationPoint);
+            memberAccount.addContributionPoint(bonusPoint);
             RewardEntity reward = new RewardEntity();
             reward.setTitle("Reward for highly active in event: " + eventEntity.getId());
             reward.setDescription("");

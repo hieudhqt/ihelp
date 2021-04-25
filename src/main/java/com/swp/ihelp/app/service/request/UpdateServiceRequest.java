@@ -48,6 +48,7 @@ public class UpdateServiceRequest implements Serializable {
             pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Ho_Chi_Minh")
     private Date endDate;
 
+    @NotNull
     private Set<Integer> categoryIds;
 
     public static ServiceEntity convertToEntityWithId(UpdateServiceRequest request) {
