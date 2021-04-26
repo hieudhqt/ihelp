@@ -9,6 +9,7 @@ import com.swp.ihelp.app.account.response.ProfileResponse;
 import com.swp.ihelp.app.event.EventRepository;
 import com.swp.ihelp.app.image.ImageEntity;
 import com.swp.ihelp.app.image.ImageRepository;
+import com.swp.ihelp.app.reward.RewardRepository;
 import com.swp.ihelp.app.service.ServiceRepository;
 import com.swp.ihelp.exception.EntityExistedException;
 import com.swp.ihelp.exception.EntityNotFoundException;
@@ -25,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Date;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.*;
 
 @Service
@@ -35,16 +37,18 @@ public class AccountServiceImpl implements AccountService {
     private final ServiceRepository serviceRepository;
     private final EventRepository eventRepository;
     private final ImageRepository imageRepository;
+    private final RewardRepository rewardRepository;
 
     @Value("${paging.page-size}")
     private int pageSize;
 
     @Autowired
-    public AccountServiceImpl(AccountRepository accountRepository, ServiceRepository serviceRepository, EventRepository eventRepository, ImageRepository imageRepository) {
+    public AccountServiceImpl(AccountRepository accountRepository, ServiceRepository serviceRepository, EventRepository eventRepository, ImageRepository imageRepository, RewardRepository rewardRepository) {
         this.accountRepository = accountRepository;
         this.serviceRepository = serviceRepository;
         this.eventRepository = eventRepository;
         this.imageRepository = imageRepository;
+        this.rewardRepository = rewardRepository;
     }
 
     @Override
@@ -114,6 +118,47 @@ public class AccountServiceImpl implements AccountService {
             role = accountRepository.findRoleByEmail(email);
         }
         return role;
+    }
+
+    @Override
+    public Map<String, Object> getTopContributor(int page, int pageSize) throws Exception {
+        //Get start and end date of quarter in a year.
+        LocalDate currentDate = LocalDate.now();
+        String startDate = "", endDate = "";
+        switch (currentDate.getMonthValue()) {
+            case 1:
+            case 2:
+            case 3:
+                startDate = currentDate.getYear() + "-01-01";
+                endDate = currentDate.getYear() + "-03-31";
+                break;
+            case 4:
+            case 5:
+            case 6:
+                startDate = currentDate.getYear() + "-04-01";
+                endDate = currentDate.getYear() + "-06-30";
+                break;
+            case 7:
+            case 8:
+            case 9:
+                startDate = currentDate.getYear() + "-07-01";
+                endDate = currentDate.getYear() + "-09-30";
+                break;
+            case 10:
+            case 11:
+            case 12:
+                startDate = currentDate.getYear() + "-10-01";
+                endDate = currentDate.getYear() + "-12-31";
+                break;
+        }
+        Pageable paging = PageRequest.of(page, pageSize);
+        Page<AccountEntity> pageAccounts = accountRepository
+                .getTopAccountsByContributionAndDateWithPaging(startDate, endDate, paging);
+        if (pageAccounts.isEmpty()) {
+            throw new EntityNotFoundException("Unable to get top contributors.");
+        }
+
+        return getAccountResponseMapWithContributionInQuarter(pageAccounts, startDate, endDate);
     }
 
     @Override
@@ -285,6 +330,25 @@ public class AccountServiceImpl implements AccountService {
     private Map<String, Object> getAccountResponseMap(Page<AccountEntity> pageAccounts) throws Exception {
         List<AccountEntity> accountEntities = pageAccounts.getContent();
         List<AccountGeneralResponse> accountResponses = AccountGeneralResponse.convertToListResponse(accountEntities);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("accounts", accountResponses);
+        response.put("currentPage", pageAccounts.getNumber());
+        response.put("totalItems", pageAccounts.getTotalElements());
+        response.put("totalPages", pageAccounts.getTotalPages());
+
+        return response;
+    }
+
+    private Map<String, Object> getAccountResponseMapWithContributionInQuarter(Page<AccountEntity> pageAccounts,
+                                                                               String startDate, String endDate) throws Exception {
+        List<AccountEntity> accountEntities = pageAccounts.getContent();
+        List<AccountGeneralResponse> accountResponses = AccountGeneralResponse.convertToListResponse(accountEntities);
+
+        for (AccountGeneralResponse accountResponse : accountResponses) {
+            int contributionPoint = rewardRepository.getTotalPointByDate(accountResponse.getEmail(), startDate, endDate);
+            accountResponse.setContributionPoint(contributionPoint);
+        }
 
         Map<String, Object> response = new HashMap<>();
         response.put("accounts", accountResponses);

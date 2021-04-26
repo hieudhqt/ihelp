@@ -163,6 +163,12 @@ public class AccountRestController {
         return accountService.findByServiceId(serviceId);
     }
 
+    @GetMapping("/accounts/contributor")
+    public ResponseEntity<Map<String, Object>> findTopContributors(@RequestParam(value = "page") int page,
+                                                                   @RequestParam(value = "pageSize") int pageSize) throws Exception {
+        return new ResponseEntity<>(accountService.getTopContributor(page, pageSize), HttpStatus.OK);
+    }
+
     @GetMapping("/accounts/exist")
     public Map<String, Object> existsByEmailAndPhone(@RequestParam String email, @RequestParam String phone) throws Exception {
         if (email == null || email.isEmpty()) {

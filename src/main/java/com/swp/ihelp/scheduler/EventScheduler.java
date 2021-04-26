@@ -94,7 +94,7 @@ public class EventScheduler {
                 eventRepository.updateStatus(eventId, StatusEnum.COMPLETED.getId());
                 EventEntity eventEntity = eventRepository.getOne(eventId);
 
-                int contributionPoint = Math.round(eventEntity.getPoint() + eventEntity.getPoint() * hostBonusPointPercent);
+                int contributionPoint = Math.round(eventEntity.getPoint() * hostBonusPointPercent);
 
                 RewardEntity reward = new RewardEntity();
                 reward.setTitle("Reward for hosting event: " + eventEntity.getId());
@@ -181,6 +181,31 @@ public class EventScheduler {
     @Scheduled(cron = "5 0 0 * * *")
     @Transactional
     public void autoDisableEvent() {
+        try {
+            logger.info("Auto disable event");
+
+            DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+            String currentDate = dateFormat.format(new Date());
+
+            List<String> eventIds
+                    = eventRepository.getEmptyEventIds(currentDate);
+            for (String eventId : eventIds) {
+                EventEntity eventToDisable = eventRepository.getOne(eventId);
+                eventToDisable.setReason("This event is disabled due to lacking participants on start date.");
+                eventToDisable.setStatus(new StatusEntity().setId(StatusEnum.DISABLED.getId()));
+                eventRepository.save(eventToDisable);
+
+                int refundPoint = eventToDisable.getPoint() * eventToDisable.getQuota();
+                accountRepository.updateBalancePoint(eventToDisable.getAuthorAccount().getEmail(), refundPoint);
+            }
+        } catch (Exception e) {
+            logger.error("Error when auto disabling events: " + e.getMessage());
+        }
+    }
+
+    @Scheduled(cron = "5 0 0 * * *")
+    @Transactional
+    public void autoEvaluateEvent() {
         try {
             logger.info("Auto disable event");
 

@@ -39,4 +39,6 @@ public interface AccountService {
 
     Map<String, Object> existsByEmailAndPhone(String email, String phone) throws Exception;
 
+    Map<String, Object> getTopContributor(int page, int pageSize) throws Exception;
+
 }
