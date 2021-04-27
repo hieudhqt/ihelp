@@ -70,12 +70,14 @@ public class RewardScheduler {
 
                 List<String> hostDeviceTokens = deviceRepository.findByEmail(account.getEmail());
 
-                PushNotificationRequest notificationRequest = new PushNotificationRequest()
-                        .setTitle("You are rewarded: " + pointToReward + " from the system")
-                        .setMessage("Due to having actively volunteer contribution, you have been rewarded: " + pointToReward)
-                        .setRegistrationTokens(hostDeviceTokens);
+                if (hostDeviceTokens != null && !hostDeviceTokens.isEmpty()) {
+                    PushNotificationRequest notificationRequest = new PushNotificationRequest()
+                            .setTitle("You are rewarded: " + pointToReward + " from the system")
+                            .setMessage("Due to having actively volunteer contribution, you have been rewarded: " + pointToReward)
+                            .setRegistrationTokens(hostDeviceTokens);
 
-                pushNotificationService.sendPushNotificationToMultiDevices(notificationRequest);
+                    pushNotificationService.sendPushNotificationToMultiDevices(notificationRequest);
+                }
 
                 notificationRepository.save(new NotificationEntity()
                         .setTitle("You are rewarded: " + pointToReward + " from the system")

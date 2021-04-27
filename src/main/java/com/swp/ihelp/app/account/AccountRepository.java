@@ -34,6 +34,11 @@ public interface AccountRepository extends JpaRepository<AccountEntity, String> 
             "WHERE ea.is_evaluated <> 1 OR ea.is_evaluated IS NULL", nativeQuery = true)
     List<NotEvaluatedParticipantsMapping> findNotEvaluatedAccountsByEventId(String eventId);
 
+    @Query("SELECT a.phone FROM AccountEntity a WHERE a.email=:email")
+    String findPhoneByEmail(String email) throws Exception;
+
+    Page<AccountEntity> findAccountEntitiesByFullNameContainsIgnoreCase(String fullName, Pageable pageable) throws Exception;
+
     @Modifying
     @Query(value = "UPDATE account a SET a.account_status_id=:statusId WHERE a.email=:email", nativeQuery = true)
     void updateStatus(String email, String statusId) throws Exception;

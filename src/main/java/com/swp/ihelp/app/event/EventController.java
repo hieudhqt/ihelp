@@ -126,15 +126,21 @@ public class EventController {
 
         //Push notification to evaluated member
         List<String> deviceTokens = notificationService.findDeviceTokensByEmail(request.getMemberEmail());
-        if (deviceTokens != null || !deviceTokens.isEmpty()) {
+        if (deviceTokens != null && !deviceTokens.isEmpty()) {
             PushNotificationRequest pushNotificationRequest = new PushNotificationRequest()
-                    .setTitle("You have been evaluated from event \"" + " " + "\" host")
-                    .setMessage("You now can give feedback about event \"" + " " + "\"")
+                    .setTitle("You have been evaluated from event \"" + request.getTitle() + "\" host")
+                    .setMessage("You now can give feedback about event \"" + request.getTitle() + "\"")
                     .setRegistrationTokens(deviceTokens);
             pushNotificationService.sendPushNotificationToMultiDevices(pushNotificationRequest);
         } else {
 //            throw new EntityNotFoundException("Account: " + email + " has no device token.");
         }
+
+        notificationService.insert(new NotificationEntity()
+                .setTitle("You have been evaluated from event \"" + request.getTitle() + "\" host")
+                .setMessage("You now can give feedback about event \"" + request.getTitle() + "\"")
+                .setDate(new Timestamp(System.currentTimeMillis()))
+                .setAccountEntity(new AccountEntity().setEmail(request.getMemberEmail())));
 
         return ResponseEntity.ok("Evaluation of account " + request.getMemberEmail() + " completed.");
     }
@@ -159,7 +165,7 @@ public class EventController {
 
         //Push notification to event's host
         List<String> deviceTokens = notificationService.findDeviceTokensByEmail(approvedEvent.getAuthorAccount().getEmail());
-        if (deviceTokens != null || !deviceTokens.isEmpty()) {
+        if (deviceTokens != null && !deviceTokens.isEmpty()) {
 
             Map<String, String> notificationData = new HashMap<>();
             notificationData.put("evaluateRequiredEvents", eventId);
@@ -171,15 +177,15 @@ public class EventController {
                     .setData(notificationData)
                     .setRegistrationTokens(deviceTokens);
             pushNotificationService.sendPushNotificationToMultiDevices(pushNotificationRequest);
-
-            notificationService.insert(new NotificationEntity()
-                    .setTitle("Your event: \"" + approvedEvent.getTitle() + "\" has been approved")
-                    .setMessage("Event \"" + approvedEvent.getTitle() + " is now able to accept registration")
-                    .setDate(new Timestamp(System.currentTimeMillis()))
-                    .setAccountEntity(new AccountEntity().setEmail(approvedEvent.getAuthorAccount().getEmail())));
         } else {
 //            throw new EntityNotFoundException("Account: " + email + " has no device token.");
         }
+
+        notificationService.insert(new NotificationEntity()
+                .setTitle("Your event: \"" + approvedEvent.getTitle() + "\" has been approved")
+                .setMessage("Event \"" + approvedEvent.getTitle() + " is now able to accept registration")
+                .setDate(new Timestamp(System.currentTimeMillis()))
+                .setAccountEntity(new AccountEntity().setEmail(approvedEvent.getAuthorAccount().getEmail())));
 
         return ResponseEntity.ok("Event " + eventId + " has been approved by " + email);
     }
@@ -189,21 +195,21 @@ public class EventController {
         EventEntity rejectedEvent = eventService.reject(request);
 
         List<String> deviceTokens = notificationService.findDeviceTokensByEmail(rejectedEvent.getAuthorAccount().getEmail());
-        if (deviceTokens != null || !deviceTokens.isEmpty()) {
+        if (deviceTokens != null & !deviceTokens.isEmpty()) {
             PushNotificationRequest pushNotificationRequest = new PushNotificationRequest()
                     .setTitle("Your event: \"" + rejectedEvent.getTitle() + "\" has been rejected")
                     .setMessage("Event \"" + rejectedEvent.getTitle() + " has been rejected with following reason: " + request.getReason())
                     .setRegistrationTokens(deviceTokens);
             pushNotificationService.sendPushNotificationToMultiDevices(pushNotificationRequest);
-
-            notificationService.insert(new NotificationEntity()
-                    .setTitle("Your event: \"" + rejectedEvent.getTitle() + "\" has been rejected")
-                    .setMessage("Event \"" + rejectedEvent.getTitle() + " has been rejected with following reason: " + request.getReason())
-                    .setDate(new Timestamp(System.currentTimeMillis()))
-                    .setAccountEntity(new AccountEntity().setEmail(rejectedEvent.getAuthorAccount().getEmail())));
         } else {
 //            throw new EntityNotFoundException("Account: " + email + " has no device token.");
         }
+
+        notificationService.insert(new NotificationEntity()
+                .setTitle("Your event: \"" + rejectedEvent.getTitle() + "\" has been rejected")
+                .setMessage("Event \"" + rejectedEvent.getTitle() + " has been rejected with following reason: " + request.getReason())
+                .setDate(new Timestamp(System.currentTimeMillis()))
+                .setAccountEntity(new AccountEntity().setEmail(rejectedEvent.getAuthorAccount().getEmail())));
 
         return ResponseEntity.ok("Event " + request.getEventId() +
                 " has been rejected by " + request.getManagerEmail() + ", reason: "
@@ -237,7 +243,7 @@ public class EventController {
 
         //Subscribe user to topic with eventId in argument
         List<String> deviceTokens = notificationService.findDeviceTokensByEmail(email);
-        if (deviceTokens != null || !deviceTokens.isEmpty()) {
+        if (deviceTokens != null && !deviceTokens.isEmpty()) {
             pushNotificationService.subscribeToTopic(deviceTokens, eventId);
         } else {
 //            throw new EntityNotFoundException("Account: " + email + " has no device token.");

@@ -26,8 +26,12 @@ public interface FeedbackService {
 
     Map<String, Object> getReports(int page) throws Exception;
 
-    void approve(String feedbackId, String managerEmail) throws Exception;
+    FeedbackEntity approve(String feedbackId, String managerEmail) throws Exception;
 
-    void reject(RejectFeedbackRequest request) throws Exception;
+    FeedbackEntity reject(RejectFeedbackRequest request) throws Exception;
+
+    boolean existsByEventIdAndEmail(String eventId, String email) throws Exception;
+
+    boolean existsByServiceIdAndEmail(String serviceId, String email) throws Exception;
 
 }

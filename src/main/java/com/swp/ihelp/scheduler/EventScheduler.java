@@ -118,16 +118,19 @@ public class EventScheduler {
                 //Push notification to event's host
                 List<String> hostDeviceTokens = deviceRepository.findByEmail(eventEntity.getAuthorAccount().getEmail());
 
-                Map<String, String> notificationData = new HashMap<>();
-                notificationData.put("evaluateRequiredEvents", eventId);
+                if (hostDeviceTokens != null && !hostDeviceTokens.isEmpty()) {
+                    Map<String, String> notificationData = new HashMap<>();
+                    notificationData.put("evaluateRequiredEvents", eventId);
 
-                PushNotificationRequest hostNotificationRequest = new PushNotificationRequest()
-                        .setTitle("Your event: \"" + eventEntity.getTitle() + "\" is completed")
-                        .setMessage("Event \"" + eventEntity.getTitle() + "\" has participants in need of evaluating")
-                        .setData(notificationData)
-                        .setRegistrationTokens(hostDeviceTokens);
+                    PushNotificationRequest hostNotificationRequest = new PushNotificationRequest()
+                            .setTitle("Your event: \"" + eventEntity.getTitle() + "\" is completed")
+                            .setMessage("Event \"" + eventEntity.getTitle() + "\" has participants in need of evaluating")
+                            .setData(notificationData)
+                            .setRegistrationTokens(hostDeviceTokens);
 
-                pushNotificationService.sendPushNotificationToMultiDevices(hostNotificationRequest);
+                    pushNotificationService.sendPushNotificationToMultiDevices(hostNotificationRequest);
+                }
+
                 notificationRepository.save(new NotificationEntity()
                         .setTitle("Your event: \"" + eventEntity.getTitle() + "\" is completed")
                         .setMessage("Event \"" + eventEntity.getTitle() + "\" has participants in need of evaluating")
@@ -160,12 +163,15 @@ public class EventScheduler {
                 //Push notification to event's host
                 List<String> hostDeviceTokens = deviceRepository.findByEmail(eventToReject.getAuthorAccount().getEmail());
 
-                PushNotificationRequest hostNotificationRequest = new PushNotificationRequest()
-                        .setTitle("Your event: \"" + eventToReject.getTitle() + "\" has been rejected because approval deadline was exceeded")
-                        .setMessage("Event \"" + eventToReject.getTitle() + "\" has been rejected, please contact admin or manager for more information")
-                        .setRegistrationTokens(hostDeviceTokens);
+                if (hostDeviceTokens != null && !hostDeviceTokens.isEmpty()) {
+                    PushNotificationRequest hostNotificationRequest = new PushNotificationRequest()
+                            .setTitle("Your event: \"" + eventToReject.getTitle() + "\" has been rejected because approval deadline was exceeded")
+                            .setMessage("Event \"" + eventToReject.getTitle() + "\" has been rejected, please contact admin or manager for more information")
+                            .setRegistrationTokens(hostDeviceTokens);
 
-                pushNotificationService.sendPushNotificationToMultiDevices(hostNotificationRequest);
+                    pushNotificationService.sendPushNotificationToMultiDevices(hostNotificationRequest);
+                }
+
                 notificationRepository.save(new NotificationEntity()
                         .setTitle("Your event: \"" + eventToReject.getTitle() + "\" has been rejected because approval deadline was exceeded")
                         .setMessage("Event \"" + eventToReject.getTitle() + "\" has been rejected, please contact admin or manager for more information")
@@ -197,6 +203,24 @@ public class EventScheduler {
 
                 int refundPoint = eventToDisable.getPoint() * eventToDisable.getQuota();
                 accountRepository.updateBalancePoint(eventToDisable.getAuthorAccount().getEmail(), refundPoint);
+
+                List<String> hostDeviceTokens = deviceRepository.findByEmail(eventToDisable.getAuthorAccount().getEmail());
+
+                if (hostDeviceTokens != null && !hostDeviceTokens.isEmpty()) {
+                    PushNotificationRequest hostNotificationRequest = new PushNotificationRequest()
+                            .setTitle("Your event: \"" + eventToDisable.getTitle() + "\" has been disabled because event has started without participants")
+                            .setMessage("Event \"" + eventToDisable.getTitle() + "\" has been disabled, please contact admin or manager for more information")
+                            .setRegistrationTokens(hostDeviceTokens);
+
+                    pushNotificationService.sendPushNotificationToMultiDevices(hostNotificationRequest);
+                }
+
+                notificationRepository.save(new NotificationEntity()
+                        .setTitle("Your event: \"" + eventToDisable.getTitle() + "\" has been disabled because event has started without participants")
+                        .setMessage("Event \"" + eventToDisable.getTitle() + "\" has been rejected, please contact admin or manager for more information")
+                        .setDate(new Timestamp(System.currentTimeMillis()))
+                        .setAccountEntity(new AccountEntity().setEmail(eventToDisable.getAuthorAccount().getEmail())));
+
             }
         } catch (Exception e) {
             logger.error("Error when auto disabling events: " + e.getMessage());

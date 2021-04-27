@@ -156,7 +156,7 @@ public class FeedbackServiceImpl implements FeedbackService {
     }
 
     @Override
-    public void approve(String feedbackId, String managerEmail) throws Exception {
+    public FeedbackEntity approve(String feedbackId, String managerEmail) throws Exception {
         existsByFeedbackId(feedbackId);
         existsByEmail(managerEmail);
         FeedbackEntity feedbackEntity = feedbackRepository.getOne(feedbackId);
@@ -169,11 +169,12 @@ public class FeedbackServiceImpl implements FeedbackService {
         AccountEntity approver = accountRepository.getOne(managerEmail);
         feedbackEntity.setManagerAccount(approver);
         feedbackEntity.setStatus(new StatusEntity().setId(StatusEnum.APPROVED.getId()));
-        feedbackRepository.save(feedbackEntity);
+        FeedbackEntity approvedFeedback = feedbackRepository.save(feedbackEntity);
+        return approvedFeedback;
     }
 
     @Override
-    public void reject(RejectFeedbackRequest request) throws Exception {
+    public FeedbackEntity reject(RejectFeedbackRequest request) throws Exception {
         String feedbackId = request.getFeedbackId();
         String managerEmail = request.getManagerEmail();
         existsByFeedbackId(feedbackId);
@@ -189,7 +190,18 @@ public class FeedbackServiceImpl implements FeedbackService {
         feedbackEntity.setManagerAccount(rejecter);
         feedbackEntity.setStatus(new StatusEntity().setId(StatusEnum.REJECTED.getId()));
         feedbackEntity.setReason(request.getReason());
-        feedbackRepository.save(feedbackEntity);
+        FeedbackEntity rejectedFeedback = feedbackRepository.save(feedbackEntity);
+        return rejectedFeedback;
+    }
+
+    @Override
+    public boolean existsByEventIdAndEmail(String eventId, String email) throws Exception {
+        return feedbackRepository.existsByEvent_IdAndAccount_Email(eventId, email);
+    }
+
+    @Override
+    public boolean existsByServiceIdAndEmail(String serviceId, String email) throws Exception {
+        return feedbackRepository.existsByService_IdAndAccount_Email(serviceId, email);
     }
 
     private void existsByEmail(String email) {
