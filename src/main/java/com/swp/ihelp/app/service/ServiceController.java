@@ -115,7 +115,7 @@ public class ServiceController {
         return new ResponseEntity<>(updatedService, HttpStatus.OK);
     }
 
-    @PutMapping("/services/{eventId}/{statusId}")
+    @PutMapping("/services/{serviceId}/{statusId}")
     public ResponseEntity<String> updateStatus(@PathVariable String serviceId,
                                                @PathVariable int statusId) throws Exception {
         serviceVolunteerService.updateStatus(serviceId, statusId);
