@@ -106,12 +106,14 @@ public class ServiceScheduler {
 
                 List<String> deviceTokens = deviceRepository.findByEmail(serviceEntity.getAuthorAccount().getEmail());
 
-                PushNotificationRequest notificationRequest = new PushNotificationRequest()
-                        .setTitle("Your service: \"" + serviceEntity.getTitle() + "\" has ended")
-                        .setMessage("Service \"" + serviceEntity.getTitle() + "\" has ended")
-                        .setRegistrationTokens(deviceTokens);
+                if (deviceTokens != null && !deviceTokens.isEmpty()) {
+                    PushNotificationRequest notificationRequest = new PushNotificationRequest()
+                            .setTitle("Your service: \"" + serviceEntity.getTitle() + "\" has ended")
+                            .setMessage("Service \"" + serviceEntity.getTitle() + "\" has ended")
+                            .setRegistrationTokens(deviceTokens);
 
-                pushNotificationService.sendPushNotificationToMultiDevices(notificationRequest);
+                    pushNotificationService.sendPushNotificationToMultiDevices(notificationRequest);
+                }
 
                 notificationRepository.save(new NotificationEntity()
                         .setTitle("Your service: \"" + serviceEntity.getTitle() + "\" has ended")
@@ -145,12 +147,14 @@ public class ServiceScheduler {
                 //Push notification to service's host
                 List<String> hostDeviceTokens = deviceRepository.findByEmail(serviceToReject.getAuthorAccount().getEmail());
 
-                PushNotificationRequest notificationRequest = new PushNotificationRequest()
-                        .setTitle("Your service: \"" + serviceToReject.getTitle() + "\" has been rejected because approval deadline was exceeded")
-                        .setMessage("Service \"" + serviceToReject.getTitle() + "\" has been rejected, please contact admin or manager for more information")
-                        .setRegistrationTokens(hostDeviceTokens);
+                if (hostDeviceTokens != null && !hostDeviceTokens.isEmpty()) {
+                    PushNotificationRequest notificationRequest = new PushNotificationRequest()
+                            .setTitle("Your service: \"" + serviceToReject.getTitle() + "\" has been rejected because approval deadline was exceeded")
+                            .setMessage("Service \"" + serviceToReject.getTitle() + "\" has been rejected, please contact admin or manager for more information")
+                            .setRegistrationTokens(hostDeviceTokens);
 
-                pushNotificationService.sendPushNotificationToMultiDevices(notificationRequest);
+                    pushNotificationService.sendPushNotificationToMultiDevices(notificationRequest);
+                }
 
                 notificationRepository.save(new NotificationEntity()
                         .setTitle("Your service: \"" + serviceToReject.getTitle() + "\" has been rejected because approval deadline was exceeded")

@@ -2,6 +2,8 @@ package com.swp.ihelp.app.account;
 
 import com.swp.ihelp.app.account.response.NotEvaluatedParticipantsMapping;
 import com.swp.ihelp.app.account.response.ParticipantsMapping;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -31,6 +33,11 @@ public interface AccountRepository extends JpaRepository<AccountEntity, String> 
             "LEFT JOIN image i ON i.account_email = a.email AND i.type = 'avatar' " +
             "WHERE ea.is_evaluated <> 1 OR ea.is_evaluated IS NULL", nativeQuery = true)
     List<NotEvaluatedParticipantsMapping> findNotEvaluatedAccountsByEventId(String eventId);
+
+    @Query("SELECT a.phone FROM AccountEntity a WHERE a.email=:email")
+    String findPhoneByEmail(String email) throws Exception;
+
+    Page<AccountEntity> findAccountEntitiesByFullNameContainsIgnoreCase(String fullName, Pageable pageable) throws Exception;
 
     @Modifying
     @Query(value = "UPDATE account a SET a.account_status_id=:statusId WHERE a.email=:email", nativeQuery = true)

@@ -134,6 +134,11 @@ public class AccountRestController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    @GetMapping("/accounts/full_name/{name}")
+    public ResponseEntity<Map<String, Object>> findAccountByName(@RequestParam(value = "page") int page, @PathVariable String name) throws Exception {
+        return new ResponseEntity<>(accountService.findByName(page, name), HttpStatus.OK);
+    }
+
     @GetMapping("/accounts")
     public ResponseEntity<Map<String, Object>> findAll(@RequestParam(value = "page") int page) throws Exception {
         return new ResponseEntity<>(accountService.findAll(page), HttpStatus.OK);
@@ -179,9 +184,14 @@ public class AccountRestController {
         accountService.updateStatus(email, statusId);
     }
 
-    @PutMapping("/accounts/reset_password")
+    @PutMapping("/accounts/update_password")
     public void updatePassword(@RequestBody ResetPasswordRequest request) throws Exception {
         authenticate(request.getEmail(), request.getOldPassword());
+        accountService.updatePassword(request.getEmail(), request.getNewPassword());
+    }
+
+    @PutMapping("/accounts/reset_password")
+    public void resetPassword(@RequestBody ResetPasswordRequest request) throws Exception {
         accountService.updatePassword(request.getEmail(), request.getNewPassword());
     }
 
