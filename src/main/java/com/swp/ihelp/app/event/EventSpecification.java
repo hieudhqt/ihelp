@@ -23,6 +23,7 @@ public class EventSpecification implements Specification<EventEntity> {
     @Override
     public Predicate toPredicate
             (Root<EventEntity> root, CriteriaQuery<?> query, CriteriaBuilder builder) {
+        //Greater than
         if (criteria.getOperation().equalsIgnoreCase(">")) {
             if (criteria.getKey().contains("Date")) {
                 SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -33,6 +34,7 @@ public class EventSpecification implements Specification<EventEntity> {
             }
             return builder.greaterThanOrEqualTo(
                     root.get(criteria.getKey()), criteria.getValue().toString());
+            //Less than
         } else if (criteria.getOperation().equalsIgnoreCase("<")) {
             if (criteria.getKey().contains("Date")) {
                 SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -43,6 +45,7 @@ public class EventSpecification implements Specification<EventEntity> {
             }
             return builder.lessThanOrEqualTo(
                     root.get(criteria.getKey()), criteria.getValue().toString());
+            //Equal to
         } else if (criteria.getOperation().equalsIgnoreCase(":")) {
             if (root.get(criteria.getKey()).getJavaType() == String.class) {
                 return builder.like(
@@ -67,6 +70,32 @@ public class EventSpecification implements Specification<EventEntity> {
                     return builder.equal(root.<Boolean>get(criteria.getKey()), Boolean.parseBoolean(criteria.getValue().toString()));
                 }
                 return builder.equal(root.get(criteria.getKey()), criteria.getValue());
+            }
+            //Not equal
+        } else if (criteria.getOperation().equalsIgnoreCase("!")) {
+            if (root.get(criteria.getKey()).getJavaType() == String.class) {
+                return builder.notLike(
+                        root.get(criteria.getKey()), "%" + criteria.getValue() + "%");
+            } else {
+                if (criteria.getKey().contains("Date")) {
+                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                    Date parsedDate = dateFormat.parse(criteria.getValue().toString());
+                    Timestamp timestamp = new java.sql.Timestamp(parsedDate.getTime());
+                    return builder.notEqual(
+                            root.<Timestamp>get(criteria.getKey()), timestamp);
+                } else if (criteria.getKey().equals("eventCategories")) {
+                    Join<EventEntity, EventCategoryEntity> join = root.join("eventCategories");
+                    return builder.notEqual(join.<Integer>get("id"), criteria.getValue());
+                } else if (criteria.getKey().equals("authorAccount")) {
+                    Join<EventEntity, AccountEntity> join = root.join("authorAccount");
+                    return builder.notEqual(join.<String>get("email"), criteria.getValue());
+                } else if (criteria.getKey().equals("status")) {
+                    Join<EventEntity, StatusEntity> join = root.join("status");
+                    return builder.notEqual(join.<Integer>get("id"), criteria.getValue());
+                } else if (criteria.getKey().equals("isOnsite")) {
+                    return builder.notEqual(root.<Boolean>get(criteria.getKey()), Boolean.parseBoolean(criteria.getValue().toString()));
+                }
+                return builder.notEqual(root.get(criteria.getKey()), criteria.getValue());
             }
         }
         return null;

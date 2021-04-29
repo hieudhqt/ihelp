@@ -23,6 +23,7 @@ public class ServiceSpecification implements Specification<ServiceEntity> {
     @Override
     public Predicate toPredicate
             (Root<ServiceEntity> root, CriteriaQuery<?> query, CriteriaBuilder builder) {
+        //Greater than
         if (criteria.getOperation().equalsIgnoreCase(">")) {
             if (criteria.getKey().contains("Date")) {
                 SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -33,6 +34,7 @@ public class ServiceSpecification implements Specification<ServiceEntity> {
             }
             return builder.greaterThanOrEqualTo(
                     root.get(criteria.getKey()), criteria.getValue().toString());
+            //Less than
         } else if (criteria.getOperation().equalsIgnoreCase("<")) {
             if (criteria.getKey().contains("Date")) {
                 SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -43,6 +45,7 @@ public class ServiceSpecification implements Specification<ServiceEntity> {
             }
             return builder.lessThanOrEqualTo(
                     root.get(criteria.getKey()), criteria.getValue().toString());
+            //Equal to
         } else if (criteria.getOperation().equalsIgnoreCase(":")) {
             if (root.get(criteria.getKey()).getJavaType() == String.class) {
                 return builder.like(
@@ -65,6 +68,29 @@ public class ServiceSpecification implements Specification<ServiceEntity> {
                     return builder.equal(join.<Integer>get("id"), criteria.getValue());
                 }
                 return builder.equal(root.get(criteria.getKey()), criteria.getValue());
+            }
+        } else if (criteria.getOperation().equalsIgnoreCase("!")) {
+            if (root.get(criteria.getKey()).getJavaType() == String.class) {
+                return builder.notLike(
+                        root.get(criteria.getKey()), "%" + criteria.getValue() + "%");
+            } else {
+                if (criteria.getKey().contains("Date")) {
+                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                    Date parsedDate = dateFormat.parse(criteria.getValue().toString());
+                    Timestamp timestamp = new java.sql.Timestamp(parsedDate.getTime());
+                    return builder.notEqual(
+                            root.<Timestamp>get(criteria.getKey()), timestamp);
+                } else if (criteria.getKey().equals("serviceCategories")) {
+                    Join<ServiceEntity, EventCategoryEntity> join = root.join("serviceCategories");
+                    return builder.notEqual(join.<Integer>get("id"), criteria.getValue());
+                } else if (criteria.getKey().equals("authorAccount")) {
+                    Join<ServiceEntity, AccountEntity> join = root.join("authorAccount");
+                    return builder.notEqual(join.<String>get("email"), criteria.getValue());
+                } else if (criteria.getKey().equals("status")) {
+                    Join<ServiceEntity, StatusEntity> join = root.join("status");
+                    return builder.notEqual(join.<Integer>get("id"), criteria.getValue());
+                }
+                return builder.notEqual(root.get(criteria.getKey()), criteria.getValue());
             }
         }
         return null;
