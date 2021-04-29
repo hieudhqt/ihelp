@@ -89,7 +89,11 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
         Pattern pattern = Pattern.compile(filterPattern);
         Matcher matcher = pattern.matcher(search + ",");
         while (matcher.find()) {
-            builder.with(matcher.group(1), matcher.group(2), matcher.group(3));
+            String orPredicate = null;
+            if (matcher.end(3) <= search.length() - 1) {
+                orPredicate = "" + search.charAt(matcher.end(3));
+            }
+            builder.with(matcher.group(1), matcher.group(2), matcher.group(3), orPredicate);
         }
         Specification<ServiceEntity> spec = builder.build();
 
@@ -270,6 +274,7 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
     @Override
     @Transactional
     public void updateStatus(String serviceId, int statusId) throws Exception {
+        System.out.println(serviceId);
         if (!serviceRepository.existsById(serviceId)) {
             throw new EntityNotFoundException("Service with ID:" + serviceId + " not found.");
         }

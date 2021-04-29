@@ -33,7 +33,11 @@ public interface EventRepository extends JpaRepository<EventEntity, String>, Jpa
     Page<EventEntity> findByAuthorEmail(String email, Pageable pageable);
 
     @Query("SELECT e.event from EventHasAccountEntity e where e.account.email = :email and e.event.status.id = :statusId")
-    Page<EventEntity> findByParticipantEmail(String email, int statusId, Pageable pageable);
+    Page<EventEntity> findByParticipantEmailWithStatus(String email, int statusId, Pageable pageable);
+
+    @Query("SELECT e.event from EventHasAccountEntity e where e.account.email = :email ")
+    Page<EventEntity> findByParticipantEmail(String email, Pageable pageable);
+
 
     @Query("SELECT count(e.event.authorAccount) from EventHasAccountEntity e where e.event.id = :eventId")
     Integer getSpotUsed(String eventId);

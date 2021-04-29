@@ -30,7 +30,7 @@ public interface EventService {
 
     Map<String, Object> findByAuthorEmail(String email, int page) throws Exception;
 
-    Map<String, Object> findByParticipantEmail(String email, int statusId, int page) throws Exception;
+    Map<String, Object> findByParticipantEmail(String email, Integer statusId, int page) throws Exception;
 
     void joinEvent(String email, String eventId) throws Exception;
 

@@ -112,10 +112,14 @@ public class EventServiceImpl implements EventService {
         Pattern pattern = Pattern.compile(filterPattern);
         Matcher matcher = pattern.matcher(search + ",");
         while (matcher.find()) {
-            builder.with(matcher.group(1), matcher.group(2), matcher.group(3));
+            String orPredicate = null;
+            if (matcher.end(3) <= search.length() - 1) {
+                orPredicate = "" + search.charAt(matcher.end(3));
+            }
+            builder.with(matcher.group(1), matcher.group(2), matcher.group(3), orPredicate);
+
         }
         Specification<EventEntity> spec = builder.build();
-
         Page<EventEntity> pageEvents = eventRepository.findAll(spec, paging);
         if (pageEvents.isEmpty()) {
             throw new EntityNotFoundException("Event not found.");
@@ -185,9 +189,14 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public Map<String, Object> findByParticipantEmail(String email, int statusId, int page) throws Exception {
+    public Map<String, Object> findByParticipantEmail(String email, Integer statusId, int page) throws Exception {
         Pageable paging = PageRequest.of(page, pageSize, Sort.by("startDate").descending().and(Sort.by("title").ascending()));
-        Page<EventEntity> pageEvents = eventRepository.findByParticipantEmail(email, statusId, paging);
+        Page<EventEntity> pageEvents;
+        if (statusId != null) {
+            pageEvents = eventRepository.findByParticipantEmailWithStatus(email, statusId, paging);
+        } else {
+            pageEvents = eventRepository.findByParticipantEmail(email, paging);
+        }
         if (pageEvents.isEmpty()) {
             throw new EntityNotFoundException("Account " + email + " has not joined any event.");
         }
