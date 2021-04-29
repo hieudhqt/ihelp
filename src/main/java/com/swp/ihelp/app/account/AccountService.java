@@ -33,8 +33,6 @@ public interface AccountService {
 
     void updateRole(String email, String roleId) throws Exception;
 
-    void updateAvatar(String email, String avatarUrl) throws Exception;
-
     void insertAvatar(String email, String avatarUrl) throws Exception;
 
     List<Map<String, Object>> findNotEvaluatedAccountsByEventId(String eventId) throws Exception;

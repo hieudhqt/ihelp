@@ -4,15 +4,13 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 
 import java.sql.Timestamp;
 
-public interface ParticipantsMapping {
+public interface ServiceUsersMapping {
 
     String getEmail();
     String getFullName();
     Boolean getGender();
     String getPhone();
     Integer getContributionPoint();
-    Boolean getEvaluation();
-    Integer getRating();
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Ho_Chi_Minh")
     Timestamp getJoinDate();
 
