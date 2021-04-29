@@ -48,37 +48,37 @@ public class TransactionController {
 
         //Push notification to receiver
         List<String> receiverDeviceTokens = notificationService.findDeviceTokensByEmail(request.getReceiverEmail());
-        if (receiverDeviceTokens != null || !receiverDeviceTokens.isEmpty()) {
+        if (receiverDeviceTokens != null && !receiverDeviceTokens.isEmpty()) {
             PushNotificationRequest receiverNotificationRequest = new PushNotificationRequest()
                     .setTitle("You have received " + request.getPoint() + " point from " + request.getSenderEmail())
                     .setMessage(request.getPoint() + " point was sent from " + request.getSenderEmail() + " at: " + transactionTime)
                     .setRegistrationTokens(receiverDeviceTokens);
 
             pushNotificationService.sendPushNotificationToMultiDevices(receiverNotificationRequest);
-
-            notificationService.insert(new NotificationEntity()
-                    .setTitle("You have received " + request.getPoint() + " point from " + request.getSenderEmail())
-                    .setMessage(request.getPoint() + " point was sent from " + request.getSenderEmail() + " at: " + transactionTime)
-                    .setDate(new Timestamp(System.currentTimeMillis()))
-                    .setAccountEntity(new AccountEntity().setEmail(request.getReceiverEmail())));
         }
+
+        notificationService.insert(new NotificationEntity()
+                .setTitle("You have received " + request.getPoint() + " point from " + request.getSenderEmail())
+                .setMessage(request.getPoint() + " point was sent from " + request.getSenderEmail() + " at: " + transactionTime)
+                .setDate(new Timestamp(System.currentTimeMillis()))
+                .setAccountEntity(new AccountEntity().setEmail(request.getReceiverEmail())));
 
         //Push notification to sender
         List<String> senderDeviceTokens = notificationService.findDeviceTokensByEmail(request.getSenderEmail());
-        if (senderDeviceTokens != null || !senderDeviceTokens.isEmpty()) {
+        if (senderDeviceTokens != null && !senderDeviceTokens.isEmpty()) {
             PushNotificationRequest senderNotificationRequest = new PushNotificationRequest()
                     .setTitle(request.getPoint() + " point was sent successfully to " + request.getReceiverEmail())
                     .setMessage(request.getPoint() + " point was sent to " + request.getReceiverEmail() + " at: " + transactionTime)
                     .setRegistrationTokens(senderDeviceTokens);
 
             pushNotificationService.sendPushNotificationToMultiDevices(senderNotificationRequest);
-
-            notificationService.insert(new NotificationEntity()
-                    .setTitle(request.getPoint() + " point was sent successfully to " + request.getReceiverEmail())
-                    .setMessage(request.getPoint() + " point was sent to " + request.getReceiverEmail() + " at: " + transactionTime)
-                    .setDate(new Timestamp(System.currentTimeMillis()))
-                    .setAccountEntity(new AccountEntity().setEmail(request.getSenderEmail())));
         }
+
+        notificationService.insert(new NotificationEntity()
+                .setTitle(request.getPoint() + " point was sent successfully to " + request.getReceiverEmail())
+                .setMessage(request.getPoint() + " point was sent to " + request.getReceiverEmail() + " at: " + transactionTime)
+                .setDate(new Timestamp(System.currentTimeMillis()))
+                .setAccountEntity(new AccountEntity().setEmail(request.getSenderEmail())));
 
         return ResponseEntity.ok("Transaction added.");
     }

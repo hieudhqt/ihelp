@@ -111,6 +111,16 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
+    public Map<String, Object> findByName(int page, String name) throws Exception {
+        Pageable paging = PageRequest.of(page, pageSize, Sort.by("email").ascending());
+        Page<AccountEntity> pageAccounts = accountRepository.findAccountEntitiesByFullNameContainsIgnoreCase(name, paging);
+        if (pageAccounts.isEmpty()) {
+            throw new EntityNotFoundException("No accounts found with keyword: " + name);
+        }
+        return getAccountResponseMap(pageAccounts);
+    }
+
+    @Override
     public String findRoleById(String email) throws Exception {
         boolean isExisted = accountRepository.existsById(email);
         String role = null;

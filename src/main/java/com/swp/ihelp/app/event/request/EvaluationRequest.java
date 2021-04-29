@@ -10,6 +10,7 @@ import java.io.Serializable;
 public class EvaluationRequest implements Serializable {
     @NotBlank
     private String eventId;
+    private String title;
     @NotBlank
     private String memberEmail;
     @Min(1)
