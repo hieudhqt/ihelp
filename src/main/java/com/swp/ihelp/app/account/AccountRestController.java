@@ -211,12 +211,6 @@ public class AccountRestController {
         return accountService.update(request);
     }
 
-    @PutMapping("/accounts/{email}/avatar")
-    public ResponseEntity updateAvatar(@PathVariable String email, @RequestBody String avatarUrl) throws Exception {
-        accountService.updateAvatar(email, avatarUrl);
-        return ResponseEntity.ok("Avatar updated");
-    }
-
     @DeleteMapping("/signout")
     public ResponseEntity logout(@RequestBody DeviceTokenRequest request) throws Exception {
         notificationService.deleteDeviceToken(request.getEmail(), request.getDeviceToken());
