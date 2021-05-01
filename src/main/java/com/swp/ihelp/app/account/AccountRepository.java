@@ -2,6 +2,7 @@ package com.swp.ihelp.app.account;
 
 import com.swp.ihelp.app.account.response.NotEvaluatedParticipantsMapping;
 import com.swp.ihelp.app.account.response.ParticipantsMapping;
+import com.swp.ihelp.app.account.response.ServiceUsersMapping;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -15,17 +16,17 @@ public interface AccountRepository extends JpaRepository<AccountEntity, String> 
     @Query("SELECT a.role.name FROM AccountEntity a WHERE a.email=:email")
     String findRoleByEmail(String email);
 
-    @Query(value = "SELECT a.email AS email, a.full_name AS fullName, a.gender AS gender,a.phone AS phone, a.balance_point AS balancePoint, ea.join_date AS joinDate, i.image_url AS imageUrl " +
+    @Query(value = "SELECT a.email AS email, a.full_name AS fullName, a.gender AS gender, a.phone AS phone, a.contribution_point as contributionPoint, ea.is_evaluated as evaluation, ea.rating as rating, ea.join_date AS joinDate, i.image_url AS imageUrl " +
             "FROM account a " +
             "INNER JOIN event_has_account ea ON ea.account_email = a.email AND ea.event_id=:eventId " +
             "LEFT JOIN image i ON i.account_email = a.email AND i.type = 'avatar'", nativeQuery = true)
     List<ParticipantsMapping> findByEventId(String eventId);
 
-    @Query(value = "SELECT a.email AS email, a.full_name AS fullname, a.gender AS gender,a.phone AS phone, a.balance_point AS balancePoint, sa.use_date AS joinDate, i.image_url AS imageUrl " +
+    @Query(value = "SELECT a.email AS email, a.full_name AS fullname, a.gender AS gender, a.phone AS phone, a.contribution_point as contributionPoint, sa.use_date AS joinDate, i.image_url AS imageUrl " +
             "FROM account a " +
             "INNER JOIN service_has_account sa ON sa.account_email = a.email AND sa.service_id=:serviceId " +
             "LEFT JOIN image i ON i.account_email = a.email AND i.type = 'avatar'", nativeQuery = true)
-    List<ParticipantsMapping> findByServiceId(String serviceId);
+    List<ServiceUsersMapping> findByServiceId(String serviceId);
 
     @Query(value = "SELECT a.email AS email, a.full_name AS fullName, a.phone AS phone, i.image_url AS imageUrl " +
             "FROM account a " +
