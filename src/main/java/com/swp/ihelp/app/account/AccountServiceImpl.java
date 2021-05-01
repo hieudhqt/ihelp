@@ -162,13 +162,13 @@ public class AccountServiceImpl implements AccountService {
                 break;
         }
         Pageable paging = PageRequest.of(page, pageSize);
-        Page<AccountEntity> pageAccounts = accountRepository
+        Page<String> pageEmails = accountRepository
                 .getTopAccountsByContributionAndDateWithPaging(startDate, endDate, paging);
-        if (pageAccounts.isEmpty()) {
+        if (pageEmails.isEmpty()) {
             throw new EntityNotFoundException("Unable to get top contributors.");
         }
 
-        return getAccountResponseMapWithContributionInQuarter(pageAccounts, startDate, endDate);
+        return getAccountResponseMapWithContributionInQuarter(pageEmails, startDate, endDate);
     }
 
     @Override
@@ -350,9 +350,10 @@ public class AccountServiceImpl implements AccountService {
         return response;
     }
 
-    private Map<String, Object> getAccountResponseMapWithContributionInQuarter(Page<AccountEntity> pageAccounts,
+    private Map<String, Object> getAccountResponseMapWithContributionInQuarter(Page<String> pageEmails,
                                                                                String startDate, String endDate) throws Exception {
-        List<AccountEntity> accountEntities = pageAccounts.getContent();
+        List<String> emails = pageEmails.getContent();
+        List<AccountEntity> accountEntities = accountRepository.findAllById(emails);
         List<AccountGeneralResponse> accountResponses = AccountGeneralResponse.convertToListResponse(accountEntities);
 
         for (AccountGeneralResponse accountResponse : accountResponses) {
@@ -362,9 +363,9 @@ public class AccountServiceImpl implements AccountService {
 
         Map<String, Object> response = new HashMap<>();
         response.put("accounts", accountResponses);
-        response.put("currentPage", pageAccounts.getNumber());
-        response.put("totalItems", pageAccounts.getTotalElements());
-        response.put("totalPages", pageAccounts.getTotalPages());
+        response.put("currentPage", pageEmails.getNumber());
+        response.put("totalItems", pageEmails.getTotalElements());
+        response.put("totalPages", pageEmails.getTotalPages());
 
         return response;
     }

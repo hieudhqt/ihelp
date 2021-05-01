@@ -74,7 +74,18 @@ public interface AccountRepository extends JpaRepository<AccountEntity, String> 
             "LIMIT 0, 100 ", nativeQuery = true)
     List<AccountEntity> getTop100AccountsByContributionAndDate(String startDate, String endDate) throws Exception;
 
-    @Query(value = "SELECT a.* " +
+//    @Query(value = "SELECT a.* " +
+//            "FROM ihelp.account a  " +
+//            "INNER JOIN (SELECT r.account_email, SUM(r.point) as total " +
+//            "FROM ihelp.reward r  " +
+//            "WHERE DATE(r.created_date) >= :startDate AND DATE(r.created_date) <= :endDate " +
+//            "GROUP BY r.account_email) e " +
+//            "ON e.account_email = a.email  " +
+//            "WHERE a.role_id = 'user' " +
+//            "ORDER BY e.total desc", nativeQuery = true)
+//    Page<AccountEntity> getTopAccountsByContributionAndDateWithPaging(String startDate, String endDate, Pageable pageable) throws Exception;
+
+    @Query(value = "SELECT a.email " +
             "FROM ihelp.account a  " +
             "INNER JOIN (SELECT r.account_email, SUM(r.point) as total " +
             "FROM ihelp.reward r  " +
@@ -83,7 +94,8 @@ public interface AccountRepository extends JpaRepository<AccountEntity, String> 
             "ON e.account_email = a.email  " +
             "WHERE a.role_id = 'user' " +
             "ORDER BY e.total desc", nativeQuery = true)
-    Page<AccountEntity> getTopAccountsByContributionAndDateWithPaging(String startDate, String endDate, Pageable pageable) throws Exception;
+    Page<String> getTopAccountsByContributionAndDateWithPaging(String startDate, String endDate, Pageable pageable) throws Exception;
+
 
     @Query(value = "SELECT a FROM AccountEntity a WHERE a.role.name = :roleName")
     List<AccountEntity> findByRoleName(String roleName) throws Exception;
