@@ -122,6 +122,19 @@ public class ServiceController {
         return ResponseEntity.ok(serviceMessage.getServiceUpdatedMessage(serviceId));
     }
 
+    @PutMapping("/services/disable/{serviceId}")
+    public ResponseEntity<String> disableService(@PathVariable String serviceId) throws Exception {
+        serviceVolunteerService.disableService(serviceId);
+        return ResponseEntity.ok("Service " + serviceId + " disabled.");
+    }
+
+    @PutMapping("/services/enable/{serviceId}")
+    public ResponseEntity<String> enableService(@PathVariable String serviceId) throws Exception {
+        String updatedStatus = serviceVolunteerService.enableService(serviceId);
+        return ResponseEntity.ok("Service " + serviceId + " enabled. " +
+                "Status is changed to \"" + updatedStatus + "\"");
+    }
+
     @PutMapping("/services/{email}/approve/{serviceId}")
     public ResponseEntity<String> approve(@PathVariable String email,
                                           @PathVariable String serviceId) throws Exception {

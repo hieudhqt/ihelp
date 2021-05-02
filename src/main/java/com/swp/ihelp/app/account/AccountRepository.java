@@ -100,4 +100,7 @@ public interface AccountRepository extends JpaRepository<AccountEntity, String> 
 
     @Query(value = "SELECT a FROM AccountEntity a WHERE a.role.name = :roleName")
     List<AccountEntity> findByRoleName(String roleName) throws Exception;
+
+    @Query(value = "SELECT a.balancePoint FROM AccountEntity a WHERE a.email = :email")
+    Integer getBalancePoint(String email) throws Exception;
 }

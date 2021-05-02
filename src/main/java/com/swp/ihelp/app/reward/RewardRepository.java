@@ -14,4 +14,8 @@ public interface RewardRepository extends JpaRepository<RewardEntity, String> {
     @Query("SELECT r from RewardEntity r " +
             "WHERE r.title LIKE %:eventId% AND r.account.email = :email")
     RewardEntity findRewardByEventIdAndEmail(String eventId, String email);
+
+    @Query(value = "Select CASE WHEN COUNT(r.id) = 1 THEN true ELSE false END " +
+            "FROM RewardEntity r WHERE r.account.email = :email")
+    Boolean isAccountContributed(String email);
 }

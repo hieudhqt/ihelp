@@ -129,5 +129,8 @@ public interface EventRepository extends JpaRepository<EventEntity, String>, Jpa
             "GROUP BY month " +
             "ORDER BY month ", nativeQuery = true)
     List<EventHostedReport> getMonthlyHostedEventNumber(int year);
+
+    @Query(value = "SELECT e.point FROM EventEntity e WHERE e.id = :eventId")
+    Integer getPointById(String eventId);
 }
 

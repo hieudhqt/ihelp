@@ -507,6 +507,18 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    public Boolean isUserHasEnoguhPoint(String email, String eventId) throws Exception {
+        if (!eventRepository.existsById(eventId)) {
+            throw new EntityNotFoundException("Event not found.");
+
+        }
+        if (!accountRepository.existsById(email)) {
+            throw new EntityNotFoundException("Account not found.");
+        }
+        return accountRepository.getBalancePoint(email) >= eventRepository.getPointById(eventId);
+    }
+
+    @Override
     public void deleteById(String id) throws Exception {
         if (!eventRepository.existsById(id)) {
             throw new EntityNotFoundException(eventMessage.getEventNotFoundMessage() + id);
@@ -520,29 +532,68 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    @Transactional
     public void disableEvent(String eventId) throws Exception {
         EventEntity eventEntity = eventRepository.getOne(eventId);
-        int spotUsed = eventRepository.getSpotUsed(eventId);
-        if (spotUsed > 0) {
-            throw new RuntimeException("You can only disable an event when it has no participants");
-        }
-        if (eventEntity.getStatus().getId() != StatusEnum.APPROVED.getId()) {
-            throw new RuntimeException("Event can only be disabled when it's status is \"Approved\".");
+        if (eventEntity.getStatus().getId() != StatusEnum.APPROVED.getId() &&
+                eventEntity.getStatus().getId() != StatusEnum.ONGOING.getId()) {
+            throw new RuntimeException("Event can only be disabled when it's status is " +
+                    "\"Approved\" or \"Ongoing\".");
         }
         eventRepository.updateStatus(eventId, StatusEnum.DISABLED.getId());
+
         int pointUsed = eventEntity.getPoint() * eventEntity.getQuota();
         if (pointUsed > 0) {
             accountRepository.updateBalancePoint(eventEntity.getAuthorAccount().getEmail(),
                     pointUsed);
 
             PointEntity hostPointEntity = new PointEntity();
-            hostPointEntity.setIsReceived(false);
+            hostPointEntity.setIsReceived(true);
             hostPointEntity.setDescription("Point refunded to " + pointUsed + " for disabling event: " + eventId);
             hostPointEntity.setCreatedDate(new Timestamp(System.currentTimeMillis()));
             hostPointEntity.setAccount(eventEntity.getAuthorAccount());
             hostPointEntity.setAmount(pointUsed);
             pointRepository.save(hostPointEntity);
         }
+    }
+
+    @Override
+    @Transactional
+    public String enableEvent(String eventId) throws Exception {
+        EventEntity eventEntity = eventRepository.getOne(eventId);
+        Date currentDate = new Date();
+        if (eventEntity.getEndDate().before(currentDate)) {
+            throw new RuntimeException("This event cannot be enabled because it has passed end date.");
+        }
+        if (!eventEntity.getStatus().getId().equals(StatusEnum.DISABLED.getId())) {
+            throw new EntityNotFoundException("Events can only be enabled if it is \"Disabled\".");
+        }
+        int statusIdToUpdate = -1;
+        if (eventEntity.getStartDate().after(currentDate)) {
+            statusIdToUpdate = StatusEnum.APPROVED.getId();
+        } else if (eventEntity.getStartDate().before(currentDate) &&
+                eventEntity.getEndDate().after(currentDate)) {
+            statusIdToUpdate = StatusEnum.ONGOING.getId();
+        }
+        if (statusIdToUpdate > 0) {
+            eventRepository.updateStatus(eventId, statusIdToUpdate);
+            int pointUsed = eventEntity.getPoint() * eventEntity.getQuota();
+            if (pointUsed > 0) {
+                accountRepository.updateBalancePoint(eventEntity.getAuthorAccount().getEmail(),
+                        -pointUsed);
+
+                PointEntity hostPointEntity = new PointEntity();
+                hostPointEntity.setIsReceived(false);
+                hostPointEntity.setDescription("Point deducted for enabling event: " + eventId);
+                hostPointEntity.setCreatedDate(new Timestamp(System.currentTimeMillis()));
+                hostPointEntity.setAccount(eventEntity.getAuthorAccount());
+                hostPointEntity.setAmount(pointUsed);
+                pointRepository.save(hostPointEntity);
+            }
+        } else {
+            throw new RuntimeException("Invalid event status.");
+        }
+        return statusIdToUpdate == StatusEnum.APPROVED.getId() ? "Approved" : "Ongoing";
     }
 
     //1. Get EventEntity from eventId

@@ -113,6 +113,12 @@ public class EventController {
         return new ResponseEntity<>(eventService.getMonthlyHostedEventNumber(year), HttpStatus.OK);
     }
 
+    @GetMapping("/events/account/{email}/{eventId}")
+    public ResponseEntity<Boolean> isUserHasEnoughPoint(@PathVariable String email,
+                                                        @PathVariable String eventId) throws Exception {
+        return ResponseEntity.ok(eventService.isUserHasEnoguhPoint(email, eventId));
+    }
+
     @PostMapping("/events")
     public ResponseEntity<String> addEvent(@Valid @RequestBody CreateEventRequest eventRequest) throws Exception {
         String eventId = eventService.insert(eventRequest);
@@ -216,17 +222,23 @@ public class EventController {
                 + request.getReason());
     }
 
+    @PutMapping("/events/enable/{eventId}")
+    public ResponseEntity<String> enableEvent(@PathVariable String eventId) throws Exception {
+        String updatedStatus = eventService.enableEvent(eventId);
+        return ResponseEntity.ok("Event " + eventId + " enabled. " +
+                "Status is changed to \"" + updatedStatus + "\"");
+    }
+
+    @PutMapping("/events/disable/{eventId}")
+    public ResponseEntity<String> disableEvent(@PathVariable String eventId) throws Exception {
+        eventService.disableEvent(eventId);
+        return ResponseEntity.ok("Event " + eventId + " disabled.");
+    }
 
     @DeleteMapping("/events/{eventId}")
     public ResponseEntity<String> deleteEvent(@PathVariable String eventId) throws Exception {
         eventService.deleteById(eventId);
         return ResponseEntity.ok(eventMessage.getEventDeletedMessage() + eventId);
-    }
-
-    @DeleteMapping("/events/disable/{eventId}")
-    public ResponseEntity<String> disableEvent(@PathVariable String eventId) throws Exception {
-        eventService.disableEvent(eventId);
-        return ResponseEntity.ok("Event " + eventId + " disabled.");
     }
 
     @DeleteMapping("/events/{eventId}/{email}")

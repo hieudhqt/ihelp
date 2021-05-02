@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -32,10 +33,11 @@ public class UpdateServiceRequest implements Serializable {
 
     private String latitude;
 
-    @Min(0)
+    @Min(1)
+    @Max(1000)
     private Integer quota;
 
-    @Min(0)
+    @Min(10)
     private Integer point;
 
     @NotNull

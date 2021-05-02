@@ -1,5 +1,6 @@
 package com.swp.ihelp.app.point;
 
+import com.swp.ihelp.app.image.ImageRepository;
 import com.swp.ihelp.app.point.response.EventPointHistory;
 import com.swp.ihelp.app.point.response.PointResponse;
 import com.swp.ihelp.app.reward.RewardEntity;
@@ -24,14 +25,16 @@ public class PointServiceImpl implements PointService {
     private final static Pattern numberPattern = Pattern.compile("\\d+");
 
     private PointRepository pointRepository;
+    private ImageRepository imageRepository;
     private RewardRepository rewardRepository;
 
     @Value("${paging.page-size}")
     private int pageSize;
 
     @Autowired
-    public PointServiceImpl(PointRepository pointRepository, RewardRepository rewardRepository) {
+    public PointServiceImpl(PointRepository pointRepository, ImageRepository imageRepository, RewardRepository rewardRepository) {
         this.pointRepository = pointRepository;
+        this.imageRepository = imageRepository;
         this.rewardRepository = rewardRepository;
     }
 
@@ -74,6 +77,8 @@ public class PointServiceImpl implements PointService {
         for (PointEntity point : listPoints) {
             EventPointHistory eventPointHistory = new EventPointHistory();
             eventPointHistory.setEmail(point.getAccount().getEmail());
+            eventPointHistory.setName(point.getAccount().getFullName());
+            eventPointHistory.setImageUrl(imageRepository.findAvatarByEmail(point.getAccount().getEmail()));
             eventPointHistory.setPoint(point.getAmount());
             eventPointHistory.setRating(Integer.parseInt(getFirstNumber(point.getDescription())));
 

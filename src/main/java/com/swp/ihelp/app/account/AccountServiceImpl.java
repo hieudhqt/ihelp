@@ -388,6 +388,8 @@ public class AccountServiceImpl implements AccountService {
             accountResponse.setContributionPoint(contributionPoint);
         }
 
+        accountResponses.sort(Comparator.comparing(AccountGeneralResponse::getContributionPoint).reversed());
+
         Map<String, Object> response = new HashMap<>();
         response.put("accounts", accountResponses);
         response.put("currentPage", pageEmails.getNumber());

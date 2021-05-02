@@ -30,11 +30,11 @@ public class UpdateEventRequest implements Serializable {
 
     private String latitude;
 
-    @Min(0)
+    @Min(1)
     @Max(100)
     private Integer quota;
 
-    @Min(0)
+    @Min(10)
     private Integer point;
 
     @NotNull
