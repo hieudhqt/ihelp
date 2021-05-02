@@ -34,6 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -156,7 +157,8 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
 
     @Override
     public Map<String, Object> findByAuthorEmail(String email, int page) throws Exception {
-        Pageable paging = PageRequest.of(page, pageSize);
+        Pageable paging = PageRequest.of(page, pageSize,
+                Sort.by("startDate").descending().and(Sort.by("title").ascending()));
         Page<ServiceEntity> pageServices = serviceRepository
                 .findByAuthorEmail(email, paging);
 
@@ -218,8 +220,11 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
         if (request.getStartDate().after(request.getEndDate())) {
             throw new RuntimeException("Start date must be before end date.");
         }
-        if ((request.getStartDate().getTime() - System.currentTimeMillis())
-                < minStartDateFromCreate) {
+
+        long diffInMillies = Math.abs(request.getStartDate().getTime() - System.currentTimeMillis());
+        long diffInDays = TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS);
+
+        if (diffInDays < minStartDateFromCreate) {
             throw new RuntimeException("Start date must be at least " + minStartDateFromCreate +
                     " days after create date.");
         }
@@ -342,6 +347,44 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
     }
 
     @Override
+    @Transactional
+    public void disableService(String serviceId) throws Exception {
+        ServiceEntity serviceEntity = serviceRepository.getOne(serviceId);
+        if (serviceEntity.getStatus().getId() != StatusEnum.APPROVED.getId() &&
+                serviceEntity.getStatus().getId() != StatusEnum.ONGOING.getId()) {
+            throw new RuntimeException("Service can only be disabled when it's status is " +
+                    "\"Approved\" or \"Ongoing\".");
+        }
+        serviceRepository.updateStatus(serviceId, StatusEnum.DISABLED.getId());
+    }
+
+    @Override
+    @Transactional
+    public String enableService(String serviceId) throws Exception {
+        ServiceEntity serviceEntity = serviceRepository.getOne(serviceId);
+        Date currentDate = new Date();
+        if (serviceEntity.getEndDate().before(currentDate)) {
+            throw new RuntimeException("This service cannot be enabled because it has passed end date.");
+        }
+        if (!serviceEntity.getStatus().getId().equals(StatusEnum.DISABLED.getId())) {
+            throw new EntityNotFoundException("Services can only be enabled if it is \"Disabled\".");
+        }
+        int statusIdToUpdate = -1;
+        if (serviceEntity.getStartDate().after(currentDate)) {
+            statusIdToUpdate = StatusEnum.APPROVED.getId();
+        } else if (serviceEntity.getStartDate().before(currentDate) &&
+                serviceEntity.getEndDate().after(currentDate)) {
+            statusIdToUpdate = StatusEnum.ONGOING.getId();
+        }
+        if (statusIdToUpdate > 0) {
+            serviceRepository.updateStatus(serviceId, statusIdToUpdate);
+        } else {
+            throw new RuntimeException("Invalid service status.");
+        }
+        return statusIdToUpdate == StatusEnum.APPROVED.getId() ? "Approved" : "Ongoing";
+    }
+
+    @Override
     public void deleteById(String id) throws Exception {
         serviceRepository.deleteById(id);
     }
@@ -421,6 +464,9 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
         }
         if (userAccount.getBalancePoint() < service.getPoint()) {
             errorMsg += "This account does not have enough point to use the service;";
+        }
+        if (!rewardRepository.isAccountContributed(userAccount.getEmail())) {
+            errorMsg += "You must do at least 1 volunteering work to use service;";
         }
         return errorMsg;
     }

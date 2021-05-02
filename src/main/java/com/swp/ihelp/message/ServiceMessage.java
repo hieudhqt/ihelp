@@ -35,8 +35,7 @@ public class ServiceMessage implements Serializable {
     }
 
     public String getServiceDeletedMessage(String serviceId) {
-        String result = this.serviceDeletedMessage.replaceFirst("#", serviceId);
-        return result;
+        return this.serviceDeletedMessage += serviceId;
     }
 
     public String getServiceUsedMessage(String email, String serviceId) {

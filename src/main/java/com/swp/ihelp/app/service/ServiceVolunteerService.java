@@ -40,4 +40,8 @@ public interface ServiceVolunteerService {
     ServiceEntity reject(RejectServiceRequest request) throws Exception;
 
     Map<String, Object> findNearbyServices(int page, float radius, double lat, double lng) throws Exception;
+
+    void disableService(String serviceId) throws Exception;
+
+    String enableService(String serviceId) throws Exception;
 }

@@ -38,6 +38,8 @@ public interface EventService {
 
     void disableEvent(String eventId) throws Exception;
 
+    String enableEvent(String eventId) throws Exception;
+
     EventEntity approve(String eventId, String managerEmail) throws Exception;
 
     EventEntity reject(RejectEventRequest request) throws Exception;
@@ -51,4 +53,6 @@ public interface EventService {
     List<String> findEvaluateRequiredByAuthorEmail(String email) throws Exception;
 
     Map<Integer, Integer> getMonthlyHostedEventNumber(int year) throws Exception;
+
+    Boolean isUserHasEnoguhPoint(String email, String eventId) throws Exception;
 }
