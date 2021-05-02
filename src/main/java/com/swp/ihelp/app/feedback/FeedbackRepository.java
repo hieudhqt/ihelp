@@ -32,7 +32,7 @@ public interface FeedbackRepository extends JpaRepository<FeedbackEntity, String
     @Query("SELECT f FROM FeedbackEntity f WHERE f.event IS NULL AND f.service IS NULL")
     Page<FeedbackEntity> getReports(Pageable pageable);
 
-    @Query("SELECT f FROM FeedbackEntity f WHERE f.account.email=:email AND f.event IS NOT NULL OR f.service IS NOT NULL")
+    @Query("SELECT f FROM FeedbackEntity f WHERE f.account.email=:email AND (f.event IS NOT NULL OR f.service IS NOT NULL)")
     Page<FeedbackEntity> findByEmail(String email, Pageable pageable) throws Exception;
 
 }
