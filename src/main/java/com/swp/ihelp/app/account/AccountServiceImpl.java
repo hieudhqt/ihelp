@@ -62,7 +62,12 @@ public class AccountServiceImpl implements AccountService {
         }
         if (!isExisted) {
             AccountEntity accountEntity = SignUpRequest.convertToEntity(signUpRequest);
-            accountRepository.save(accountEntity);
+            AccountEntity savedAccount = accountRepository.save(accountEntity);
+            if (signUpRequest.getAvatarUrl() != null && !signUpRequest.getAvatarUrl().isEmpty()) {
+                imageRepository.save(new ImageEntity().setImageUrl(signUpRequest.getAvatarUrl())
+                        .setAuthorAccount(savedAccount)
+                        .setType("avatar"));
+            }
         } else {
             throw new EntityExistedException(errorMessage);
         }
@@ -368,8 +373,8 @@ public class AccountServiceImpl implements AccountService {
         List<AccountEntity> accountEntities = pageAccounts.getContent();
         List<AccountGeneralResponse> accountResponses = AccountGeneralResponse.convertToListResponse(accountEntities);
 
-        for (AccountGeneralResponse response : accountResponses) {
-            response.setImageUrl(imageRepository.findAvatarByEmail(response.getEmail()));
+        for (AccountGeneralResponse accountResponse : accountResponses) {
+            accountResponse.setImageUrl(imageRepository.findAvatarByEmail(accountResponse.getEmail()));
         }
 
         Map<String, Object> response = new HashMap<>();
@@ -390,6 +395,7 @@ public class AccountServiceImpl implements AccountService {
         for (AccountGeneralResponse accountResponse : accountResponses) {
             int contributionPoint = rewardRepository.getTotalPointByDate(accountResponse.getEmail(), startDate, endDate);
             accountResponse.setContributionPoint(contributionPoint);
+            accountResponse.setImageUrl(imageRepository.findAvatarByEmail(accountResponse.getEmail()));
         }
 
         accountResponses.sort(Comparator.comparing(AccountGeneralResponse::getContributionPoint).reversed());

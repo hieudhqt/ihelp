@@ -33,6 +33,8 @@ public class SignUpRequest implements Serializable {
 
     private boolean gender;
 
+    private String avatarUrl;
+
     public static AccountEntity convertToEntity(SignUpRequest request) {
         PasswordEncoder encoder = new BCryptPasswordEncoder();
         RoleEntity signUpRole = new RoleEntity("user", "User");

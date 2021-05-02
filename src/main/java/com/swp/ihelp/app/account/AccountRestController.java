@@ -211,7 +211,7 @@ public class AccountRestController {
         return accountService.update(request);
     }
 
-    @DeleteMapping("/signout")
+    @PutMapping("/signout")
     public ResponseEntity logout(@RequestBody DeviceTokenRequest request) throws Exception {
         notificationService.deleteDeviceToken(request.getEmail(), request.getDeviceToken());
         return ResponseEntity.ok("Device token is deleted");
