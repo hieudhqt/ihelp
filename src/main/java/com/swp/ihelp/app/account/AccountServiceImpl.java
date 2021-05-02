@@ -368,6 +368,10 @@ public class AccountServiceImpl implements AccountService {
         List<AccountEntity> accountEntities = pageAccounts.getContent();
         List<AccountGeneralResponse> accountResponses = AccountGeneralResponse.convertToListResponse(accountEntities);
 
+        for (AccountGeneralResponse response : accountResponses) {
+            response.setImageUrl(imageRepository.findAvatarByEmail(response.getEmail()));
+        }
+
         Map<String, Object> response = new HashMap<>();
         response.put("accounts", accountResponses);
         response.put("currentPage", pageAccounts.getNumber());
