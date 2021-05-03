@@ -91,9 +91,9 @@ public class EventController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @GetMapping("/events/history/{email}/{statusId}")
+    @GetMapping("/events/history/{email}")
     public ResponseEntity<Map<String, Object>> findByParticipantEmail(@PathVariable String email,
-                                                                      @PathVariable(required = false) Integer statusId,
+                                                                      @RequestParam(value = "statusId", required = false) Integer statusId,
                                                                       @RequestParam(value = "page") int page) throws Exception {
         Map<String, Object> response = eventService.findByParticipantEmail(email, statusId, page);
         return new ResponseEntity<>(response, HttpStatus.OK);

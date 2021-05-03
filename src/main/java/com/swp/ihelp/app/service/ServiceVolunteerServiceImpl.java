@@ -9,6 +9,7 @@ import com.swp.ihelp.app.point.PointEntity;
 import com.swp.ihelp.app.point.PointRepository;
 import com.swp.ihelp.app.reward.RewardRepository;
 import com.swp.ihelp.app.service.request.CreateServiceRequest;
+import com.swp.ihelp.app.service.request.DateRangeServiceRequest;
 import com.swp.ihelp.app.service.request.RejectServiceRequest;
 import com.swp.ihelp.app.service.request.UpdateServiceRequest;
 import com.swp.ihelp.app.service.response.ServiceDetailResponse;
@@ -32,11 +33,14 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
 import java.sql.Timestamp;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static com.swp.ihelp.app.service.ServiceSpecification.*;
 
 @Service
 public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
@@ -48,6 +52,8 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
     private ServiceCategoryRepository categoryRepository;
     private RewardRepository rewardRepository;
     private StatusRepository statusRepository;
+
+    private EntityManager entityManager;
 
     @Value("${paging.page-size}")
     private int pageSize;
@@ -67,6 +73,11 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
         this.categoryRepository = categoryRepository;
         this.rewardRepository = rewardRepository;
         this.statusRepository = statusRepository;
+    }
+
+    @Autowired
+    public void setEntityManager(EntityManager entityManager) {
+        this.entityManager = entityManager;
     }
 
     @Override
@@ -213,6 +224,35 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
             }
         }
         return result;
+    }
+
+    @Override
+    public Map<String, Object> findServicesByDateRange(DateRangeServiceRequest request, int page) throws Exception {
+        Timestamp fromTimestamp = new Timestamp(request.getFromDate().getTime());
+        Timestamp toTimestamp = new Timestamp(request.getToDate().getTime());
+
+        Specification finalCondition;
+        Specification condition1 = Specification.where(startDateGreaterThan(fromTimestamp))
+                .and(startDateLessThan(toTimestamp));
+        Specification condition2 = Specification.where(endDateGreaterThan(fromTimestamp))
+                .and(endDateLessThan(toTimestamp));
+        finalCondition = condition1.or(condition2);
+
+        List<Integer> statusList = request.getStatus();
+        if (!statusList.isEmpty()) {
+            Specification finalStatusSpec = Specification.where(hasStatus(statusList.get(0)));
+            for (int i = 1; i < statusList.size(); i++) {
+                finalStatusSpec = finalStatusSpec.or(hasStatus(statusList.get(i)));
+            }
+            finalCondition = finalCondition.and(finalStatusSpec);
+        }
+
+        Pageable paging = PageRequest.of(page, pageSize,
+                Sort.by("startDate").descending().and(Sort.by("title").ascending()));
+        Page<ServiceEntity> pageServices = serviceRepository
+                .findAll(finalCondition, paging);
+        Map<String, Object> response = getServiceResponseMap(pageServices);
+        return response;
     }
 
     @Override

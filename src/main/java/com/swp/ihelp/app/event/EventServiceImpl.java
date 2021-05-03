@@ -190,7 +190,7 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public Map<String, Object> findByParticipantEmail(String email, Integer statusId, int page) throws Exception {
-        Pageable paging = PageRequest.of(page, pageSize, Sort.by("startDate").descending().and(Sort.by("title").ascending()));
+        Pageable paging = PageRequest.of(page, pageSize, Sort.by("event.startDate").descending().and(Sort.by("event.title").ascending()));
         Page<EventEntity> pageEvents;
         if (statusId != null) {
             pageEvents = eventRepository.findByParticipantEmailWithStatus(email, statusId, paging);
