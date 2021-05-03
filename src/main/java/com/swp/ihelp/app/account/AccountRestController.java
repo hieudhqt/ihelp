@@ -138,8 +138,8 @@ public class AccountRestController {
     }
 
     @GetMapping("/accounts/full_name/{name}")
-    public ResponseEntity<Map<String, Object>> findAccountByName(@RequestParam(value = "page") int page, @PathVariable String name) throws Exception {
-        return new ResponseEntity<>(accountService.findByName(page, name), HttpStatus.OK);
+    public ResponseEntity<Map<String, Object>> findAccountByName(@RequestParam(value = "page") int page, @PathVariable String name, @RequestParam(required = false) String statusId) throws Exception {
+        return new ResponseEntity<>(accountService.findByName(page, name, statusId), HttpStatus.OK);
     }
 
     @GetMapping("/accounts")

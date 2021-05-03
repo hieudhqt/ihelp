@@ -70,8 +70,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/login", "/signup", "/reset_password").permitAll()
                 .antMatchers(HttpMethod.GET, "/api/events/**", "/api/services/**", "/api/event-categories/**", "/api/service-categories/**",
                         "/accounts/event/**", "/accounts/service/**", "/accounts/exist", "/accounts/{email}",
-                        "/feedbacks/event/{eventId}", "/feedbacks/service/{serviceId}").permitAll()
-                .antMatchers(HttpMethod.GET, "/feedbacks/reports", "/accounts").hasRole("ADMIN")
+                        "/api/feedbacks/event/**", "/api/feedbacks/service/**").permitAll()
+                .antMatchers(HttpMethod.GET, "/api/feedbacks/reports", "/accounts").hasRole("ADMIN")
                 .antMatchers(HttpMethod.DELETE, "/accounts/**").hasRole("ADMIN")
                 .anyRequest().authenticated().and()
 //                .requiresChannel()

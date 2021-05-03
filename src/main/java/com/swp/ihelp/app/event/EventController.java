@@ -8,6 +8,7 @@ import com.swp.ihelp.app.event.request.UpdateEventRequest;
 import com.swp.ihelp.app.event.response.EventDetailResponse;
 import com.swp.ihelp.app.notification.NotificationEntity;
 import com.swp.ihelp.app.notification.NotificationService;
+import com.swp.ihelp.app.status.StatusEnum;
 import com.swp.ihelp.google.firebase.fcm.PushNotificationRequest;
 import com.swp.ihelp.google.firebase.fcm.PushNotificationService;
 import com.swp.ihelp.message.EventMessage;
@@ -161,6 +162,41 @@ public class EventController {
     public ResponseEntity<String> updateStatus(@PathVariable String eventId,
                                                @PathVariable int statusId) throws Exception {
         eventService.updateStatus(eventId, statusId);
+
+        if (statusId == StatusEnum.COMPLETED.getId()) {
+            EventDetailResponse event = eventService.findById(eventId);
+
+            //Push notification to event's participant
+            PushNotificationRequest participantsNotificationRequest = new PushNotificationRequest()
+                    .setTitle("Event \"" + event.getTitle() + "\" is completed")
+                    .setMessage("Event \"" + event.getTitle() + "\" is now being under organizer's evaluation")
+                    .setTopic(eventId);
+
+            pushNotificationService.sendPushNotificationToTopic(participantsNotificationRequest);
+
+            //Push notification to event's host
+            List<String> hostDeviceTokens = notificationService.findDeviceTokensByEmail(event.getAccountEmail());
+
+            if (hostDeviceTokens != null && !hostDeviceTokens.isEmpty()) {
+                Map<String, String> notificationData = new HashMap<>();
+                notificationData.put("evaluateRequiredEvents", eventId);
+
+                PushNotificationRequest hostNotificationRequest = new PushNotificationRequest()
+                        .setTitle("Your event: \"" + event.getTitle() + "\" is completed")
+                        .setMessage("Event \"" + event.getTitle() + "\" has participants in need of evaluating")
+                        .setData(notificationData)
+                        .setRegistrationTokens(hostDeviceTokens);
+
+                pushNotificationService.sendPushNotificationToMultiDevices(hostNotificationRequest);
+            }
+
+            notificationService.insert(new NotificationEntity()
+                    .setTitle("Your event: \"" + event.getTitle() + "\" is completed")
+                    .setMessage("Event \"" + event.getTitle() + "\" has participants in need of evaluating")
+                    .setDate(new Timestamp(System.currentTimeMillis()))
+                    .setAccountEntity(new AccountEntity().setEmail(event.getAccountEmail())));
+        }
+
         return ResponseEntity.ok(eventMessage.getEventUpdatedMessage(eventId));
     }
 
@@ -189,7 +225,7 @@ public class EventController {
 
         notificationService.insert(new NotificationEntity()
                 .setTitle("Your event: \"" + approvedEvent.getTitle() + "\" has been approved")
-                .setMessage("Event \"" + approvedEvent.getTitle() + " is now able to accept registration")
+                .setMessage("Event \"" + approvedEvent.getTitle() + "\" is now able to accept registration")
                 .setDate(new Timestamp(System.currentTimeMillis()))
                 .setAccountEntity(new AccountEntity().setEmail(approvedEvent.getAuthorAccount().getEmail())));
 
@@ -204,7 +240,7 @@ public class EventController {
         if (deviceTokens != null & !deviceTokens.isEmpty()) {
             PushNotificationRequest pushNotificationRequest = new PushNotificationRequest()
                     .setTitle("Your event: \"" + rejectedEvent.getTitle() + "\" has been rejected")
-                    .setMessage("Event \"" + rejectedEvent.getTitle() + " has been rejected with following reason: " + request.getReason())
+                    .setMessage("Event \"" + rejectedEvent.getTitle() + "\" has been rejected with following reason: " + request.getReason())
                     .setRegistrationTokens(deviceTokens);
             pushNotificationService.sendPushNotificationToMultiDevices(pushNotificationRequest);
         } else {
@@ -213,7 +249,7 @@ public class EventController {
 
         notificationService.insert(new NotificationEntity()
                 .setTitle("Your event: \"" + rejectedEvent.getTitle() + "\" has been rejected")
-                .setMessage("Event \"" + rejectedEvent.getTitle() + " has been rejected with following reason: " + request.getReason())
+                .setMessage("Event \"" + rejectedEvent.getTitle() + "\" has been rejected with following reason: " + request.getReason())
                 .setDate(new Timestamp(System.currentTimeMillis()))
                 .setAccountEntity(new AccountEntity().setEmail(rejectedEvent.getAuthorAccount().getEmail())));
 

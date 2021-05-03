@@ -15,7 +15,7 @@ public interface AccountService {
 
     Map<String, Object> findAll(String statusId, int page) throws Exception;
 
-    Map<String, Object> findByName(int page, String name) throws Exception;
+    Map<String, Object> findByName(int page, String name, String statusId) throws Exception;
 
     String findRoleById(String email) throws Exception;
 

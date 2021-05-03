@@ -40,6 +40,8 @@ public interface AccountRepository extends JpaRepository<AccountEntity, String> 
 
     Page<AccountEntity> findAccountEntitiesByFullNameContainsIgnoreCaseAndStatus_Id(String fullName, String id, Pageable pageable) throws Exception;
 
+    Page<AccountEntity> findAccountEntitiesByFullNameContainsIgnoreCase(String fullName, Pageable pageable) throws Exception;
+
     Page<AccountEntity> findAccountEntitiesByStatus_Id(String id, Pageable pageable) throws Exception;
 
     @Modifying
