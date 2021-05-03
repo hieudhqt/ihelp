@@ -5,7 +5,9 @@ import com.swp.ihelp.app.account.response.LoginResponse;
 import com.swp.ihelp.app.account.response.ProfileResponse;
 import com.swp.ihelp.app.event.EventService;
 import com.swp.ihelp.app.image.ImageService;
+import com.swp.ihelp.app.notification.NotificationEntity;
 import com.swp.ihelp.app.notification.NotificationService;
+import com.swp.ihelp.google.firebase.fcm.PushNotificationRequest;
 import com.swp.ihelp.google.firebase.fcm.PushNotificationService;
 import com.swp.ihelp.security.CustomUser;
 import com.swp.ihelp.security.JwtTokenUtil;
@@ -25,6 +27,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -140,8 +143,8 @@ public class AccountRestController {
     }
 
     @GetMapping("/accounts")
-    public ResponseEntity<Map<String, Object>> findAll(@RequestParam(value = "page") int page) throws Exception {
-        return new ResponseEntity<>(accountService.findAll(page), HttpStatus.OK);
+    public ResponseEntity<Map<String, Object>> findAll(@RequestParam(required = false) String statusId, @RequestParam(value = "page") int page) throws Exception {
+        return new ResponseEntity<>(accountService.findAll(statusId, page), HttpStatus.OK);
     }
 
     @GetMapping("/accounts/{email}/role")
@@ -204,6 +207,42 @@ public class AccountRestController {
     @PutMapping("/accounts/{email}/role/{roleId}")
     public void updateRole(@PathVariable String email, @PathVariable String roleId) throws Exception {
         accountService.updateRole(email, roleId);
+
+        String title;
+        String message;
+
+        switch (roleId) {
+            case "admin":
+                throw new RuntimeException("This action is forbidden.");
+            case "manager":
+                title = "You have been promoted to manager";
+                message = "Now you can access iHelp web admin";
+                break;
+            case "user":
+                title = "You have been demoted to volunteer";
+                message = "You can only use iHelp mobile application";
+                break;
+            default:
+                throw new RuntimeException("UNKNOWN ROLE");
+        }
+
+        List<String> deviceTokens = notificationService.findDeviceTokensByEmail(email);
+        if (deviceTokens != null && !deviceTokens.isEmpty()) {
+            PushNotificationRequest pushNotificationRequest = new PushNotificationRequest()
+                    .setTitle(title)
+                    .setMessage(message)
+                    .setRegistrationTokens(deviceTokens);
+            pushNotificationService.sendPushNotificationToMultiDevices(pushNotificationRequest);
+        } else {
+//            throw new EntityNotFoundException("Account: " + email + " has no device token.");
+        }
+
+        notificationService.insert(new NotificationEntity()
+                .setTitle(title)
+                .setMessage(message)
+                .setDate(new Timestamp(System.currentTimeMillis()))
+                .setAccountEntity(new AccountEntity().setEmail(email)));
+
     }
 
     @PutMapping("/accounts")

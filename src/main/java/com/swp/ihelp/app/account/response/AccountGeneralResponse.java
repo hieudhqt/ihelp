@@ -2,6 +2,7 @@ package com.swp.ihelp.app.account.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.swp.ihelp.app.account.AccountEntity;
+import com.swp.ihelp.app.entity.AccountStatusEntity;
 import com.swp.ihelp.app.entity.RoleEntity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -38,6 +39,8 @@ public class AccountGeneralResponse implements Serializable {
 
     private Integer contributionPoint;
 
+    private AccountStatusEntity accountStatus;
+
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Ho_Chi_ Minh")
     private Date createdDate;
 
@@ -50,6 +53,7 @@ public class AccountGeneralResponse implements Serializable {
         this.role = accountEntity.getRole();
         this.balancePoint = accountEntity.getBalancePoint();
         this.contributionPoint = accountEntity.getContributionPoint();
+        this.accountStatus = accountEntity.getStatus();
         this.createdDate = accountEntity.getCreatedDate();
     }
 

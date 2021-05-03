@@ -3,6 +3,7 @@ package com.swp.ihelp.app.entity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.Accessors;
 
 import javax.persistence.*;
 import java.util.Objects;
@@ -12,29 +13,16 @@ import java.util.Objects;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Accessors(chain = true)
 public class AccountStatusEntity {
-    private String id;
-    private String name;
 
     @Id
     @Column(name = "id", nullable = false, length = 20)
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
+    private String id;
 
     @Basic
     @Column(name = "name", nullable = false, length = 20)
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
+    private String name;
 
     @Override
     public boolean equals(Object o) {

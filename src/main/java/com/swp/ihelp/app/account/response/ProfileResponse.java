@@ -2,6 +2,7 @@ package com.swp.ihelp.app.account.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.swp.ihelp.app.account.AccountEntity;
+import com.swp.ihelp.app.entity.AccountStatusEntity;
 import com.swp.ihelp.app.entity.RoleEntity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -36,6 +37,8 @@ public class ProfileResponse implements Serializable {
 
     private Integer contributionPoint;
 
+    private AccountStatusEntity accountStatus;
+
     private int totalJoinedEvents;
 
     private int totalHostEvents;
@@ -53,6 +56,7 @@ public class ProfileResponse implements Serializable {
         this.role = accountEntity.getRole();
         this.balancePoint = accountEntity.getBalancePoint();
         this.contributionPoint = accountEntity.getContributionPoint();
+        this.accountStatus = accountEntity.getStatus();
     }
 
 }
