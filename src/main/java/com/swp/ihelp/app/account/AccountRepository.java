@@ -38,7 +38,9 @@ public interface AccountRepository extends JpaRepository<AccountEntity, String> 
     @Query("SELECT a.phone FROM AccountEntity a WHERE a.email=:email")
     String findPhoneByEmail(String email) throws Exception;
 
-    Page<AccountEntity> findAccountEntitiesByFullNameContainsIgnoreCase(String fullName, Pageable pageable) throws Exception;
+    Page<AccountEntity> findAccountEntitiesByFullNameContainsIgnoreCaseAndStatus_Id(String fullName, String id, Pageable pageable) throws Exception;
+
+    Page<AccountEntity> findAccountEntitiesByStatus_Id(String id, Pageable pageable) throws Exception;
 
     @Modifying
     @Query(value = "UPDATE account a SET a.account_status_id=:statusId WHERE a.email=:email", nativeQuery = true)

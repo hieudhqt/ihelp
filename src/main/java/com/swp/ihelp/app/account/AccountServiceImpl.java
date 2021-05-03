@@ -101,10 +101,15 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public Map<String, Object> findAll(int page) throws Exception {
+    public Map<String, Object> findAll(String statusId, int page) throws Exception {
         Pageable paging = PageRequest.of(page, pageSize,
                 Sort.by("email").ascending());
-        Page<AccountEntity> pageAccounts = accountRepository.findAll(paging);
+        Page<AccountEntity> pageAccounts;
+        if (statusId != null) {
+            pageAccounts = accountRepository.findAccountEntitiesByStatus_Id(statusId, paging);
+        } else {
+            pageAccounts = accountRepository.findAll(paging);
+        }
         if (pageAccounts.isEmpty()) {
             throw new EntityNotFoundException("Account not found.");
         }
@@ -115,7 +120,7 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public Map<String, Object> findByName(int page, String name) throws Exception {
         Pageable paging = PageRequest.of(page, pageSize, Sort.by("email").ascending());
-        Page<AccountEntity> pageAccounts = accountRepository.findAccountEntitiesByFullNameContainsIgnoreCase(name, paging);
+        Page<AccountEntity> pageAccounts = accountRepository.findAccountEntitiesByFullNameContainsIgnoreCaseAndStatus_Id(name, AccountStatusEnum.ACTIVE.getId(), paging);
         if (pageAccounts.isEmpty()) {
             throw new EntityNotFoundException("No accounts found with keyword: " + name);
         }
