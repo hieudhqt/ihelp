@@ -2,11 +2,17 @@ package com.swp.ihelp.scheduler;
 
 import com.swp.ihelp.app.account.AccountEntity;
 import com.swp.ihelp.app.account.AccountRepository;
+import com.swp.ihelp.app.account.response.NotEvaluatedParticipantsMapping;
 import com.swp.ihelp.app.event.EventEntity;
 import com.swp.ihelp.app.event.EventRepository;
+import com.swp.ihelp.app.eventjointable.EventHasAccountEntity;
+import com.swp.ihelp.app.eventjointable.EventHasAccountEntityPK;
+import com.swp.ihelp.app.eventjointable.EventHasAccountRepository;
 import com.swp.ihelp.app.notification.DeviceRepository;
 import com.swp.ihelp.app.notification.NotificationEntity;
 import com.swp.ihelp.app.notification.NotificationRepository;
+import com.swp.ihelp.app.point.PointEntity;
+import com.swp.ihelp.app.point.PointRepository;
 import com.swp.ihelp.app.reward.RewardEntity;
 import com.swp.ihelp.app.reward.RewardRepository;
 import com.swp.ihelp.app.status.StatusEntity;
@@ -36,6 +42,8 @@ public class EventScheduler {
     private final EventRepository eventRepository;
     private final RewardRepository rewardRepository;
     private final AccountRepository accountRepository;
+    private final PointRepository pointRepository;
+    private final EventHasAccountRepository eventHasAccountRepository;
 
     //Use notification repository due to not using @Repository and @Service in the same class
     private final DeviceRepository deviceRepository;
@@ -51,13 +59,15 @@ public class EventScheduler {
     private int maxDaysToApprove;
 
     @Autowired
-    public EventScheduler(EventRepository eventRepository, RewardRepository rewardRepository, AccountRepository accountRepository, DeviceRepository deviceRepository, NotificationRepository notificationRepository, PushNotificationService pushNotificationService) {
+    public EventScheduler(EventRepository eventRepository, RewardRepository rewardRepository, AccountRepository accountRepository, DeviceRepository deviceRepository, NotificationRepository notificationRepository, PushNotificationService pushNotificationService, PointRepository pointRepository, EventHasAccountRepository eventHasAccountRepository) {
         this.eventRepository = eventRepository;
         this.rewardRepository = rewardRepository;
         this.accountRepository = accountRepository;
         this.deviceRepository = deviceRepository;
         this.notificationRepository = notificationRepository;
         this.pushNotificationService = pushNotificationService;
+        this.pointRepository = pointRepository;
+        this.eventHasAccountRepository = eventHasAccountRepository;
     }
 
     @Scheduled(cron = "0 0 0 * * *")
@@ -104,8 +114,9 @@ public class EventScheduler {
                 reward.setAccount(eventEntity.getAuthorAccount());
                 rewardRepository.save(reward);
 
-                accountRepository.updateContributionPoint(eventEntity.getAuthorAccount().getEmail(),
-                        contributionPoint);
+                String hostEmail = eventEntity.getAuthorAccount().getEmail();
+
+                accountRepository.updateContributionPoint(hostEmail, contributionPoint);
 
                 //Push notification to event's participant
                 PushNotificationRequest participantsNotificationRequest = new PushNotificationRequest()
@@ -227,28 +238,45 @@ public class EventScheduler {
         }
     }
 
-    @Scheduled(cron = "5 0 0 * * *")
+    @Scheduled(cron = "6 0 0 * * *")
     @Transactional
     public void autoEvaluateEvent() {
         try {
-            logger.info("Auto disable event");
-
-            DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-            String currentDate = dateFormat.format(new Date());
+            logger.info("Auto evaluate event");
 
             List<String> eventIds
-                    = eventRepository.getEmptyEventIds(currentDate);
+                    = eventRepository.findEvaluateRequiredOver1Week();
             for (String eventId : eventIds) {
-                EventEntity eventToDisable = eventRepository.getOne(eventId);
-                eventToDisable.setReason("This event is disabled due to lacking participants on start date.");
-                eventToDisable.setStatus(new StatusEntity().setId(StatusEnum.DISABLED.getId()));
-                eventRepository.save(eventToDisable);
+                EventEntity eventToEvaluate = eventRepository.getOne(eventId);
 
-                int refundPoint = eventToDisable.getPoint() * eventToDisable.getQuota();
-                accountRepository.updateBalancePoint(eventToDisable.getAuthorAccount().getEmail(), refundPoint);
+                List<NotEvaluatedParticipantsMapping> membersToEvaluate =
+                        accountRepository.findNotEvaluatedAccountsByEventId(eventId);
+
+                for (NotEvaluatedParticipantsMapping memberAccount : membersToEvaluate) {
+                    PointEntity memberPointEntity = new PointEntity();
+                    memberPointEntity.setIsReceived(true);
+                    memberPointEntity.setDescription("Rating: 2 \n" +
+                            "Description: Auto evaluated. \nEventID: " + eventId);
+                    memberPointEntity.setCreatedDate(new Timestamp(System.currentTimeMillis()));
+                    memberPointEntity.setAccount(new AccountEntity().setEmail(memberAccount.getEmail()));
+                    memberPointEntity.setAmount(eventToEvaluate.getPoint());
+                    pointRepository.save(memberPointEntity);
+
+                    accountRepository.updateBalancePoint(memberAccount.getEmail(), eventToEvaluate.getPoint());
+
+                    EventHasAccountEntityPK eventHasAccountEntityPK = new
+                            EventHasAccountEntityPK(eventId, memberAccount.getEmail());
+
+                    EventHasAccountEntity eventHasAccount = eventHasAccountRepository
+                            .getOne(eventHasAccountEntityPK);
+                    eventHasAccount.setEvaluated(true);
+                    eventHasAccount.setRating((short) 2);
+                    eventHasAccountRepository.save(eventHasAccount);
+                }
+
             }
         } catch (Exception e) {
-            logger.error("Error when auto disabling events: " + e.getMessage());
+            logger.error("Error when auto evaluating events: " + e.getMessage());
         }
     }
 }

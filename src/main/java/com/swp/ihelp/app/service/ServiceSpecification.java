@@ -95,4 +95,27 @@ public class ServiceSpecification implements Specification<ServiceEntity> {
         }
         return null;
     }
+
+    public static Specification<ServiceEntity> startDateLessThan(Timestamp timestamp) {
+        return (root, query, cb) -> cb.lessThanOrEqualTo(root.get("startDate"), timestamp);
+    }
+
+    public static Specification<ServiceEntity> startDateGreaterThan(Timestamp timestamp) {
+        return (root, query, cb) -> cb.greaterThanOrEqualTo(root.get("startDate"), timestamp);
+    }
+
+    public static Specification<ServiceEntity> endDateLessThan(Timestamp timestamp) {
+        return (root, query, cb) -> cb.lessThanOrEqualTo(root.get("endDate"), timestamp);
+    }
+
+    public static Specification<ServiceEntity> endDateGreaterThan(Timestamp timestamp) {
+        return (root, query, cb) -> cb.greaterThanOrEqualTo(root.get("endDate"), timestamp);
+    }
+
+    public static Specification<ServiceEntity> hasStatus(Integer statusId) {
+        return (root, query, cb) -> {
+            Join<ServiceEntity, StatusEntity> join = root.join("status");
+            return cb.equal(join.<Integer>get("id"), statusId);
+        };
+    }
 }

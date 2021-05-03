@@ -105,6 +105,13 @@ public interface EventRepository extends JpaRepository<EventEntity, String>, Jpa
             "GROUP BY e.id", nativeQuery = true)
     List<String> findEvaluateRequiredByAuthorEmail(String email);
 
+    @Query(value = "SELECT e.id " +
+            "FROM event e " +
+            "JOIN event_has_account ea ON e.id = ea.event_id " +
+            "WHERE e.status_id = 4 AND ea.is_evaluated <> 1 AND DATEDIFF(NOW(), e.end_date) >= 7",
+            nativeQuery = true)
+    List<String> findEvaluateRequiredOver1Week();
+
     @Query(value = "SELECT e.id FROM ihelp.event e " +
             "WHERE Date(e.start_date) = :date AND e.status_id = :status", nativeQuery = true)
     List<String> getEventIdsToStartByDate(String date, int status);

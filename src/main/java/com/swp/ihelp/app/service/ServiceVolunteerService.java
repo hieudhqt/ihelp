@@ -1,6 +1,7 @@
 package com.swp.ihelp.app.service;
 
 import com.swp.ihelp.app.service.request.CreateServiceRequest;
+import com.swp.ihelp.app.service.request.DateRangeServiceRequest;
 import com.swp.ihelp.app.service.request.RejectServiceRequest;
 import com.swp.ihelp.app.service.request.UpdateServiceRequest;
 import com.swp.ihelp.app.service.response.ServiceDetailResponse;
@@ -44,4 +45,6 @@ public interface ServiceVolunteerService {
     void disableService(String serviceId) throws Exception;
 
     String enableService(String serviceId) throws Exception;
+
+    Map<String, Object> findServicesByDateRange(DateRangeServiceRequest request, int page) throws Exception;
 }

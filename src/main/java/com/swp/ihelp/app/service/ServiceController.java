@@ -4,6 +4,7 @@ import com.swp.ihelp.app.account.AccountEntity;
 import com.swp.ihelp.app.notification.NotificationEntity;
 import com.swp.ihelp.app.notification.NotificationService;
 import com.swp.ihelp.app.service.request.CreateServiceRequest;
+import com.swp.ihelp.app.service.request.DateRangeServiceRequest;
 import com.swp.ihelp.app.service.request.RejectServiceRequest;
 import com.swp.ihelp.app.service.request.UpdateServiceRequest;
 import com.swp.ihelp.app.service.response.ServiceDetailResponse;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Map;
 
@@ -101,6 +103,18 @@ public class ServiceController {
     @GetMapping("/services/statistic/{year}")
     public ResponseEntity<Map<Integer, Integer>> getMonthlyHostedServiceNumber(@PathVariable int year) throws Exception {
         return new ResponseEntity<>(serviceVolunteerService.getMonthlyHostedServiceNumber(year), HttpStatus.OK);
+    }
+
+    @GetMapping("/services/date")
+    public ResponseEntity<Map<String, Object>> findServiceByDateRange(@RequestParam(value = "status") List<Integer> status,
+                                                                      @RequestParam(value = "fromDate") String fromDate,
+                                                                      @RequestParam(value = "toDate") String toDate,
+                                                                      @RequestParam(value = "page") int page) throws Exception {
+        DateRangeServiceRequest request = new DateRangeServiceRequest();
+        request.setFromDate(new SimpleDateFormat("yyyy-MM-dd").parse(fromDate));
+        request.setToDate(new SimpleDateFormat("yyyy-MM-dd").parse(toDate));
+        request.setStatus(status);
+        return new ResponseEntity<>(serviceVolunteerService.findServicesByDateRange(request, page), HttpStatus.OK);
     }
 
     @PostMapping("/services")
