@@ -74,10 +74,10 @@ public interface ServiceRepository extends JpaRepository<ServiceEntity, String>,
             "   sin(radians(s.lat ))) " +
             ") AS distance  " +
             "FROM ihelp.service s " +
-            "WHERE s.status_id = :statusId " +
+            "WHERE s.status_id = 7 " +
             "HAVING distance < :radius " +
             "ORDER BY distance ", nativeQuery = true)
-    Page<Object[]> getNearbyServices(float radius, double lat, double lng, int statusId, Pageable pageable);
+    Page<Object[]> getNearbyServices(float radius, double lat, double lng, Pageable pageable);
 
     @Query(value = "SELECT s.id FROM ihelp.service s " +
             "WHERE Date(s.start_date) = :date AND s.status_id = :status", nativeQuery = true)
@@ -98,4 +98,10 @@ public interface ServiceRepository extends JpaRepository<ServiceEntity, String>,
             "GROUP BY month " +
             "ORDER BY month ", nativeQuery = true)
     List<ServiceHostedReport> getMonthlyHostedServiceNumber(int year);
+
+    @Query("SELECT s.service from ServiceHasAccountEntity s where s.account.email = :email and s.service.status.id = :statusId ")
+    Page<ServiceEntity> findByUserEmailWithStatus(String email, int statusId, Pageable pageable);
+
+    @Query("SELECT s.service from ServiceHasAccountEntity s where s.account.email = :email")
+    Page<ServiceEntity> findByUserEmail(String email, Pageable pageable);
 }

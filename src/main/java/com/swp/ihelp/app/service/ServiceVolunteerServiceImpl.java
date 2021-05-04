@@ -178,10 +178,25 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
     }
 
     @Override
+    public Map<String, Object> findByServiceUserEmail(String email, Integer statusId, int page) throws Exception {
+        Pageable paging = PageRequest.of(page, pageSize, Sort.by("useDate").descending().and(Sort.by("service.title").ascending()));
+        Page<ServiceEntity> pageServices;
+        if (statusId != null) {
+            pageServices = serviceRepository.findByUserEmailWithStatus(email, statusId, paging);
+        } else {
+            pageServices = serviceRepository.findByUserEmail(email, paging);
+        }
+        if (pageServices.isEmpty()) {
+            throw new EntityNotFoundException("Account " + email + " has not used any service.");
+        }
+        return getServiceResponseMap(pageServices);
+    }
+
+    @Override
     public Map<String, Object> findNearbyServices(int page, float radius, double lat, double lng) throws Exception {
         Pageable paging = PageRequest.of(page, pageSize);
         Page<Object[]> pageServices
-                = serviceRepository.getNearbyServices(radius, lat, lng, StatusEnum.APPROVED.getId(), paging);
+                = serviceRepository.getNearbyServices(radius, lat, lng, paging);
 
         if (pageServices.isEmpty()) {
             throw new EntityNotFoundException("Service not found.");
@@ -505,7 +520,7 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
         if (userAccount.getBalancePoint() < service.getPoint()) {
             errorMsg += "This account does not have enough point to use the service;";
         }
-        if (!rewardRepository.isAccountContributed(userAccount.getEmail())) {
+        if (userAccount.getContributionPoint() == 0) {
             errorMsg += "You must do at least 1 volunteering work to use service;";
         }
         return errorMsg;
