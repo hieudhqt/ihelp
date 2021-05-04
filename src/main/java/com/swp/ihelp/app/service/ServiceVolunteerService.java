@@ -32,6 +32,8 @@ public interface ServiceVolunteerService {
 
     Map<String, Object> findByAuthorEmail(String email, int page) throws Exception;
 
+    Map<String, Object> findByServiceUserEmail(String email, Integer statusId, int page) throws Exception;
+
     Map<Integer, Integer> getMonthlyHostedServiceNumber(int year) throws Exception;
 
     ServiceEntity useService(String email, String serviceId) throws Exception;

@@ -91,6 +91,14 @@ public class ServiceController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    @GetMapping("/services/history/{email}")
+    public ResponseEntity<Map<String, Object>> findByServiceUserEmail(@PathVariable String email,
+                                                                      @RequestParam(value = "statusId", required = false) Integer statusId,
+                                                                      @RequestParam(value = "page") int page) throws Exception {
+        Map<String, Object> response = serviceVolunteerService.findByServiceUserEmail(email, statusId, page);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
     @GetMapping("/services/nearby/{radius}")
     public ResponseEntity<Map<String, Object>> findNearbyServices(@PathVariable float radius,
                                                                   @RequestParam(value = "lat") double lat,
