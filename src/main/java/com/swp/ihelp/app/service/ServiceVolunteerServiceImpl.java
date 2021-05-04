@@ -266,12 +266,19 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
                 Sort.by("startDate").descending().and(Sort.by("title").ascending()));
         Page<ServiceEntity> pageServices = serviceRepository
                 .findAll(finalCondition, paging);
+        if (pageServices.isEmpty()) {
+            throw new EntityNotFoundException("Service not found.");
+        }
         Map<String, Object> response = getServiceResponseMap(pageServices);
         return response;
     }
 
     @Override
     public Map<String, Object> findServicesByDateRange(DateRangeServiceRequest request, String filter, int page) throws Exception {
+        if (request.getFromDate() == null || request.getToDate() == null) {
+            return findAll(page, filter);
+        }
+
         Timestamp fromTimestamp = new Timestamp(request.getFromDate().getTime());
         Timestamp toTimestamp = new Timestamp(request.getToDate().getTime());
 
@@ -282,14 +289,6 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
                 .and(endDateLessThan(toTimestamp));
         finalCondition = condition1.or(condition2);
 
-//        List<Integer> statusList = request.getStatus();
-//        if (!statusList.isEmpty()) {
-//            Specification finalStatusSpec = Specification.where(hasStatus(statusList.get(0)));
-//            for (int i = 1; i < statusList.size(); i++) {
-//                finalStatusSpec = finalStatusSpec.or(hasStatus(statusList.get(i)));
-//            }
-//            finalCondition = finalCondition.and(finalStatusSpec);
-//        }
         if (!filter.isEmpty()) {
             ServiceSpecificationBuilder builder = new ServiceSpecificationBuilder();
             Pattern pattern = Pattern.compile(filterPattern);
@@ -308,6 +307,9 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
                 Sort.by("startDate").descending().and(Sort.by("title").ascending()));
         Page<ServiceEntity> pageServices = serviceRepository
                 .findAll(finalCondition, paging);
+        if (pageServices.isEmpty()) {
+            throw new EntityNotFoundException("Service not found.");
+        }
         Map<String, Object> response = getServiceResponseMap(pageServices);
         return response;
     }

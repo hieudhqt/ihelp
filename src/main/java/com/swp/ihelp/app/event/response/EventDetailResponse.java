@@ -38,6 +38,7 @@ public class EventDetailResponse implements Serializable {
     private String accountEmail;
     private String fullName;
     private String avatarUrl;
+    private String reason;
     private Boolean isOnsite;
     private StatusEntity status;
     private Set<EventCategoryEntity> categories;
@@ -61,6 +62,7 @@ public class EventDetailResponse implements Serializable {
         this.images = ImageResponse.convertToResponseList(eventEntity.getImages());
         this.status = eventEntity.getStatus();
         this.categories = eventEntity.getEventCategories();
+        this.reason = eventEntity.getReason();
     }
 
 }

@@ -118,6 +118,21 @@ public class EventScheduler {
 
                 accountRepository.updateContributionPoint(hostEmail, contributionPoint);
 
+                //Refund point when event participants number is lower than quota.
+                int remainingSpots = eventRepository.getRemainingSpot(eventId);
+                if (remainingSpots > 0) {
+                    int pointToRefund = eventEntity.getPoint() * remainingSpots;
+                    accountRepository.updateBalancePoint(hostEmail, pointToRefund);
+
+                    PointEntity hostPointEntity = new PointEntity();
+                    hostPointEntity.setIsReceived(true);
+                    hostPointEntity.setDescription("Point refunded to " + hostEmail + " due to event: " + eventId + " members count did not reach quota.");
+                    hostPointEntity.setCreatedDate(new Timestamp(System.currentTimeMillis()));
+                    hostPointEntity.setAccount(eventEntity.getAuthorAccount());
+                    hostPointEntity.setAmount(pointToRefund);
+                    pointRepository.save(hostPointEntity);
+                }
+
                 //Push notification to event's participant
                 PushNotificationRequest participantsNotificationRequest = new PushNotificationRequest()
                         .setTitle("Event \"" + eventEntity.getTitle() + "\" is completed")
