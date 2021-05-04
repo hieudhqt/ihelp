@@ -31,6 +31,21 @@ public class ServiceSpecificationBuilder {
         }
         return result;
     }
+
+    public Specification<ServiceEntity> build(Specification<ServiceEntity> result) {
+        if (params.size() == 0) {
+            return null;
+        }
+
+        Specification<ServiceEntity> filterCondition = new ServiceSpecification(params.get(0));
+        for (int i = 1; i < params.size(); i++) {
+            filterCondition = params.get(i - 1).isOrPredicate()
+                    ? filterCondition.or(new ServiceSpecification(params.get(i)))
+                    : filterCondition.and(new ServiceSpecification(params.get(i)));
+        }
+        result = result.and(filterCondition);
+        return result;
+    }
 //    public Specification<ServiceEntity> build() {
 //        if (params.size() == 0) {
 //            return null;

@@ -271,6 +271,49 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
     }
 
     @Override
+    public Map<String, Object> findServicesByDateRange(DateRangeServiceRequest request, String filter, int page) throws Exception {
+        Timestamp fromTimestamp = new Timestamp(request.getFromDate().getTime());
+        Timestamp toTimestamp = new Timestamp(request.getToDate().getTime());
+
+        Specification finalCondition;
+        Specification condition1 = Specification.where(startDateGreaterThan(fromTimestamp))
+                .and(startDateLessThan(toTimestamp));
+        Specification condition2 = Specification.where(endDateGreaterThan(fromTimestamp))
+                .and(endDateLessThan(toTimestamp));
+        finalCondition = condition1.or(condition2);
+
+//        List<Integer> statusList = request.getStatus();
+//        if (!statusList.isEmpty()) {
+//            Specification finalStatusSpec = Specification.where(hasStatus(statusList.get(0)));
+//            for (int i = 1; i < statusList.size(); i++) {
+//                finalStatusSpec = finalStatusSpec.or(hasStatus(statusList.get(i)));
+//            }
+//            finalCondition = finalCondition.and(finalStatusSpec);
+//        }
+        if (!filter.isEmpty()) {
+            ServiceSpecificationBuilder builder = new ServiceSpecificationBuilder();
+            Pattern pattern = Pattern.compile(filterPattern);
+            Matcher matcher = pattern.matcher(filter + ",");
+            while (matcher.find()) {
+                String orPredicate = null;
+                if (matcher.end(3) <= filter.length() - 1) {
+                    orPredicate = "" + filter.charAt(matcher.end(3));
+                }
+                builder.with(matcher.group(1), matcher.group(2), matcher.group(3), orPredicate);
+            }
+            finalCondition = builder.build(finalCondition);
+        }
+
+        Pageable paging = PageRequest.of(page, pageSize,
+                Sort.by("startDate").descending().and(Sort.by("title").ascending()));
+        Page<ServiceEntity> pageServices = serviceRepository
+                .findAll(finalCondition, paging);
+        Map<String, Object> response = getServiceResponseMap(pageServices);
+        return response;
+    }
+
+
+    @Override
     public String insert(CreateServiceRequest request) throws Exception {
         if (request.getStartDate().after(request.getEndDate())) {
             throw new RuntimeException("Start date must be before end date.");

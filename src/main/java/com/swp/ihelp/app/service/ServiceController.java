@@ -70,13 +70,6 @@ public class ServiceController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-//    @GetMapping("/services/type/{typeId}")
-//    public ResponseEntity<Map<String, Object>> findByServiceTypeId(@PathVariable int typeId,
-//                                                                   @RequestParam(value = "page") int page) throws Exception {
-//        Map<String, Object> response = serviceVolunteerService.findByServiceTypeId(typeId, page);
-//        return new ResponseEntity<>(response, HttpStatus.OK);
-//    }
-
     @GetMapping("/services/status/{statusId}")
     public ResponseEntity<Map<String, Object>> findByStatusId(@PathVariable int statusId,
                                                               @RequestParam(value = "page") int page) throws Exception {
@@ -123,6 +116,17 @@ public class ServiceController {
         request.setToDate(new SimpleDateFormat("yyyy-MM-dd").parse(toDate));
         request.setStatus(status);
         return new ResponseEntity<>(serviceVolunteerService.findServicesByDateRange(request, page), HttpStatus.OK);
+    }
+
+    @GetMapping("/services/date/{filter}")
+    public ResponseEntity<Map<String, Object>> findServiceByDateRangeWithFilter(@RequestParam(value = "fromDate") String fromDate,
+                                                                                @RequestParam(value = "toDate") String toDate,
+                                                                                @PathVariable String filter,
+                                                                                @RequestParam(value = "page") int page) throws Exception {
+        DateRangeServiceRequest request = new DateRangeServiceRequest();
+        request.setFromDate(new SimpleDateFormat("yyyy-MM-dd").parse(fromDate));
+        request.setToDate(new SimpleDateFormat("yyyy-MM-dd").parse(toDate));
+        return new ResponseEntity<>(serviceVolunteerService.findServicesByDateRange(request, filter, page), HttpStatus.OK);
     }
 
     @PostMapping("/services")
