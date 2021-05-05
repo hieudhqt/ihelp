@@ -125,6 +125,8 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
             service = new ServiceDetailResponse(result.get());
             int remainingSpots = serviceRepository.getRemainingSpot(id);
             service.setSpot(remainingSpots);
+            String avatarUrl = imageRepository.findAvatarByEmail(service.getAccountEmail());
+            service.setAvatarUrl(avatarUrl);
         } else {
             throw new RuntimeException("Did not find service with id:" + id);
         }
@@ -289,7 +291,7 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
                 .and(endDateLessThan(toTimestamp));
         finalCondition = condition1.or(condition2);
 
-        if (!filter.isEmpty()) {
+        if (filter != null) {
             ServiceSpecificationBuilder builder = new ServiceSpecificationBuilder();
             Pattern pattern = Pattern.compile(filterPattern);
             Matcher matcher = pattern.matcher(filter + ",");

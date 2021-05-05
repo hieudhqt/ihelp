@@ -118,10 +118,10 @@ public class ServiceController {
         return new ResponseEntity<>(serviceVolunteerService.findServicesByDateRange(request, page), HttpStatus.OK);
     }
 
-    @GetMapping("/services/date/{filter}")
+    @GetMapping("/services/date/filter")
     public ResponseEntity<Map<String, Object>> findServiceByDateRangeWithFilter(@RequestParam(value = "fromDate", required = false) String fromDate,
                                                                                 @RequestParam(value = "toDate", required = false) String toDate,
-                                                                                @PathVariable String filter,
+                                                                                @RequestParam(value = "filter", required = false) String filter,
                                                                                 @RequestParam(value = "page") int page) throws Exception {
         DateRangeServiceRequest request = new DateRangeServiceRequest();
         if (fromDate != null && toDate != null) {

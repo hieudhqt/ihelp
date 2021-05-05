@@ -18,6 +18,8 @@ public interface EventService {
 
     Map<String, Object> findByTitle(String title, int page) throws Exception;
 
+    Map<String, Object> findTitleById(String eventId) throws Exception;
+
     String insert(CreateEventRequest event) throws Exception;
 
     EventDetailResponse update(UpdateEventRequest event) throws Exception;
@@ -31,6 +33,8 @@ public interface EventService {
     Map<String, Object> findByAuthorEmail(String email, int page) throws Exception;
 
     Map<String, Object> findByParticipantEmail(String email, Integer statusId, int page) throws Exception;
+
+    boolean hasParticipants(String eventId) throws Exception;
 
     void joinEvent(String email, String eventId) throws Exception;
 

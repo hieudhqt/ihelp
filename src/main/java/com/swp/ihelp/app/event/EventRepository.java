@@ -38,12 +38,17 @@ public interface EventRepository extends JpaRepository<EventEntity, String>, Jpa
     @Query("SELECT e.event from EventHasAccountEntity e where e.account.email = :email ")
     Page<EventEntity> findByParticipantEmail(String email, Pageable pageable);
 
+    @Query("SELECT e.title FROM EventEntity e WHERE e.id=:eventId")
+    String findTitleById(String eventId);
 
     @Query("SELECT count(e.event.authorAccount) from EventHasAccountEntity e where e.event.id = :eventId")
     Integer getSpotUsed(String eventId);
 
     @Query("SELECT e.startDate From EventEntity e")
     List<Timestamp> getAllStartDates();
+
+    @Query("SELECT CASE WHEN COUNT (ea) > 0 THEN TRUE ELSE FALSE END FROM EventHasAccountEntity ea WHERE ea.event.id=:eventId")
+    boolean hasParticipants(String eventId);
 
     @Query(value =
             "SELECT (e.quota - (SELECT count(account_email) " +
@@ -63,10 +68,11 @@ public interface EventRepository extends JpaRepository<EventEntity, String>, Jpa
     @Query("SELECT DISTINCT 1 " +
             "FROM EventEntity e " +
             "INNER JOIN EventHasAccountEntity ea on e.id = ea.event.id " +
-            "WHERE e.startDate <= :date " +
-            "AND e.endDate >= :date " +
-            "AND ea.account.email = :email ")
-    Integer isAccountJoinedAnyEvent(Date date, String email);
+            "WHERE e.startDate <= :startDate " +
+            "AND e.endDate >= :endDate " +
+            "AND ea.account.email = :email " +
+            "AND e.status.id <> 4 AND e.status.id <> 5")
+    Integer isAccountJoinedAnyEvent(Timestamp startDate, Timestamp endDate, String email);
 
 //    @Query(value = "SELECT e.id, e.end_date FROM ihelp.event e WHERE e.end_date <= :date " +
 //            "ORDER BY e.end_date DESC Limit 1 ", nativeQuery = true)
@@ -95,7 +101,20 @@ public interface EventRepository extends JpaRepository<EventEntity, String>, Jpa
             "FROM ihelp.event e " +
             "WHERE e.status_id = :statusId " +
             "HAVING distance < :radius " +
-            "ORDER BY distance ", nativeQuery = true)
+            "ORDER BY distance ",
+            countQuery = "SELECT count(e.id) " +
+                    "            FROM ihelp.event e   " +
+                    "            WHERE e.status_id = :statusId   " +
+                    "            AND  (   " +
+                    "               6371 *   " +
+                    "               acos(cos(radians(:lat)) *    " +
+                    "               cos(radians(e.lat)) *    " +
+                    "               cos(radians(e.lng) -   " +
+                    "               radians(:lng))  +  " +
+                    "               sin(radians(:lat)) *    " +
+                    "               sin(radians(e.lat )))   " +
+                    "            ) < :radius "
+            ,nativeQuery = true)
     Page<Object[]> getNearbyEvents(float radius, double lat, double lng, int statusId, Pageable pageable);
 
     @Query(value = "SELECT e.id " +

@@ -20,6 +20,8 @@ public class LoginResponse implements Serializable {
 
     private String fullName;
 
+    private String phone;
+
     private String imageUrl;
 
     private String role;

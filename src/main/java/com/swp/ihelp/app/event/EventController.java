@@ -71,6 +71,12 @@ public class EventController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    @GetMapping("/events/{eventId}/titles")
+    public ResponseEntity<Map<String, Object>> findTitleById(@PathVariable String eventId) throws Exception {
+        Map<String, Object> response = eventService.findTitleById(eventId);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
     @GetMapping("/events/category/{categoryId}")
     public ResponseEntity<Map<String, Object>> findByCategoryId(@PathVariable int categoryId,
                                                                 @RequestParam(value = "page") int page) throws Exception {
@@ -179,7 +185,15 @@ public class EventController {
 
             if (hostDeviceTokens != null && !hostDeviceTokens.isEmpty()) {
                 Map<String, String> notificationData = new HashMap<>();
-                notificationData.put("evaluateRequiredEvents", eventId);
+
+                String data;
+                if (eventService.hasParticipants(eventId)) {
+                    data = eventId;
+                } else {
+                    data = "";
+                }
+
+                notificationData.put("evaluateRequiredEvents", data);
 
                 PushNotificationRequest hostNotificationRequest = new PushNotificationRequest()
                         .setTitle("Your event: \"" + event.getTitle() + "\" is completed")
@@ -210,7 +224,7 @@ public class EventController {
         if (deviceTokens != null && !deviceTokens.isEmpty()) {
 
             Map<String, String> notificationData = new HashMap<>();
-            notificationData.put("evaluateRequiredEvents", eventId);
+            notificationData.put("eventId", eventId);
             notificationData.put("managerEmail", email);
 
             PushNotificationRequest pushNotificationRequest = new PushNotificationRequest()

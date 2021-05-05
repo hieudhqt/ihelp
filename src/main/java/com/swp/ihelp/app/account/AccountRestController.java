@@ -73,6 +73,7 @@ public class AccountRestController {
         final String accessToken = jwtTokenUtil.generateAccessToken(userDetails);
         String imageUrl = imageService.findAvatarByEmail(email);
         String fullName = userDetails.getFullName();
+        String phone = userDetails.getPhone();
 
         List<String> evaluateRequiredEvents = eventService.findEvaluateRequiredByAuthorEmail(email);
 
@@ -95,7 +96,7 @@ public class AccountRestController {
 //        .setTitle("Test topic")
 //        .setMessage("Test noti topic")
 //                .setToken("dQ3dZpPsZ3XyQBTfkcLV-O:APA91bEQWwdXYnOWLGPd_Iu2N4f8LooeYXShtau8WHjZ5UcGMJIRSOYLORtXodLm0BTpIELSC5wQ78alTfEkhaOvu7BeHyg048VVmPcBc4KKghmKka_n1QZzFsTvD7p9mk640gE2XhUG"));
-        return new LoginResponse(accessToken, email, fullName, imageUrl, role, evaluateRequiredEvents);
+        return new LoginResponse(accessToken, email, fullName, phone, imageUrl, role, evaluateRequiredEvents);
     }
 
     @ApiImplicitParam(name = "isRefreshToken", value = "Set refresh token header", required = true, dataTypeClass = String.class, paramType = "header", defaultValue = "true")
@@ -199,7 +200,7 @@ public class AccountRestController {
         accountService.updatePassword(request.getEmail(), request.getNewPassword());
     }
 
-    @PutMapping("/accounts/reset_password")
+    @PutMapping("/reset_password")
     public void resetPassword(@RequestBody ResetPasswordRequest request) throws Exception {
         accountService.updatePassword(request.getEmail(), request.getNewPassword());
     }

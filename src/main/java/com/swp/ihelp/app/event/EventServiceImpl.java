@@ -52,8 +52,11 @@ public class EventServiceImpl implements EventService {
     @Value("${paging.page-size}")
     private int pageSize;
 
-    @Value("${point.event.bonus-percent}")
-    private float bonusPointPercent;
+    @Value("${point.event.rating-2-bonus-percent}")
+    private float rating2BonusPointPercent;
+
+    @Value("${point.event.rating-3-bonus-percent}")
+    private float rating3BonusPointPercent;
 
     @Value("${point.event.host-event-bonus}")
     private float hostBonusPointPercent;
@@ -158,6 +161,16 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    public Map<String, Object> findTitleById(String eventId) throws Exception {
+        existsByEventId(eventId);
+        String title = eventRepository.findTitleById(eventId);
+        Map<String, Object> map = new HashMap<>();
+        map.put("eventId", eventId);
+        map.put("title", title);
+        return map;
+    }
+
+    @Override
     public Map<String, Object> findByCategoryId(int categoryId, int page) throws Exception {
         Pageable paging = PageRequest.of(page, pageSize);
         Page<EventEntity> pageEvents = eventRepository.findByCategoryId(categoryId, paging);
@@ -201,6 +214,11 @@ public class EventServiceImpl implements EventService {
             throw new EntityNotFoundException("Account " + email + " has not joined any event.");
         }
         return getEventResponseMap(pageEvents);
+    }
+
+    @Override
+    public boolean hasParticipants(String eventId) throws Exception {
+        return eventRepository.hasParticipants(eventId);
     }
 
     @Override
@@ -465,10 +483,11 @@ public class EventServiceImpl implements EventService {
                 break;
             case 2:
                 participationPoint = eventEntity.getPoint();
+                bonusPoint = Math.round(eventEntity.getPoint() * rating2BonusPointPercent);
                 break;
             case 3:
                 participationPoint = eventEntity.getPoint();
-                bonusPoint = Math.round(eventEntity.getPoint() * bonusPointPercent);
+                bonusPoint = Math.round(eventEntity.getPoint() * rating3BonusPointPercent);
                 break;
             default:
                 throw new RuntimeException("Invalid rating.");
@@ -634,7 +653,7 @@ public class EventServiceImpl implements EventService {
             errorMsg += "Event host cannot join his/her own event;";
         }
 
-        if (eventRepository.isAccountJoinedAnyEvent(new Date(), email) != null) {
+        if (eventRepository.isAccountJoinedAnyEvent(event.getStartDate(), event.getEndDate(), email) != null) {
             errorMsg += "This email has already joined another event;";
         }
 
@@ -721,5 +740,11 @@ public class EventServiceImpl implements EventService {
             response.setSpot(remainingSpot);
         }
         return result;
+    }
+
+    private void existsByEventId(String eventId) {
+        if (!eventRepository.existsById(eventId)) {
+            throw new RuntimeException("Event with ID: " + eventId + " not found.");
+        }
     }
 }

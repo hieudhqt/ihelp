@@ -37,6 +37,7 @@ public class ServiceDetailResponse implements Serializable {
     private Date endDate;
     private String accountEmail;
     private String fullName;
+    private String avatarUrl;
     private String reason;
     private StatusEntity status;
     private Set<ServiceCategoryEntity> categories;

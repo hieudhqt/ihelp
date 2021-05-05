@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,7 +41,7 @@ public class NotificationServiceImpl implements NotificationService {
         if (!accountRepository.existsById(email)) {
             throw new RuntimeException("Account: " + email + " not found");
         }
-        Pageable paging = PageRequest.of(page, pageSize);
+        Pageable paging = PageRequest.of(page, pageSize, Sort.by("date").descending());
         Page<NotificationEntity> pageNotifications = notificationRepository.findByEmail(email, paging);
         if (pageNotifications.isEmpty()) {
             throw new EntityNotFoundException("Notification not found.");

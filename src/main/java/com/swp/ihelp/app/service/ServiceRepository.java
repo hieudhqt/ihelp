@@ -76,7 +76,20 @@ public interface ServiceRepository extends JpaRepository<ServiceEntity, String>,
             "FROM ihelp.service s " +
             "WHERE s.status_id = 7 " +
             "HAVING distance < :radius " +
-            "ORDER BY distance ", nativeQuery = true)
+            "ORDER BY distance ",
+            countQuery = "SELECT count(s.id) " +
+            "            FROM ihelp.service s   " +
+            "            WHERE s.status_id = :statusId   " +
+            "            AND  (   " +
+            "               6371 *   " +
+            "               acos(cos(radians(:lat)) *    " +
+            "               cos(radians(s.lat)) *    " +
+            "               cos(radians(s.lng) -   " +
+            "               radians(:lng))  +  " +
+            "               sin(radians(:lat)) *    " +
+            "               sin(radians(s.lat )))   " +
+            "            ) < :radius ",
+            nativeQuery = true)
     Page<Object[]> getNearbyServices(float radius, double lat, double lng, Pageable pageable);
 
     @Query(value = "SELECT s.id FROM ihelp.service s " +

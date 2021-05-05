@@ -32,6 +32,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
         AccountEntity accountEntity = accountRepository.getOne(s);
         String fullName = accountEntity.getFullName();
+        String phone = accountEntity.getPhone();
         String statusId = accountEntity.getStatus().getId();
 
         if (statusId.equals(AccountStatusEnum.SUSPENDED.getId())) {
@@ -40,7 +41,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
         if (accountEntity != null) {
             roles = Arrays.asList(new SimpleGrantedAuthority(accountEntity.getRole().getName()));
-            return new CustomUser(accountEntity.getEmail(), accountEntity.getPassword(), roles, fullName);
+            return new CustomUser(accountEntity.getEmail(), accountEntity.getPassword(), roles, fullName, phone);
         }
         throw new UsernameNotFoundException("Email or password not found");
     }

@@ -31,7 +31,7 @@ public class Swagger2Config {
                 .paths(PathSelectors.any())
                 .build()
 //                .apiInfo(getApiInfo())
-                .protocols(Sets.newHashSet("http", "https"))
+                .protocols(Sets.newHashSet("http"))
                 .securityContexts(Collections.singletonList(securityContext()))
                 .securitySchemes(Arrays.asList(apiKey()));
     }
