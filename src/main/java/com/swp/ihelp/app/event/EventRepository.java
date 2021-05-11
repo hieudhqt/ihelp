@@ -11,7 +11,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.sql.Timestamp;
-import java.util.Date;
 import java.util.List;
 
 public interface EventRepository extends JpaRepository<EventEntity, String>, JpaSpecificationExecutor<EventEntity> {
@@ -114,7 +113,7 @@ public interface EventRepository extends JpaRepository<EventEntity, String>, Jpa
                     "               sin(radians(:lat)) *    " +
                     "               sin(radians(e.lat )))   " +
                     "            ) < :radius "
-            ,nativeQuery = true)
+            , nativeQuery = true)
     Page<Object[]> getNearbyEvents(float radius, double lat, double lng, int statusId, Pageable pageable);
 
     @Query(value = "SELECT e.id " +
