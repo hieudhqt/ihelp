@@ -68,8 +68,8 @@ public interface EventRepository extends JpaRepository<EventEntity, String>, Jpa
     @Query("SELECT DISTINCT 1 " +
             "FROM EventEntity e " +
             "INNER JOIN EventHasAccountEntity ea on e.id = ea.event.id " +
-            "WHERE e.startDate <= :startDate " +
-            "AND e.endDate >= :endDate " +
+            "WHERE e.startDate <= :endDate " +
+            "AND e.endDate >= :startDate " +
             "AND ea.account.email = :email " +
             "AND e.status.id <> 4 AND e.status.id <> 5")
     Integer isAccountJoinedAnyEvent(Timestamp startDate, Timestamp endDate, String email);

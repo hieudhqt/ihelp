@@ -46,7 +46,7 @@ public class SignUpRequest implements Serializable {
                 .setPhone(request.getPhone())
                 .setDateOfBirth(request.getDateOfBirth())
                 .setGender(request.isGender())
-                .setBalancePoint(0)
+                .setBalancePoint(1000)
                 .setContributionPoint(0)
                 .setCreatedDate(new Date(System.currentTimeMillis()))
                 .setRole(signUpRole)

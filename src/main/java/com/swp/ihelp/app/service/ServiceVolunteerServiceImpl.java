@@ -567,9 +567,9 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
         if (userAccount.getBalancePoint() < service.getPoint()) {
             errorMsg += "This account does not have enough point to use the service;";
         }
-        if (userAccount.getContributionPoint() == 0) {
-            errorMsg += "You must do at least 1 volunteering work to use service;";
-        }
+//        if (userAccount.getContributionPoint() == 0) {
+//            errorMsg += "You must do at least 1 volunteering work to use service;";
+//        }
         return errorMsg;
     }
 
