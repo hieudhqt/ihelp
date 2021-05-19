@@ -5,6 +5,7 @@ import com.swp.ihelp.app.account.AccountRepository;
 import com.swp.ihelp.app.account.response.NotEvaluatedParticipantsMapping;
 import com.swp.ihelp.app.event.EventEntity;
 import com.swp.ihelp.app.event.EventRepository;
+import com.swp.ihelp.app.event.EventService;
 import com.swp.ihelp.app.eventjointable.EventHasAccountEntity;
 import com.swp.ihelp.app.eventjointable.EventHasAccountEntityPK;
 import com.swp.ihelp.app.eventjointable.EventHasAccountRepository;
@@ -13,7 +14,6 @@ import com.swp.ihelp.app.notification.NotificationEntity;
 import com.swp.ihelp.app.notification.NotificationRepository;
 import com.swp.ihelp.app.point.PointEntity;
 import com.swp.ihelp.app.point.PointRepository;
-import com.swp.ihelp.app.reward.RewardEntity;
 import com.swp.ihelp.app.reward.RewardRepository;
 import com.swp.ihelp.app.status.StatusEntity;
 import com.swp.ihelp.app.status.StatusEnum;
@@ -31,9 +31,7 @@ import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Component
 public class EventScheduler {
@@ -44,6 +42,7 @@ public class EventScheduler {
     private final AccountRepository accountRepository;
     private final PointRepository pointRepository;
     private final EventHasAccountRepository eventHasAccountRepository;
+    private final EventService eventService;
 
     //Use notification repository due to not using @Repository and @Service in the same class
     private final DeviceRepository deviceRepository;
@@ -59,15 +58,16 @@ public class EventScheduler {
     private int maxDaysToApprove;
 
     @Autowired
-    public EventScheduler(EventRepository eventRepository, RewardRepository rewardRepository, AccountRepository accountRepository, DeviceRepository deviceRepository, NotificationRepository notificationRepository, PushNotificationService pushNotificationService, PointRepository pointRepository, EventHasAccountRepository eventHasAccountRepository) {
+    public EventScheduler(EventRepository eventRepository, RewardRepository rewardRepository, AccountRepository accountRepository, PointRepository pointRepository, EventHasAccountRepository eventHasAccountRepository, EventService eventService, DeviceRepository deviceRepository, NotificationRepository notificationRepository, PushNotificationService pushNotificationService) {
         this.eventRepository = eventRepository;
         this.rewardRepository = rewardRepository;
         this.accountRepository = accountRepository;
+        this.pointRepository = pointRepository;
+        this.eventHasAccountRepository = eventHasAccountRepository;
+        this.eventService = eventService;
         this.deviceRepository = deviceRepository;
         this.notificationRepository = notificationRepository;
         this.pushNotificationService = pushNotificationService;
-        this.pointRepository = pointRepository;
-        this.eventHasAccountRepository = eventHasAccountRepository;
     }
 
     @Scheduled(cron = "0 0 0 * * *")
@@ -101,68 +101,7 @@ public class EventScheduler {
             List<String> eventIds
                     = eventRepository.getEventIdsToCompleteByDate(currentDate, StatusEnum.ONGOING.getId());
             for (String eventId : eventIds) {
-                eventRepository.updateStatus(eventId, StatusEnum.COMPLETED.getId());
-                EventEntity eventEntity = eventRepository.getOne(eventId);
-
-                int contributionPoint = Math.round(eventEntity.getPoint() * hostBonusPointPercent);
-
-                RewardEntity reward = new RewardEntity();
-                reward.setTitle("Reward for hosting event: " + eventEntity.getId());
-                reward.setDescription("");
-                reward.setPoint(contributionPoint);
-                reward.setCreatedDate(new Timestamp(System.currentTimeMillis()));
-                reward.setAccount(eventEntity.getAuthorAccount());
-                rewardRepository.save(reward);
-
-                String hostEmail = eventEntity.getAuthorAccount().getEmail();
-
-                accountRepository.updateContributionPoint(hostEmail, contributionPoint);
-
-                //Refund point when event participants number is lower than quota.
-                int remainingSpots = eventRepository.getRemainingSpot(eventId);
-                if (remainingSpots > 0) {
-                    int pointToRefund = eventEntity.getPoint() * remainingSpots;
-                    accountRepository.updateBalancePoint(hostEmail, pointToRefund);
-
-                    PointEntity hostPointEntity = new PointEntity();
-                    hostPointEntity.setIsReceived(true);
-                    hostPointEntity.setDescription("Point refunded to " + hostEmail + " due to event: " + eventId + " members count did not reach quota.");
-                    hostPointEntity.setCreatedDate(new Timestamp(System.currentTimeMillis()));
-                    hostPointEntity.setAccount(eventEntity.getAuthorAccount());
-                    hostPointEntity.setAmount(pointToRefund);
-                    pointRepository.save(hostPointEntity);
-                }
-
-                //Push notification to event's participant
-                PushNotificationRequest participantsNotificationRequest = new PushNotificationRequest()
-                        .setTitle("Event \"" + eventEntity.getTitle() + "\" is completed")
-                        .setMessage("Event \"" + eventEntity.getTitle() + "\" is now being under host's evaluation")
-                        .setTopic(eventId);
-
-                pushNotificationService.sendPushNotificationToTopic(participantsNotificationRequest);
-
-                //Push notification to event's host
-                List<String> hostDeviceTokens = deviceRepository.findByEmail(eventEntity.getAuthorAccount().getEmail());
-
-                if (hostDeviceTokens != null && !hostDeviceTokens.isEmpty()) {
-                    Map<String, String> notificationData = new HashMap<>();
-                    notificationData.put("evaluateRequiredEvents", eventId);
-
-                    PushNotificationRequest hostNotificationRequest = new PushNotificationRequest()
-                            .setTitle("Your event: \"" + eventEntity.getTitle() + "\" is completed")
-                            .setMessage("Event \"" + eventEntity.getTitle() + "\" has participants in need of evaluating")
-                            .setData(notificationData)
-                            .setRegistrationTokens(hostDeviceTokens);
-
-                    pushNotificationService.sendPushNotificationToMultiDevices(hostNotificationRequest);
-                }
-
-                notificationRepository.save(new NotificationEntity()
-                        .setTitle("Your event: \"" + eventEntity.getTitle() + "\" is completed")
-                        .setMessage("Event \"" + eventEntity.getTitle() + "\" has participants in need of evaluating")
-                        .setDate(new Timestamp(System.currentTimeMillis()))
-                        .setAccountEntity(new AccountEntity().setEmail(eventEntity.getAuthorAccount().getEmail())));
-
+                eventService.completeEvent(eventId);
             }
         } catch (Exception e) {
             logger.error("Error when auto completing events: " + e.getMessage());
@@ -275,6 +214,7 @@ public class EventScheduler {
                     memberPointEntity.setCreatedDate(new Timestamp(System.currentTimeMillis()));
                     memberPointEntity.setAccount(new AccountEntity().setEmail(memberAccount.getEmail()));
                     memberPointEntity.setAmount(eventToEvaluate.getPoint());
+                    memberPointEntity.setEvent(eventToEvaluate);
                     pointRepository.save(memberPointEntity);
 
                     accountRepository.updateBalancePoint(memberAccount.getEmail(), eventToEvaluate.getPoint());

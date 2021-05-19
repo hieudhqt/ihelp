@@ -171,9 +171,14 @@ public class EventEntity {
         this.endDate = new Timestamp(endDate.getTime());
     }
 
-//    public EventEntity(String id, Date endDate) {
-//        this.id = id;
-//        this.endDate = new Timestamp(endDate.getTime());
-//    }
+    @ManyToOne(fetch = FetchType.LAZY)
+    private EventEntity referencedEvent;
+
+    @OneToMany(mappedBy = "referencedEvent")
+    private Set<EventEntity> referencingEvents = new HashSet<>();
+
+    @Basic
+    @Column(name = "requirement", nullable = true, length = 200)
+    private String requirement;
 }
 

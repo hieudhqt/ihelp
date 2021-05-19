@@ -11,7 +11,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.sql.Timestamp;
-import java.util.Date;
 import java.util.List;
 
 public interface EventRepository extends JpaRepository<EventEntity, String>, JpaSpecificationExecutor<EventEntity> {
@@ -114,7 +113,7 @@ public interface EventRepository extends JpaRepository<EventEntity, String>, Jpa
                     "               sin(radians(:lat)) *    " +
                     "               sin(radians(e.lat )))   " +
                     "            ) < :radius "
-            ,nativeQuery = true)
+            , nativeQuery = true)
     Page<Object[]> getNearbyEvents(float radius, double lat, double lng, int statusId, Pageable pageable);
 
     @Query(value = "SELECT e.id " +
@@ -158,5 +157,13 @@ public interface EventRepository extends JpaRepository<EventEntity, String>, Jpa
 
     @Query(value = "SELECT e.point FROM EventEntity e WHERE e.id = :eventId")
     Integer getPointById(String eventId);
+
+    @Query(value = "SELECT e FROM EventEntity e WHERE e.referencedEvent.id = :eventId")
+    Page<EventEntity> findByReferencedEventId(String eventId, Pageable pageable);
+
+    @Query(value = "SELECT e FROM EventEntity e " +
+            "WHERE e.status.id = 2 " +
+            "AND e.authorAccount.balancePoint < e.point ")
+    Page<EventEntity> getEventsWithInsufficientPoint(Pageable pageable);
 }
 

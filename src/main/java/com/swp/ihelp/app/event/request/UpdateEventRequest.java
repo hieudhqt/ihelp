@@ -52,6 +52,8 @@ public class UpdateEventRequest implements Serializable {
     @NotNull
     private Set<Integer> categoryIds;
 
+    private String requirement;
+
 //    private Set<UpdateImageRequest> images;
 
     public static EventEntity convertToEntity(UpdateEventRequest request) {
@@ -66,6 +68,7 @@ public class UpdateEventRequest implements Serializable {
                 .setPoint(request.getPoint())
                 .setStartDate(new Timestamp(request.getStartDate().getTime()))
                 .setEndDate(new Timestamp(request.getEndDate().getTime()))
+                .setRequirement(request.getRequirement())
                 .setIsOnsite(request.getOnsite());
         return eventEntity;
     }

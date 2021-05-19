@@ -59,4 +59,10 @@ public interface EventService {
     Map<Integer, Integer> getMonthlyHostedEventNumber(int year) throws Exception;
 
     Boolean isUserHasEnoguhPoint(String email, String eventId) throws Exception;
+
+    void completeEvent(String eventId) throws Exception;
+
+    Map<String, Object> findByReferencedEventId(String eventId, int page) throws Exception;
+
+    Map<String, Object> getEventsWithInsufficientPoint(int page) throws Exception;
 }

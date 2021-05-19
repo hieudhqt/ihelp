@@ -583,6 +583,7 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
         senderPoint.setIsReceived(false);
         senderPoint.setDescription("Account " + userAccount.getEmail() +
                 " used service: " + serviceEntity.getId());
+        senderPoint.setService(serviceEntity);
 
         PointEntity receiverPoint = new PointEntity();
         receiverPoint.setAmount(amount);
@@ -591,6 +592,7 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
         receiverPoint.setIsReceived(true);
         receiverPoint.setDescription("Account " + authorAccount.getEmail() +
                 " received point for providing service: " + serviceEntity.getId());
+        receiverPoint.setService(serviceEntity);
 
         pointRepository.save(senderPoint);
         pointRepository.save(receiverPoint);
