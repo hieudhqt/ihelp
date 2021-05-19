@@ -60,7 +60,6 @@ public class PointServiceImpl implements PointService {
 
     private static String getFirstNumber(String s) {
         Matcher m = numberPattern.matcher(s);
-
         return m.find() ? m.group() : null;
     }
 

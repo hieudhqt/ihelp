@@ -132,6 +132,19 @@ public class EventController {
         return ResponseEntity.ok(eventMessage.getEventAddedMessage(eventId));
     }
 
+    @GetMapping("/events/template/{eventId}")
+    public ResponseEntity<Map<String, Object>> findByReferencedEvent(@PathVariable String eventId,
+                                                                     @RequestParam(value = "page") int page) throws Exception {
+        Map<String, Object> response = eventService.findByReferencedEventId(eventId, page);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @GetMapping("/events/insufficient-point")
+    public ResponseEntity<Map<String, Object>> findEventsWithInsufficientPoint(@RequestParam(value = "page") int page) throws Exception {
+        Map<String, Object> response = eventService.getEventsWithInsufficientPoint(page);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
     @PostMapping("/events/evaluation")
     public ResponseEntity<String> evaluateMember(@Valid @RequestBody EvaluationRequest request)
             throws Exception {
@@ -312,6 +325,13 @@ public class EventController {
         }
         return ResponseEntity.ok(eventMessage.getEventJoinedMessage(eventId, email));
     }
+
+    @PutMapping("/events/complete/{eventId}")
+    public ResponseEntity<String> completeEvent(@PathVariable String eventId) throws Exception {
+        eventService.completeEvent(eventId);
+        return ResponseEntity.ok("Event " + eventId + " completed.");
+    }
+
 }
 
 

@@ -11,15 +11,15 @@ public interface PointRepository extends JpaRepository<PointEntity, String> {
     Page<PointEntity> findAllByEmail(String email, Pageable pageable);
 
     @Query("SELECT p from PointEntity p " +
-            "WHERE p.description LIKE %:eventId% AND p.isReceived = true ORDER BY p.amount desc")
+            "WHERE p.event.id = :eventId AND p.isReceived = true ORDER BY p.amount desc")
     Page<PointEntity> findPointReceivedByEventId(String eventId, Pageable pageable);
 
 
     @Query("SELECT SUM(p.amount) from PointEntity p " +
-            "WHERE p.description LIKE %:eventId% AND p.isReceived = true")
+            "WHERE p.event.id = :eventId AND p.isReceived = true")
     Integer findSumPointReceivedByEventId(String eventId);
 
     @Query("SELECT SUM (p.amount) FROM PointEntity p " +
-            "WHERE p.description LIKE %:serviceId% AND p.isReceived = true")
+            "WHERE p.service.id = :serviceId AND p.isReceived = true")
     Integer getTotalEarnedByServiceId(String serviceId);
 }

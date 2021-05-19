@@ -64,6 +64,10 @@ public class CreateEventRequest implements Serializable {
 
     private Set<ImageRequest> images;
 
+    private String requirement;
+
+    private String referencedEventId;
+
     public static EventEntity convertToEntity(CreateEventRequest request) {
         AccountEntity authorAccount = new AccountEntity().setEmail(request.getAuthorEmail());
         StatusEntity serviceStatus = new StatusEntity().setId(request.getStatusId());
@@ -81,7 +85,9 @@ public class CreateEventRequest implements Serializable {
                 .setIsOnsite(request.getOnsite())
                 .setLongitude(request.getLongitude())
                 .setLatitude(request.getLatitude())
-                .setStatus(serviceStatus);
+                .setStatus(serviceStatus)
+                .setRequirement(request.getRequirement())
+                .setReferencedEvent(new EventEntity().setId(request.getReferencedEventId()));
         for (int categoryId : request.getCategoryIds()) {
             eventEntity.addCategory(new EventCategoryEntity().setId(categoryId));
         }

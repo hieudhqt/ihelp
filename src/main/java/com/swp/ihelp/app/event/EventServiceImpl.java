@@ -19,6 +19,9 @@ import com.swp.ihelp.app.eventjointable.EventHasAccountRepository;
 import com.swp.ihelp.app.image.ImageEntity;
 import com.swp.ihelp.app.image.ImageRepository;
 import com.swp.ihelp.app.image.request.ImageRequest;
+import com.swp.ihelp.app.notification.DeviceRepository;
+import com.swp.ihelp.app.notification.NotificationEntity;
+import com.swp.ihelp.app.notification.NotificationRepository;
 import com.swp.ihelp.app.point.PointEntity;
 import com.swp.ihelp.app.point.PointRepository;
 import com.swp.ihelp.app.reward.RewardEntity;
@@ -27,6 +30,8 @@ import com.swp.ihelp.app.status.StatusEntity;
 import com.swp.ihelp.app.status.StatusEnum;
 import com.swp.ihelp.app.status.StatusRepository;
 import com.swp.ihelp.exception.EntityNotFoundException;
+import com.swp.ihelp.google.firebase.fcm.PushNotificationRequest;
+import com.swp.ihelp.google.firebase.fcm.PushNotificationService;
 import com.swp.ihelp.message.EventMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -79,10 +84,17 @@ public class EventServiceImpl implements EventService {
     private StatusRepository statusRepository;
     private RewardRepository rewardRepository;
 
+    //Use notification repository due to not using @Repository and @Service in the same class
+    private final DeviceRepository deviceRepository;
+    private final NotificationRepository notificationRepository;
+
+    //This service is only related to Firebase Cloud Messaging. It does not integrate with DAO layer or vice versa
+    private final PushNotificationService pushNotificationService;
+
     private EventMessage eventMessage;
 
     @Autowired
-    public EventServiceImpl(EventRepository eventRepository, EventHasAccountRepository eventHasAccountRepository, EventCategoryRepository categoryRepository, ImageRepository imageRepository, AccountRepository accountRepository, PointRepository pointRepository, StatusRepository statusRepository, RewardRepository rewardRepository) {
+    public EventServiceImpl(EventRepository eventRepository, EventHasAccountRepository eventHasAccountRepository, EventCategoryRepository categoryRepository, ImageRepository imageRepository, AccountRepository accountRepository, PointRepository pointRepository, StatusRepository statusRepository, RewardRepository rewardRepository, DeviceRepository deviceRepository, NotificationRepository notificationRepository, PushNotificationService pushNotificationService) {
         this.eventRepository = eventRepository;
         this.eventHasAccountRepository = eventHasAccountRepository;
         this.categoryRepository = categoryRepository;
@@ -91,6 +103,9 @@ public class EventServiceImpl implements EventService {
         this.pointRepository = pointRepository;
         this.statusRepository = statusRepository;
         this.rewardRepository = rewardRepository;
+        this.deviceRepository = deviceRepository;
+        this.notificationRepository = notificationRepository;
+        this.pushNotificationService = pushNotificationService;
     }
 
     @Override
@@ -271,6 +286,32 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    public Map<String, Object> findByReferencedEventId(String eventId, int page) throws Exception {
+        Pageable paging = PageRequest.of(page, pageSize);
+        Page<EventEntity> pageEvents
+                = eventRepository.findByReferencedEventId(eventId, paging);
+
+        if (pageEvents.isEmpty()) {
+            throw new EntityNotFoundException("Event not found.");
+        }
+
+        return getEventResponseMap(pageEvents);
+    }
+
+    @Override
+    public Map<String, Object> getEventsWithInsufficientPoint(int page) throws Exception {
+        Pageable paging = PageRequest.of(page, pageSize,
+                Sort.by("createdDate").ascending());
+        Page<EventEntity> pageEvents
+                = eventRepository.getEventsWithInsufficientPoint(paging);
+        if (pageEvents.isEmpty()) {
+            throw new EntityNotFoundException("Event not found.");
+        }
+
+        return getEventResponseMap(pageEvents);
+    }
+
+    @Override
     public String insert(CreateEventRequest event) throws Exception {
         String errorMsg = validateCreateEvent(event);
         if (!errorMsg.isEmpty()) {
@@ -310,12 +351,6 @@ public class EventServiceImpl implements EventService {
         eventToUpdate.setIsOnsite(eventRequest.getOnsite());
         eventToUpdate.setStartDate(new Timestamp(eventRequest.getStartDate().getTime()));
         eventToUpdate.setEndDate(new Timestamp(eventRequest.getEndDate().getTime()));
-
-//        if (eventRequest.getImages() != null) {
-//            Set<ImageEntity> imagesToUpdate = UpdateImageRequest
-//                    .convertRequestsToEntities(eventRequest.getImages());
-//            eventToUpdate.setImages(imagesToUpdate);
-//        }
 
         if (eventRequest.getCategoryIds() != null) {
             Set<EventCategoryEntity> categoriesToUpdate = new HashSet<>();
@@ -386,6 +421,7 @@ public class EventServiceImpl implements EventService {
         PointEntity hostPointEntity = new PointEntity();
         hostPointEntity.setIsReceived(false);
         hostPointEntity.setDescription("Point used by " + hostAccount.getEmail() + " to create event: " + eventId);
+        hostPointEntity.setEvent(new EventEntity().setId(eventId));
         hostPointEntity.setCreatedDate(new Timestamp(System.currentTimeMillis()));
         hostPointEntity.setAccount(hostAccount);
         hostPointEntity.setAmount(pointNeeded);
@@ -499,6 +535,7 @@ public class EventServiceImpl implements EventService {
         memberPointEntity.setIsReceived(true);
         memberPointEntity.setDescription("Rating: " + request.getRating() + " \n" +
                 "Description: " + request.getComment() + " \nEventID: " + request.getEventId());
+        memberPointEntity.setEvent(eventEntity);
         memberPointEntity.setCreatedDate(currentTimestamp);
         memberPointEntity.setAccount(memberAccount);
         memberPointEntity.setAmount(participationPoint);
@@ -570,6 +607,7 @@ public class EventServiceImpl implements EventService {
             hostPointEntity.setIsReceived(true);
             hostPointEntity.setDescription("Point refunded to " + pointUsed + " for disabling event: " + eventId);
             hostPointEntity.setCreatedDate(new Timestamp(System.currentTimeMillis()));
+            hostPointEntity.setEvent(eventEntity);
             hostPointEntity.setAccount(eventEntity.getAuthorAccount());
             hostPointEntity.setAmount(pointUsed);
             pointRepository.save(hostPointEntity);
@@ -605,6 +643,7 @@ public class EventServiceImpl implements EventService {
                 hostPointEntity.setIsReceived(false);
                 hostPointEntity.setDescription("Point deducted for enabling event: " + eventId);
                 hostPointEntity.setCreatedDate(new Timestamp(System.currentTimeMillis()));
+                hostPointEntity.setEvent(eventEntity);
                 hostPointEntity.setAccount(eventEntity.getAuthorAccount());
                 hostPointEntity.setAmount(pointUsed);
                 pointRepository.save(hostPointEntity);
@@ -633,6 +672,73 @@ public class EventServiceImpl implements EventService {
         eventEntity.addEventAccount(eventAccount);
 
         eventRepository.save(eventEntity);
+    }
+
+    @Override
+    @Transactional
+    public void completeEvent(String eventId) throws Exception {
+        eventRepository.updateStatus(eventId, StatusEnum.COMPLETED.getId());
+        EventEntity eventEntity = eventRepository.getOne(eventId);
+
+        int contributionPoint = Math.round(eventEntity.getPoint() * hostBonusPointPercent);
+
+        RewardEntity reward = new RewardEntity();
+        reward.setTitle("Reward for hosting event: " + eventEntity.getId());
+        reward.setDescription("");
+        reward.setPoint(contributionPoint);
+        reward.setCreatedDate(new Timestamp(System.currentTimeMillis()));
+        reward.setAccount(eventEntity.getAuthorAccount());
+        rewardRepository.save(reward);
+
+        String hostEmail = eventEntity.getAuthorAccount().getEmail();
+
+        accountRepository.updateContributionPoint(hostEmail, contributionPoint);
+
+        //Refund point when event participants number is lower than quota.
+        int remainingSpots = eventRepository.getRemainingSpot(eventId);
+        if (remainingSpots > 0) {
+            int pointToRefund = eventEntity.getPoint() * remainingSpots;
+            accountRepository.updateBalancePoint(hostEmail, pointToRefund);
+
+            PointEntity hostPointEntity = new PointEntity();
+            hostPointEntity.setIsReceived(true);
+            hostPointEntity.setDescription("Point refunded to " + hostEmail + " due to event: " + eventId + " members count did not reach quota.");
+            hostPointEntity.setCreatedDate(new Timestamp(System.currentTimeMillis()));
+            hostPointEntity.setAccount(eventEntity.getAuthorAccount());
+            hostPointEntity.setAmount(pointToRefund);
+            hostPointEntity.setEvent(eventEntity);
+            pointRepository.save(hostPointEntity);
+        }
+
+        //Push notification to event's participant
+        PushNotificationRequest participantsNotificationRequest = new PushNotificationRequest()
+                .setTitle("Event \"" + eventEntity.getTitle() + "\" is completed")
+                .setMessage("Event \"" + eventEntity.getTitle() + "\" is now being under host's evaluation")
+                .setTopic(eventId);
+
+        pushNotificationService.sendPushNotificationToTopic(participantsNotificationRequest);
+
+        //Push notification to event's host
+        List<String> hostDeviceTokens = deviceRepository.findByEmail(eventEntity.getAuthorAccount().getEmail());
+
+        if (hostDeviceTokens != null && !hostDeviceTokens.isEmpty()) {
+            Map<String, String> notificationData = new HashMap<>();
+            notificationData.put("evaluateRequiredEvents", eventId);
+
+            PushNotificationRequest hostNotificationRequest = new PushNotificationRequest()
+                    .setTitle("Your event: \"" + eventEntity.getTitle() + "\" is completed")
+                    .setMessage("Event \"" + eventEntity.getTitle() + "\" has participants in need of evaluating")
+                    .setData(notificationData)
+                    .setRegistrationTokens(hostDeviceTokens);
+
+            pushNotificationService.sendPushNotificationToMultiDevices(hostNotificationRequest);
+        }
+
+        notificationRepository.save(new NotificationEntity()
+                .setTitle("Your event: \"" + eventEntity.getTitle() + "\" is completed")
+                .setMessage("Event \"" + eventEntity.getTitle() + "\" has participants in need of evaluating")
+                .setDate(new Timestamp(System.currentTimeMillis()))
+                .setAccountEntity(new AccountEntity().setEmail(eventEntity.getAuthorAccount().getEmail())));
     }
 
     private String validateJoinEvent(String eventId, String email) throws Exception {
