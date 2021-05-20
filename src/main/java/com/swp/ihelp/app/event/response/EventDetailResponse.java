@@ -65,7 +65,9 @@ public class EventDetailResponse implements Serializable {
         this.status = eventEntity.getStatus();
         this.categories = eventEntity.getEventCategories();
         this.reason = eventEntity.getReason();
-        this.referencedEventId = eventEntity.getReferencedEvent().getId();
+        if (eventEntity.getReferencedEvent() != null) {
+            this.referencedEventId = eventEntity.getReferencedEvent().getId();
+        }
         this.requirement = eventEntity.getRequirement();
     }
 
