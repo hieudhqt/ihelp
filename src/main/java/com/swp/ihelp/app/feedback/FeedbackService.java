@@ -20,9 +20,9 @@ public interface FeedbackService {
 
     Map<String, Object> findByEmail(String email, int page) throws Exception;
 
-    Map<String, Object> findByEventId(String eventId, Integer statusId, int page) throws Exception;
+    Map<String, Object> findByEventId(String eventId, Integer categoryId, Integer statusId, int page) throws Exception;
 
-    Map<String, Object> findByServiceId(String serviceId, Integer statusId, int page) throws Exception;
+    Map<String, Object> findByServiceId(String serviceId,  Integer categoryId, Integer statusId, int page) throws Exception;
 
     Map<String, Object> getReports(int page) throws Exception;
 

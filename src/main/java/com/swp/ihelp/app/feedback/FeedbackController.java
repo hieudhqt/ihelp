@@ -60,18 +60,20 @@ public class FeedbackController {
 //            @ApiImplicitParam(name = "eventId", value = "Event ID",dataTypeClass = String.class, paramType = "path"),
 //            @ApiImplicitParam(name = "statusId", dataTypeClass = Integer.class, paramType = "path", required = false)
 //    })
-    @GetMapping("/event/{eventId}")
+    @GetMapping("/event/{eventId}/category/{categoryId}")
     public ResponseEntity<Map<String, Object>> findByEventId(@PathVariable String eventId,
+                                                             @PathVariable Integer categoryId,
                                                              @RequestParam(required = false) Integer statusId,
                                                              @RequestParam(value = "page") int page) throws Exception {
-        return new ResponseEntity<>(feedbackService.findByEventId(eventId, statusId, page), HttpStatus.OK);
+        return new ResponseEntity<>(feedbackService.findByEventId(eventId, categoryId, statusId, page), HttpStatus.OK);
     }
 
-    @GetMapping("/service/{serviceId}")
+    @GetMapping("/service/{serviceId}/category/{categoryId}")
     public ResponseEntity<Map<String, Object>> findByServiceId(@PathVariable String serviceId,
+                                                               @PathVariable Integer categoryId,
                                                                @RequestParam(required = false) Integer statusId,
                                                                @RequestParam(value = "page") int page) throws Exception {
-        return new ResponseEntity<>(feedbackService.findByServiceId(serviceId, statusId, page), HttpStatus.OK);
+        return new ResponseEntity<>(feedbackService.findByServiceId(serviceId, categoryId, statusId, page), HttpStatus.OK);
     }
 
     @GetMapping("/reports")

@@ -13,10 +13,7 @@ import com.swp.ihelp.app.status.StatusEnum;
 import com.swp.ihelp.exception.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -110,14 +107,14 @@ public class FeedbackServiceImpl implements FeedbackService {
     }
 
     @Override
-    public Map<String, Object> findByEventId(String eventId, Integer statusId, int page) throws Exception {
+    public Map<String, Object> findByEventId(String eventId, Integer categoryId, Integer statusId, int page) throws Exception {
         Pageable paging = PageRequest.of(page, pageSize,
                 Sort.by("createdDate").descending());
         Page<FeedbackEntity> pageFeedbacks;
         if (statusId != null) {
-            pageFeedbacks = feedbackRepository.findByEventIdWithStatusId(eventId, statusId, paging);
+            pageFeedbacks = feedbackRepository.findByEventIdWithStatusId(eventId, categoryId, statusId, paging);
         } else {
-            pageFeedbacks = feedbackRepository.findByEventId(eventId, paging);
+            pageFeedbacks = feedbackRepository.findByEventId(eventId, categoryId, paging);
         }
         if (pageFeedbacks.isEmpty()) {
             throw new EntityNotFoundException("Feedback not found.");
@@ -127,14 +124,14 @@ public class FeedbackServiceImpl implements FeedbackService {
     }
 
     @Override
-    public Map<String, Object> findByServiceId(String serviceId, Integer statusId, int page) throws Exception {
+    public Map<String, Object> findByServiceId(String serviceId, Integer categoryId, Integer statusId, int page) throws Exception {
         Pageable paging = PageRequest.of(page, pageSize,
                 Sort.by("createdDate").descending());
         Page<FeedbackEntity> pageFeedbacks;
         if (statusId != null) {
-            pageFeedbacks = feedbackRepository.findByServiceIdWithStatusId(serviceId, statusId, paging);
+            pageFeedbacks = feedbackRepository.findByServiceIdWithStatusId(serviceId, categoryId, statusId, paging);
         } else {
-            pageFeedbacks = feedbackRepository.findByServiceId(serviceId, paging);
+            pageFeedbacks = feedbackRepository.findByServiceId(serviceId, categoryId, paging);
         }
         if (pageFeedbacks.isEmpty()) {
             throw new EntityNotFoundException("Feedback not found.");
