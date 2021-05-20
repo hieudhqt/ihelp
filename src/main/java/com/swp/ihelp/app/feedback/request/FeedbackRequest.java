@@ -3,6 +3,7 @@ package com.swp.ihelp.app.feedback.request;
 import com.swp.ihelp.app.account.AccountEntity;
 import com.swp.ihelp.app.event.EventEntity;
 import com.swp.ihelp.app.feedback.FeedbackEntity;
+import com.swp.ihelp.app.feedbackcategory.FeedbackCategoryEntity;
 import com.swp.ihelp.app.service.ServiceEntity;
 import com.swp.ihelp.app.status.StatusEntity;
 import com.swp.ihelp.app.status.StatusEnum;
@@ -19,6 +20,8 @@ public class FeedbackRequest implements Serializable {
     private String accountEmail;
     private String eventId;
     private String serviceId;
+    private Integer statusId;
+    private Integer feedbackCategoryId;
 
     public static FeedbackEntity convertToEntity(FeedbackRequest request) {
         AccountEntity accountEntity = new AccountEntity().setEmail(request.getAccountEmail());
@@ -30,7 +33,8 @@ public class FeedbackRequest implements Serializable {
         if (!(request.getServiceId() == null)) {
             serviceEntity = new ServiceEntity().setId(request.getServiceId());
         }
-        StatusEntity statusEntity = new StatusEntity().setId(StatusEnum.PENDING.getId());
+        StatusEntity statusEntity = new StatusEntity().setId(request.getStatusId());
+        FeedbackCategoryEntity feedbackCategoryEntity = new FeedbackCategoryEntity().setId(request.getFeedbackCategoryId());
         return new FeedbackEntity()
                 .setRating(request.getRating())
                 .setComment(request.getComment())
@@ -38,6 +42,7 @@ public class FeedbackRequest implements Serializable {
                 .setAccount(accountEntity)
                 .setEvent(eventEntity)
                 .setService(serviceEntity)
-                .setStatus(statusEntity);
+                .setStatus(statusEntity)
+                .setFeedbackCategory(feedbackCategoryEntity);
     }
 }

@@ -17,19 +17,19 @@ public interface FeedbackRepository extends JpaRepository<FeedbackEntity, String
     @Query("SELECT f FROM FeedbackEntity f WHERE f.status.id=:statusId")
     Page<FeedbackEntity> findByStatus(Integer statusId, Pageable pageable);
 
-    @Query("SELECT f FROM FeedbackEntity f WHERE f.event.id=:eventId AND f.status.id=:statusId")
-    Page<FeedbackEntity> findByEventIdWithStatusId(String eventId, Integer statusId, Pageable pageable);
+    @Query("SELECT f FROM FeedbackEntity f WHERE f.event.id=:eventId AND f.feedbackCategory.id=:categoryId AND f.status.id=:statusId")
+    Page<FeedbackEntity> findByEventIdWithStatusId(String eventId, Integer categoryId, Integer statusId, Pageable pageable);
 
-    @Query("SELECT f FROM FeedbackEntity f WHERE f.event.id=:eventId")
-    Page<FeedbackEntity> findByEventId(String eventId, Pageable pageable);
+    @Query("SELECT f FROM FeedbackEntity f WHERE f.event.id=:eventId AND f.feedbackCategory.id=:categoryId")
+    Page<FeedbackEntity> findByEventId(String eventId, Integer categoryId, Pageable pageable);
 
-    @Query("SELECT f FROM FeedbackEntity f WHERE f.service.id=:serviceId AND f.status.id=:statusId")
-    Page<FeedbackEntity> findByServiceIdWithStatusId(String serviceId, Integer statusId, Pageable pageable);
+    @Query("SELECT f FROM FeedbackEntity f WHERE f.service.id=:serviceId AND f.feedbackCategory.id=:categoryId AND f.status.id=:statusId")
+    Page<FeedbackEntity> findByServiceIdWithStatusId(String serviceId, Integer categoryId, Integer statusId, Pageable pageable);
 
-    @Query("SELECT f FROM FeedbackEntity f WHERE f.service.id=:serviceId")
-    Page<FeedbackEntity> findByServiceId(String serviceId, Pageable pageable);
+    @Query("SELECT f FROM FeedbackEntity f WHERE f.service.id=:serviceId AND f.feedbackCategory.id=:categoryId")
+    Page<FeedbackEntity> findByServiceId(String serviceId, Integer categoryId, Pageable pageable);
 
-    @Query("SELECT f FROM FeedbackEntity f WHERE f.event IS NULL AND f.service IS NULL")
+    @Query("SELECT f FROM FeedbackEntity f WHERE f.feedbackCategory.id = 7")
     Page<FeedbackEntity> getReports(Pageable pageable);
 
     @Query("SELECT f FROM FeedbackEntity f WHERE f.account.email=:email AND (f.event IS NOT NULL OR f.service IS NOT NULL)")

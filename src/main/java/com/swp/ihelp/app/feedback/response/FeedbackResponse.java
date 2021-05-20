@@ -2,6 +2,7 @@ package com.swp.ihelp.app.feedback.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.swp.ihelp.app.feedback.FeedbackEntity;
+import com.swp.ihelp.app.feedbackcategory.FeedbackCategoryEntity;
 import com.swp.ihelp.app.status.StatusEntity;
 import lombok.Data;
 
@@ -32,6 +33,8 @@ public class FeedbackResponse implements Serializable {
 
     private StatusEntity status;
 
+    private FeedbackCategoryEntity feedbackCategory;
+
     public FeedbackResponse(FeedbackEntity feedbackEntity) {
         this.id = feedbackEntity.getId();
         this.rating = feedbackEntity.getRating();
@@ -47,6 +50,7 @@ public class FeedbackResponse implements Serializable {
             this.serviceId = feedbackEntity.getService().getId();
         }
         this.status = feedbackEntity.getStatus();
+        this.feedbackCategory = feedbackEntity.getFeedbackCategory();
     }
 
     public static List<FeedbackResponse> convertToListResponse(List<FeedbackEntity> entityList) {

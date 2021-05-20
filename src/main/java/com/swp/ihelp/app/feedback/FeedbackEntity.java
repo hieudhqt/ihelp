@@ -2,6 +2,7 @@ package com.swp.ihelp.app.feedback;
 
 import com.swp.ihelp.app.account.AccountEntity;
 import com.swp.ihelp.app.event.EventEntity;
+import com.swp.ihelp.app.feedbackcategory.FeedbackCategoryEntity;
 import com.swp.ihelp.app.service.ServiceEntity;
 import com.swp.ihelp.app.status.StatusEntity;
 import com.swp.ihelp.config.StringPrefixedSequenceIdGenerator;
@@ -70,6 +71,10 @@ public class FeedbackEntity {
     @ManyToOne
     @JoinColumn(name = "manager_email", referencedColumnName = "email", nullable = true)
     private AccountEntity managerAccount;
+
+    @ManyToOne
+    @JoinColumn(name = "feedback_category_id", referencedColumnName = "id", nullable = true)
+    private FeedbackCategoryEntity feedbackCategory;
 
     @Override
     public boolean equals(Object o) {
