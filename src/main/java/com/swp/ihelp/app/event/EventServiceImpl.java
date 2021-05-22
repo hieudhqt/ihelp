@@ -327,6 +327,14 @@ public class EventServiceImpl implements EventService {
                 eventEntity.addImage(imageEntity);
             }
         }
+        if (event.getReferencedEventId() != null) {
+            if (eventRepository.existsById(event.getReferencedEventId())) {
+                EventEntity parentEvent = eventRepository.getOne(event.getReferencedEventId());
+                eventEntity.setReferencedEvent(parentEvent);
+            } else {
+                throw new RuntimeException("Referenced event not existed.");
+            }
+        }
         EventEntity savedEvent = eventRepository.save(eventEntity);
         return savedEvent.getId();
     }
