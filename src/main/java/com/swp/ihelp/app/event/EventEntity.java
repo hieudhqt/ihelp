@@ -171,7 +171,7 @@ public class EventEntity {
         this.endDate = new Timestamp(endDate.getTime());
     }
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private EventEntity referencedEvent;
 
     @OneToMany(mappedBy = "referencedEvent")

@@ -86,8 +86,7 @@ public class CreateEventRequest implements Serializable {
                 .setLongitude(request.getLongitude())
                 .setLatitude(request.getLatitude())
                 .setStatus(serviceStatus)
-                .setRequirement(request.getRequirement())
-                .setReferencedEvent(new EventEntity().setId(request.getReferencedEventId()));
+                .setRequirement(request.getRequirement());
         for (int categoryId : request.getCategoryIds()) {
             eventEntity.addCategory(new EventCategoryEntity().setId(categoryId));
         }
