@@ -308,7 +308,23 @@ public class EventServiceImpl implements EventService {
             throw new EntityNotFoundException("Event not found.");
         }
 
-        return getEventResponseMap(pageEvents);
+        List<EventEntity> eventEntityList = pageEvents.getContent();
+        List<EventResponse> eventResponses = convertEntitesToEventResponses(eventEntityList);
+
+        for (EventResponse response : eventResponses) {
+            int balancePoint = accountRepository.getBalancePoint(response.getAuthorEmail());
+            int eventPoint = eventRepository.getPointById(response.getId());
+            int quota = eventRepository.getQuota(response.getId());
+            response.setPointShortage(Math.abs(balancePoint - (eventPoint * quota)));
+        }
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("events", eventResponses);
+        response.put("currentPage", pageEvents.getNumber());
+        response.put("totalItems", pageEvents.getTotalElements());
+        response.put("totalPages", pageEvents.getTotalPages());
+
+        return response;
     }
 
     @Override
@@ -335,6 +351,27 @@ public class EventServiceImpl implements EventService {
                 throw new RuntimeException("Referenced event not existed.");
             }
         }
+
+        if (eventEntity.getStatus().getId() == StatusEnum.APPROVED.getId()) {
+            AccountEntity hostAccount = accountRepository.getOne(eventEntity.getAuthorAccount().getEmail());
+
+            int pointNeeded = eventEntity.getPoint() * eventEntity.getQuota();
+            if (hostAccount.getBalancePoint() < pointNeeded) {
+                throw new RuntimeException("Account " + hostAccount.getEmail() +
+                        " does not have enough point");
+            }
+
+            PointEntity hostPointEntity = new PointEntity();
+            hostPointEntity.setIsReceived(false);
+            hostPointEntity.setDescription("Point used by " + hostAccount.getEmail() +
+                    " to create event: " + eventEntity.getId());
+            hostPointEntity.setEvent(new EventEntity().setId(eventEntity.getId()));
+            hostPointEntity.setCreatedDate(new Timestamp(System.currentTimeMillis()));
+            hostPointEntity.setAccount(hostAccount);
+            hostPointEntity.setAmount(pointNeeded);
+            pointRepository.save(hostPointEntity);
+        }
+
         EventEntity savedEvent = eventRepository.save(eventEntity);
         return savedEvent.getId();
     }
@@ -579,7 +616,7 @@ public class EventServiceImpl implements EventService {
         if (!accountRepository.existsById(email)) {
             throw new EntityNotFoundException("Account not found.");
         }
-        return accountRepository.getBalancePoint(email) >= eventRepository.getPointById(eventId);
+        return accountRepository.getBalancePoint(email) >= (eventRepository.getPointById(eventId) * eventRepository.getQuota(eventId));
     }
 
     @Override

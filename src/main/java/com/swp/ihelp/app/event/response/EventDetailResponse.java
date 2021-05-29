@@ -44,7 +44,7 @@ public class EventDetailResponse implements Serializable {
     private Set<EventCategoryEntity> categories;
     private Set<ImageResponse> images;
     private String referencedEventId;
-    private String requirement;
+    private String suggestion;
 
     public EventDetailResponse(EventEntity eventEntity) {
         this.id = eventEntity.getId();
@@ -68,7 +68,7 @@ public class EventDetailResponse implements Serializable {
         if (eventEntity.getReferencedEvent() != null) {
             this.referencedEventId = eventEntity.getReferencedEvent().getId();
         }
-        this.requirement = eventEntity.getRequirement();
+        this.suggestion = eventEntity.getSuggestion();
     }
 
 }

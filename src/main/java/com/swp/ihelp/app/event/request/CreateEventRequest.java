@@ -64,7 +64,7 @@ public class CreateEventRequest implements Serializable {
 
     private Set<ImageRequest> images;
 
-    private String requirement;
+    private String suggestion;
 
     private String referencedEventId;
 
@@ -86,7 +86,7 @@ public class CreateEventRequest implements Serializable {
                 .setLongitude(request.getLongitude())
                 .setLatitude(request.getLatitude())
                 .setStatus(serviceStatus)
-                .setRequirement(request.getRequirement());
+                .setSuggestion(request.getSuggestion());
         for (int categoryId : request.getCategoryIds()) {
             eventEntity.addCategory(new EventCategoryEntity().setId(categoryId));
         }
