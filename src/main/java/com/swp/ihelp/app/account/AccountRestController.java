@@ -99,6 +99,12 @@ public class AccountRestController {
         return new LoginResponse(accessToken, email, fullName, phone, imageUrl, role, evaluateRequiredEvents);
     }
 
+    @PostMapping("/authenticate")
+    public ResponseEntity<String> authenticate(@RequestBody LoginRequest loginRequest) throws Exception {
+        authenticate(loginRequest.getEmail(), loginRequest.getPassword());
+        return new ResponseEntity<>("Account granted", HttpStatus.OK);
+    }
+
     @ApiImplicitParam(name = "isRefreshToken", value = "Set refresh token header", required = true, dataTypeClass = String.class, paramType = "header", defaultValue = "true")
     @PostMapping("/refreshtoken")
     public Map<String, Object> refreshToken(HttpServletRequest request) throws Exception {
