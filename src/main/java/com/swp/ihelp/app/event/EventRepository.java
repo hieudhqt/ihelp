@@ -163,7 +163,7 @@ public interface EventRepository extends JpaRepository<EventEntity, String>, Jpa
 
     @Query(value = "SELECT e FROM EventEntity e " +
             "WHERE e.status.id = 2 " +
-            "AND e.authorAccount.balancePoint < e.point ")
+            "AND e.authorAccount.balancePoint < e.point * e.quota ")
     Page<EventEntity> getEventsWithInsufficientPoint(Pageable pageable);
 }
 

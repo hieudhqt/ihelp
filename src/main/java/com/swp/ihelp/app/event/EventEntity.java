@@ -178,7 +178,7 @@ public class EventEntity {
     private Set<EventEntity> referencingEvents = new HashSet<>();
 
     @Basic
-    @Column(name = "requirement", nullable = true, length = 200)
-    private String requirement;
+    @Column(name = "suggestion", nullable = true, length = 200)
+    private String suggestion;
 }
 

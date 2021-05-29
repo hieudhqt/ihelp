@@ -48,6 +48,8 @@ public interface ServiceVolunteerService {
 
     String enableService(String serviceId) throws Exception;
 
+    void startService(String serviceId) throws Exception;
+
     Map<String, Object> findServicesByDateRange(DateRangeServiceRequest request, int page) throws Exception;
 
     Map<String, Object> findServicesByDateRange(DateRangeServiceRequest request, String search, int page) throws Exception;

@@ -163,6 +163,12 @@ public class ServiceController {
                 "Status is changed to \"" + updatedStatus + "\"");
     }
 
+    @PutMapping("/services/start/{serviceId}")
+    public ResponseEntity<String> startService(@PathVariable String serviceId) throws Exception {
+        serviceVolunteerService.startService(serviceId);
+        return ResponseEntity.ok("Service " + serviceId + " started.");
+    }
+
     @PutMapping("/services/{email}/approve/{serviceId}")
     public ResponseEntity<String> approve(@PathVariable String email,
                                           @PathVariable String serviceId) throws Exception {

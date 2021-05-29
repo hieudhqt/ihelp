@@ -51,6 +51,8 @@ public class EventResponse implements Serializable {
 
     private Boolean isOnsite;
 
+    private Integer pointShortage;
+
     private Set<EventCategoryEntity> categories;
 
     private Set<ImageResponse> images;

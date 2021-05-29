@@ -487,6 +487,18 @@ public class ServiceVolunteerServiceImpl implements ServiceVolunteerService {
     }
 
     @Override
+    public void startService(String serviceId) throws Exception {
+        ServiceEntity service = serviceRepository.getOne(serviceId);
+        if (service == null) {
+            throw new EntityNotFoundException("Service not found.");
+        }
+
+        service.setStatus(new StatusEntity().setId(StatusEnum.ONGOING.getId()));
+        service.setStartDate(new Timestamp(System.currentTimeMillis()));
+        serviceRepository.save(service);
+    }
+
+    @Override
     public void deleteById(String id) throws Exception {
         serviceRepository.deleteById(id);
     }
