@@ -352,27 +352,31 @@ public class EventServiceImpl implements EventService {
             }
         }
 
-        if (eventEntity.getStatus().getId() == StatusEnum.APPROVED.getId()) {
+        EventEntity savedEvent = eventRepository.save(eventEntity);
+
+        if (savedEvent.getStatus().getId() == StatusEnum.APPROVED.getId()) {
             AccountEntity hostAccount = accountRepository.getOne(eventEntity.getAuthorAccount().getEmail());
 
-            int pointNeeded = eventEntity.getPoint() * eventEntity.getQuota();
+            int pointNeeded = savedEvent.getPoint() * savedEvent.getQuota();
             if (hostAccount.getBalancePoint() < pointNeeded) {
                 throw new RuntimeException("Account " + hostAccount.getEmail() +
                         " does not have enough point");
             }
 
+            hostAccount.decreaseBalancePoint(pointNeeded);
+            accountRepository.save(hostAccount);
+
             PointEntity hostPointEntity = new PointEntity();
             hostPointEntity.setIsReceived(false);
             hostPointEntity.setDescription("Point used by " + hostAccount.getEmail() +
-                    " to create event: " + eventEntity.getId());
-            hostPointEntity.setEvent(new EventEntity().setId(eventEntity.getId()));
+                    " to create event: " + savedEvent.getId());
+            hostPointEntity.setEvent(savedEvent);
             hostPointEntity.setCreatedDate(new Timestamp(System.currentTimeMillis()));
             hostPointEntity.setAccount(hostAccount);
             hostPointEntity.setAmount(pointNeeded);
             pointRepository.save(hostPointEntity);
         }
 
-        EventEntity savedEvent = eventRepository.save(eventEntity);
         return savedEvent.getId();
     }
 
