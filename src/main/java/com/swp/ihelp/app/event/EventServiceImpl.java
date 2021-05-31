@@ -400,6 +400,7 @@ public class EventServiceImpl implements EventService {
         eventToUpdate.setIsOnsite(eventRequest.getOnsite());
         eventToUpdate.setStartDate(new Timestamp(eventRequest.getStartDate().getTime()));
         eventToUpdate.setEndDate(new Timestamp(eventRequest.getEndDate().getTime()));
+        eventToUpdate.setSuggestion(eventRequest.getSuggestion());
 
         if (eventRequest.getCategoryIds() != null) {
             Set<EventCategoryEntity> categoriesToUpdate = new HashSet<>();
