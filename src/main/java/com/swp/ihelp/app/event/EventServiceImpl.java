@@ -444,9 +444,6 @@ public class EventServiceImpl implements EventService {
 
         EventEntity eventEntity = eventRepository.getOne(eventId);
 
-        if (eventEntity.getStatus().getId() != StatusEnum.PENDING.getId()) {
-            throw new RuntimeException("You can only approve or reject event if it is pending");
-        }
         if (eventEntity.getAuthorAccount().getEmail().equals(managerEmail)) {
             throw new RuntimeException("You cannot approve or reject your own event.");
         }
@@ -683,11 +680,14 @@ public class EventServiceImpl implements EventService {
             statusIdToUpdate = StatusEnum.ONGOING.getId();
         }
         if (statusIdToUpdate > 0) {
-            eventRepository.updateStatus(eventId, statusIdToUpdate);
             int pointUsed = eventEntity.getPoint() * eventEntity.getQuota();
             if (pointUsed > 0) {
+                if (eventEntity.getAuthorAccount().getBalancePoint() < pointUsed) {
+                    throw new RuntimeException("Cannot enable this event due to author user does not have enough point.");
+                }
                 accountRepository.updateBalancePoint(eventEntity.getAuthorAccount().getEmail(),
                         -pointUsed);
+                eventRepository.updateStatus(eventId, statusIdToUpdate);
 
                 PointEntity hostPointEntity = new PointEntity();
                 hostPointEntity.setIsReceived(false);
