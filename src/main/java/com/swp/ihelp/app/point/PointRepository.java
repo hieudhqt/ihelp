@@ -11,8 +11,8 @@ public interface PointRepository extends JpaRepository<PointEntity, String> {
     Page<PointEntity> findAllByEmail(String email, Pageable pageable);
 
     @Query("SELECT p from PointEntity p " +
-            "WHERE p.event.id = :eventId AND p.isReceived = true ORDER BY p.amount desc")
-    Page<PointEntity> findPointReceivedByEventId(String eventId, Pageable pageable);
+            "WHERE p.event.id = :eventId AND p.isReceived = true AND p.account.email <> :author ORDER BY p.amount desc")
+    Page<PointEntity> findPointReceivedByEventId(String eventId, String author, Pageable pageable);
 
 
     @Query("SELECT SUM(p.amount) from PointEntity p " +

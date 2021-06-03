@@ -1,5 +1,7 @@
 package com.swp.ihelp.app.point;
 
+import com.swp.ihelp.app.event.EventEntity;
+import com.swp.ihelp.app.event.EventRepository;
 import com.swp.ihelp.app.image.ImageRepository;
 import com.swp.ihelp.app.point.response.EventPointHistory;
 import com.swp.ihelp.app.point.response.PointResponse;
@@ -27,15 +29,17 @@ public class PointServiceImpl implements PointService {
     private PointRepository pointRepository;
     private ImageRepository imageRepository;
     private RewardRepository rewardRepository;
+    private EventRepository eventRepository;
 
     @Value("${paging.page-size}")
     private int pageSize;
 
     @Autowired
-    public PointServiceImpl(PointRepository pointRepository, ImageRepository imageRepository, RewardRepository rewardRepository) {
+    public PointServiceImpl(PointRepository pointRepository, ImageRepository imageRepository, RewardRepository rewardRepository, EventRepository eventRepository) {
         this.pointRepository = pointRepository;
         this.imageRepository = imageRepository;
         this.rewardRepository = rewardRepository;
+        this.eventRepository = eventRepository;
     }
 
     @Override
@@ -66,7 +70,12 @@ public class PointServiceImpl implements PointService {
     @Override
     public Map<String, Object> getHistoryByEventId(String eventId, int page) throws Exception {
         Pageable paging = PageRequest.of(page, pageSize);
-        Page<PointEntity> pagePoints = pointRepository.findPointReceivedByEventId(eventId, paging);
+        EventEntity event = eventRepository.getOne(eventId);
+        if (event == null) {
+            throw new EntityNotFoundException("Event not found.");
+        }
+        String authorEmail = event.getAuthorAccount().getEmail();
+        Page<PointEntity> pagePoints = pointRepository.findPointReceivedByEventId(eventId, authorEmail, paging);
         if (pagePoints.isEmpty()) {
             throw new EntityNotFoundException("Point not found.");
         }
